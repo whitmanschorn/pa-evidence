@@ -1,0 +1,16 @@
+{
+  "system": "http://snomed.info/sct",
+  "code": "61808009",
+  "display": "Multiple endocrine neoplasia type 2 (MEN2)",
+  "source": "Policy code only (no descendants curated). The display fallback catches type 2A/2B wordings and flags them.",
+  "descendants": [],
+  "display_terms": [
+    "multiple endocrine neoplasia type 2",
+    "multiple endocrine neoplasia type 2a",
+    "multiple endocrine neoplasia type 2b",
+    "men2",
+    "men 2",
+    "men2a",
+    "men2b"
+  ]
+}

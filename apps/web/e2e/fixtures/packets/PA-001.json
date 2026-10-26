@@ -1,0 +1,198 @@
+{
+  "request_id": "PA-001",
+  "request_date": "2026-10-01",
+  "patient": "Patient/1805a90b-326d-5089-845f-185dae4679fd",
+  "policy_id": "MP-SYN-021",
+  "policy_version": "2026.1",
+  "criteria": [
+    {
+      "id": "C1",
+      "requirement": "Type 2 diabetes mellitus, active, documented in the record",
+      "kind": "condition_present",
+      "status": "met",
+      "sources": [
+        "Condition/b1aa0158-c15c-576b-b749-e5c77bc3ad58"
+      ],
+      "value": "clinicalStatus active",
+      "attested": {
+        "field": "diagnosis_claimed.snomed",
+        "value": "44054006",
+        "agrees": true
+      },
+      "considered": [
+        {
+          "ref": "Condition/b1aa0158-c15c-576b-b749-e5c77bc3ad58",
+          "date": "2021-06-10",
+          "value": "Type 2 diabetes mellitus (disorder), active",
+          "used": true,
+          "reason": null
+        }
+      ],
+      "missing_document": null
+    },
+    {
+      "id": "C2",
+      "requirement": "HbA1c >= 7.0 % on a result dated within 90 days of the request date",
+      "kind": "observation_threshold",
+      "status": "met",
+      "sources": [
+        "Observation/17151fc0-9010-5d12-9ee1-d8ca14145838"
+      ],
+      "value": "8.1 %",
+      "observed": "2026-09-03",
+      "attested": {
+        "field": "prescriber_attestation.hba1c_value",
+        "value": "8.1 % on 2026-09-03",
+        "agrees": true
+      },
+      "considered": [
+        {
+          "ref": "Observation/17151fc0-9010-5d12-9ee1-d8ca14145838",
+          "date": "2026-09-03",
+          "value": "8.1 %",
+          "numeric": 8.1,
+          "used": true,
+          "reason": null
+        },
+        {
+          "ref": "Observation/c98937ac-1692-53b6-abe4-29680f21d0b5",
+          "date": "2026-03-11",
+          "value": "8.6 %",
+          "numeric": 8.6,
+          "used": false,
+          "reason": "outside_window"
+        }
+      ],
+      "window": {
+        "from": "2026-07-03",
+        "to": "2026-10-01"
+      },
+      "threshold": {
+        "compare": "gte",
+        "value": 7,
+        "unit": "%"
+      },
+      "missing_document": null
+    },
+    {
+      "id": "C3",
+      "requirement": "At least 90 days of metformin therapy falling within the 12 months before the request date, OR documented intolerance or contraindication to metformin",
+      "kind": "any_of",
+      "status": "met",
+      "sources": [
+        "MedicationRequest/2aa57af5-c935-5747-aa4e-aaf41415ba1b"
+      ],
+      "value": "365 of 365 days in window (path A)",
+      "attested": {
+        "field": "prescriber_attestation.metformin_trial_months",
+        "value": "14 months",
+        "agrees": true
+      },
+      "note": "Record total 14.6 months across 1 order",
+      "considered": [
+        {
+          "ref": "MedicationRequest/2aa57af5-c935-5747-aa4e-aaf41415ba1b",
+          "date": "2025-07-15",
+          "end": "2026-10-01",
+          "value": "active",
+          "used": true,
+          "reason": null
+        }
+      ],
+      "paths": [
+        {
+          "from": "path_a",
+          "label": "path A",
+          "kind": "medication_duration",
+          "status": "met",
+          "sources": [
+            "MedicationRequest/2aa57af5-c935-5747-aa4e-aaf41415ba1b"
+          ],
+          "value": "365 of 365 days in window",
+          "considered": [
+            {
+              "ref": "MedicationRequest/2aa57af5-c935-5747-aa4e-aaf41415ba1b",
+              "date": "2025-07-15",
+              "end": "2026-10-01",
+              "value": "active",
+              "used": true,
+              "reason": null
+            }
+          ],
+          "window": {
+            "from": "2025-10-01",
+            "to": "2026-10-01"
+          },
+          "threshold": {
+            "compare": "gte",
+            "value": 90,
+            "unit": "days"
+          }
+        },
+        {
+          "from": "path_b",
+          "label": "path B",
+          "kind": "allergy_present",
+          "status": "missing",
+          "sources": [],
+          "considered": []
+        },
+        {
+          "from": "path_c",
+          "label": "path C",
+          "kind": "observation_threshold",
+          "status": "missing",
+          "sources": [],
+          "considered": [],
+          "threshold": {
+            "compare": "lt",
+            "value": 30,
+            "unit": ""
+          }
+        }
+      ],
+      "missing_document": null
+    },
+    {
+      "id": "C4",
+      "requirement": "No history of pancreatitis, medullary thyroid carcinoma, or multiple endocrine neoplasia type 2, at any time",
+      "kind": "condition_absent_ever",
+      "status": "met",
+      "sources": [],
+      "note": "No Condition matching 75694006, 255032005, 61808009 or descendants",
+      "considered": [],
+      "missing_document": null
+    },
+    {
+      "id": "C5",
+      "requirement": "Age 18 or older on the request date",
+      "kind": "patient_age",
+      "status": "met",
+      "sources": [
+        "Patient/1805a90b-326d-5089-845f-185dae4679fd"
+      ],
+      "value": "age 54",
+      "considered": [
+        {
+          "ref": "Patient/1805a90b-326d-5089-845f-185dae4679fd",
+          "date": null,
+          "value": "age 54",
+          "used": true,
+          "reason": null
+        }
+      ],
+      "threshold": {
+        "compare": "gte",
+        "value": 18,
+        "unit": "years"
+      },
+      "missing_document": null
+    }
+  ],
+  "missing_documents": [],
+  "summary": "Evidence found for all 5 criteria. Every criterion has cited evidence in the record.",
+  "summary_source": "template",
+  "evidence_complete": true,
+  "route": "evidence_complete",
+  "warnings": []
+}

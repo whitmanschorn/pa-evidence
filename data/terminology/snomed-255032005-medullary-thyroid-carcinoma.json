@@ -1,0 +1,8 @@
+{
+  "system": "http://snomed.info/sct",
+  "code": "255032005",
+  "display": "Medullary thyroid carcinoma",
+  "source": "Policy code only (no descendants curated). The display fallback catches other wordings and flags them.",
+  "descendants": [],
+  "display_terms": ["medullary thyroid carcinoma", "medullary carcinoma of thyroid", "medullary thyroid cancer"]
+}

@@ -1,0 +1,11 @@
+{
+  "system": "http://snomed.info/sct",
+  "code": "75694006",
+  "display": "Pancreatitis",
+  "source": "Hand-curated: policy code 75694006 plus acute and chronic pancreatitis, is-a children in the SNOMED CT International Edition. Not exhaustive; the display fallback catches other pancreatitis concepts and flags them.",
+  "descendants": [
+    { "code": "197456007", "display": "Acute pancreatitis" },
+    { "code": "235494005", "display": "Chronic pancreatitis" }
+  ],
+  "display_terms": ["pancreatitis"]
+}

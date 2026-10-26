@@ -1,0 +1,34 @@
+{
+  "system": "http://snomed.info/sct",
+  "code": "44054006",
+  "display": "Type 2 diabetes mellitus",
+  "broader": {
+    "code": "73211009",
+    "display": "Diabetes mellitus"
+  },
+  "source": "Hand-curated: well-established is-a children of 44054006 in the SNOMED CT International Edition. Not exhaustive; production replaces this file with a terminology-server expansion (PLAN.md).",
+  "descendants": [
+    {
+      "code": "359642000",
+      "display": "Diabetes mellitus type 2 in nonobese"
+    },
+    {
+      "code": "81531005",
+      "display": "Diabetes mellitus type 2 in obese"
+    },
+    {
+      "code": "237599002",
+      "display": "Insulin treated type 2 diabetes mellitus"
+    },
+    {
+      "code": "313436004",
+      "display": "Type 2 diabetes mellitus without complication"
+    }
+  ],
+  "display_terms": [
+    "type 2 diabetes",
+    "type ii diabetes",
+    "diabetes mellitus type 2",
+    "diabetes mellitus type ii"
+  ]
+}

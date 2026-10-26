@@ -176,6 +176,56 @@ Conflicting only when attested months exceed the record total by more than 1 mon
 Under the two-sided default PA-005 C3 would be conflicting (30 vs 32.52) with a provider ask that the chart already answers.
 C2 stays two-sided (0.1).
 
+**D-030 Packet fields beyond the plan's list (Phase 3).** Each criterion also carries `requirement` (the policy's words, so a
+reviewer reads the rule next to the result), `window` and `threshold` (what was applied, checkable by the nurse; they also drive the UI
+timeline), `paths` (each any_of alternative and its status, so the nurse sees every route to C3), and `missing_document` (the ask for this
+criterion; the agent's draft check works per criterion). `considered` items add `end` (order intervals) and `numeric` (to plot values).
+All of these get a line in the README's minimum-necessary justification (Phase 9).
+
+**D-031 What the chart fetch asks for (Phase 3).** Each evaluator kind declares the resources it needs (`needs`), and `fetchChart` merges them,
+so the fetch layer never knows which criterion asked. Observations are searched server-side by LOINC code, and labs match by code only (no
+display fallback). Conditions, MedicationRequests and AllergyIntolerances are fetched whole for the member, because the display fallback
+has to see every one.
+
+**D-032 C1's "another diabetes type" lives in terminology, not in code (Phase 3).** The type 2 diabetes set names its broader concept
+(73211009 diabetes mellitus) in `data/terminology/`, so the binding needs no code and the plan's C1 binding line is unchanged.
+Prediabetes is not diabetes: a prediabetes-only record is `missing` for C1. A record with active type 2 diabetes but a form claiming another
+diagnosis is `conflicting`.
+
+**D-033 Conflict tolerances sit in bindings.ts (Phase 3).** The HbA1c tolerance (0.1) and the metformin months tolerance (1 month,
+one-sided) are not in the policy, so like C5's 18 years they live in `core/rules/bindings.ts`, each with a comment. These are the only
+clinical numbers in code, and they are all in that one file.
+
+**D-034 Metformin duration details (Phase 3).** Days are `end − start`; overlapping orders count once (union). Record months for the
+attestation check are the unclipped union up to the request date / 30.44. If the known days fall short but some orders have unknown
+durations (stopped or completed with no end date), the status is `missing` (ask for fill history), not `not_met`: the record can't show
+the criterion failing. Synthea's many `completed` orders without end dates will exercise this in Phase 7.
+
+**D-035 Blocking warnings (Phase 3).** `source_unverified`, `medication_not_in_policy_list`, `member_reference_mismatch`,
+`request_before_policy_effective` and `implausible_deceased_before_request` keep a fully met request in clinician review. The others
+(`display_match`, `other_in_window_result`, `medication_end_unknown`, `unit_mismatch`, `observation_date_from_issued`) inform the nurse but
+do not change the route. The list is in `core/rules/route.ts`.
+
+**D-036 A request dated before every policy version (Phase 3).** It uses the earliest version and gets the blocking warning
+`request_before_policy_effective`, so the nurse reviews it rather than the service refusing it.
+
+**D-037 Source verification is one batch request (Phase 3).** Every cited source and every considered reference is checked with a single
+FHIR `batch` of reads. The HTTP client follows paging `next` links only on the configured server's origin, so a bearer token is never
+sent anywhere else.
+
+**D-038 Dates (Phase 3).** A dateTime's calendar day is the day as written in the record (its first ten characters). Day arithmetic is done
+on UTC midnights, so time zones and daylight saving never move a day. The Patient's birth date never enters the packet; C5 shows only the age.
+
+**D-039 Bindings are passed in, not imported (Phase 3).** `assemblePacket` takes `bindings` in its deps. The production map in
+`bindings.ts` stays C1–C5 (the live drill adds C6 there), and the extension test adds its one C6 line in the test. `BINDINGS` is typed
+`Record<string, Binding>` rather than the plan's `satisfies`, so it can be indexed by a policy's criterion id.
+
+**D-040 Allergy evidence (Phase 3).** Any metformin AllergyIntolerance with acceptable verification counts, whatever its clinicalStatus,
+as the plan states.
+
+**D-041 Fixtures (Phase 3).** `pnpm fixtures` writes real packets to `apps/web/e2e/fixtures/packets/` using the same in-memory wiring as the
+tests. `fixturesCurrent.test.ts` fails if a committed fixture differs from today's rules engine, so the Playwright mocks cannot drift.
+
 ## Defaults until the panel answers (plan §7; the candidate is emailing the panel)
 
 1. **eGFR threshold.** The policy has `value_max: 30` but its note says "< 30". Default: strict `< 30`, using the latest eGFR on or before

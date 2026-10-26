@@ -1,0 +1,13 @@
+{
+  "system": "http://snomed.info/sct",
+  "code": "73211009",
+  "display": "Diabetes mellitus (any type)",
+  "source": "Hand-curated: 73211009 and its main type children in the SNOMED CT International Edition (type 2 expands through its own file). Used to tell 'no diabetes at all' (missing) from 'diabetes, but not active type 2' (not_met or conflicting). Prediabetes (714628002) is not diabetes and is deliberately absent.",
+  "descendants": [
+    { "code": "44054006", "display": "Type 2 diabetes mellitus" },
+    { "code": "46635009", "display": "Type 1 diabetes mellitus" },
+    { "code": "11687002", "display": "Gestational diabetes mellitus" },
+    { "code": "8801005", "display": "Secondary diabetes mellitus" }
+  ],
+  "display_terms": ["diabetes mellitus"]
+}

@@ -1,0 +1,10 @@
+{
+  "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+  "code": "6809",
+  "display": "Metformin",
+  "source": "Policy: ingredient_rxnorm 6809 and product_rxnorm_example 860975. Other metformin products, including combination products, match through the display fallback ('metformin') and are flagged; production replaces this with an RxNorm ingredient-to-product expansion (PLAN.md).",
+  "descendants": [
+    { "code": "860975", "display": "24 HR Metformin hydrochloride 500 MG Extended Release Oral Tablet" }
+  ],
+  "display_terms": ["metformin"]
+}
