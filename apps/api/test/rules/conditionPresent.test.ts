@@ -30,6 +30,15 @@ describe('condition_present (C1)', () => {
     expect(result.warnings).toEqual(['display_match']);
   });
 
+  it('flags a display match only when it is cited, and calls an unused related type related, not inactive', () => {
+    const coded = condition('t2', T2DM);
+    const relatedByDisplay = condition('dk', { code: '127013003', display: 'Disorder of kidney due to diabetes mellitus (disorder)' });
+    const result = runC1([coded, relatedByDisplay]);
+    expect(result.sources).toEqual(['Condition/t2']);
+    expect(result.warnings).toEqual([]);
+    expect(reasonOf(result, 'Condition/dk')).toBe('related_condition');
+  });
+
   it('is conflicting when the record has it resolved and the form claims it', () => {
     const result = runC1([condition('t2', T2DM, { clinicalStatus: 'resolved' })]);
     expect(result.status).toBe('conflicting');

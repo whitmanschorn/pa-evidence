@@ -1,7 +1,8 @@
 // Loads the FHIR server, in this order:
 //   1. Synthea hospitals and practitioners (patient bundles reference them, so they go first)
 //   2. Synthea patients
-//   3. the supplied bundles, as-is (they already use PUT)
+//   3. eval overlays: resources added by hand to Synthea patients for the eval, as-is (PUT; eval/synthea-overlays/README.md)
+//   4. the supplied bundles, as-is (they already use PUT)
 // Every Synthea bundle goes through rewritePostToPut, so reloading is safe and ids stay stable.
 // Then it prints a count for every resource type it loaded. Running it twice leaves every count unchanged.
 //
@@ -15,6 +16,7 @@ import { countResponseStatuses, resourceTypesIn, rewritePostToPut } from './fhir
 const REPO_ROOT = fileURLToPath(new URL('../', import.meta.url));
 const FHIR_URL = process.env.FHIR_LOAD_URL ?? 'http://localhost:8090/fhir';
 const SYNTHEA_DIR = join(REPO_ROOT, 'data/synthea/cache/fhir');
+const OVERLAY_DIR = join(REPO_ROOT, 'eval/synthea-overlays');
 const SUPPLIED_DIR = join(REPO_ROOT, 'data/bundles');
 const SUPPLIED_ONLY = process.argv.includes('--supplied-only');
 
@@ -35,11 +37,13 @@ async function main(): Promise<void> {
   const patientFiles = syntheaFiles.filter(
     (name) => !hospitalFiles.includes(name) && !practitionerFiles.includes(name),
   );
+  const overlayFiles = SUPPLIED_ONLY ? [] : listJsonFiles(OVERLAY_DIR);
   const suppliedFiles = listJsonFiles(SUPPLIED_DIR);
 
   await loadAll('Synthea hospitals', SYNTHEA_DIR, hospitalFiles, rewritePostToPut);
   await loadAll('Synthea practitioners', SYNTHEA_DIR, practitionerFiles, rewritePostToPut);
   await loadAll('Synthea patients', SYNTHEA_DIR, patientFiles, rewritePostToPut);
+  await loadAll('Eval overlays', OVERLAY_DIR, overlayFiles, (bundle) => bundle);
   await loadAll('Supplied bundles', SUPPLIED_DIR, suppliedFiles, (bundle) => bundle);
 
   await printCounts();

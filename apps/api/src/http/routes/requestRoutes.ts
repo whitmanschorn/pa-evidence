@@ -1,3 +1,4 @@
+import { RequestIdSchema } from '@pa/shared';
 import { Router } from 'express';
 import { z } from 'zod';
 import { NotFoundError, assemblePacket } from '../../core/packet/assemblePacket.js';
@@ -8,9 +9,8 @@ import { auditWhenDone } from '../auditEvents.js';
 import { addLogFields } from '../locals.js';
 import type { AppDeps } from '../../app.js';
 
-const RequestIdParam = z.string().regex(/^[A-Za-z0-9-]{1,64}$/);
 const SourceParams = z.object({
-  id: RequestIdParam,
+  id: RequestIdSchema,
   type: z.string().regex(/^[A-Z][A-Za-z]{1,40}$/),
   fhirId: z.string().regex(/^[A-Za-z0-9\-.]{1,64}$/),
 });
@@ -32,7 +32,7 @@ export function requestRoutes(deps: AppDeps): Router {
 
   // The evidence packet, built by the rules engine. One audit event per request.
   router.get('/requests/:id/evidence', allow('evidence:read', deps.audit), async (req, res) => {
-    const requestId = RequestIdParam.parse(req.params.id);
+    const requestId = RequestIdSchema.parse(req.params.id);
     const audited = { action: 'packet.read' as const, request_id: requestId, assembler: 'rules' as const };
     auditWhenDone(res, deps.audit, audited);
 

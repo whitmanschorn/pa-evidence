@@ -2,6 +2,8 @@
 // nothing reads the current date. Dates are calendar days, "YYYY-MM-DD", compared as UTC midnights so that
 // daylight saving and the server's time zone never shift a day.
 
+import { ISO_DATE } from '@pa/shared';
+
 const MS_PER_DAY = 86_400_000;
 
 // A FHIR date may be partial: "1980", "1980-04" or "1980-04-12". Missing parts stay undefined.
@@ -21,7 +23,7 @@ export function parsePartialDate(value: string | undefined): PartialDate | null 
 // Returns null for partial dates, which have no single day.
 export function toDay(value: string | undefined): string | null {
   if (value === undefined) return null;
-  const match = /^(\d{4}-\d{2}-\d{2})/.exec(value);
+  const match = new RegExp(`^(${ISO_DATE.source})`).exec(value);
   return match === null ? null : (match[1] ?? null);
 }
 
@@ -32,6 +34,12 @@ function toUtcMs(day: string): number {
 
 function fromUtcMs(ms: number): string {
   return new Date(ms).toISOString().slice(0, 10);
+}
+
+// The UTC calendar day of a moment, e.g. a clock reading. (For deployment dates such as which model version is in
+// effect; clinical logic never reads the clock.)
+export function dayOf(moment: Date): string {
+  return fromUtcMs(moment.getTime());
 }
 
 export function addDays(day: string, days: number): string {

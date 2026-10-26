@@ -1,9 +1,10 @@
 import { readdirSync, statSync } from 'node:fs';
+import { ISO_DATE } from '@pa/shared';
 
 // Rules shared by every folder of dropped-in versions (policies, models): each version is a folder named
 // "<effective date>_<version>", dotfiles are ignored, and versions must take effect in version order.
 
-const VERSION_FOLDER = /^(\d{4}-\d{2}-\d{2})_(.+)$/;
+const VERSION_FOLDER = new RegExp(`^(${ISO_DATE.source})_(.+)$`);
 
 export function parseVersionFolderName(name: string): { effective: string; version: string } | null {
   const match = VERSION_FOLDER.exec(name);

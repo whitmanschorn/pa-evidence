@@ -1,0 +1,56 @@
+{
+  "request_id": "SYN-003",
+  "request_date": "2025-04-15",
+  "patient": "Patient/7fc5a38e-c3da-07c2-2015-d9802d305f0a",
+  "policy_id": "MP-SYN-021",
+  "policy_version": "2026.1",
+  "criteria": [
+    {
+      "id": "C1",
+      "status": "met",
+      "sources": [
+        "Condition/7fc5a38e-c3da-07c2-1eb3-b4d79e4e25b6",
+        "Condition/7fc5a38e-c3da-07c2-eb17-3a34f25292e6",
+        "Condition/7fc5a38e-c3da-07c2-f131-7aa4a4f36f99"
+      ],
+      "reason": "T2DM (44054006) active, confirmed. Two active complications whose display names type 2 diabetes (neuropathy 368581000119106, nonproliferative retinopathy 1551000119108) are SNOMED descendants of 44054006 and match the display fallback, so they are cited too, flagged display_match (corrected after the first run; see NOTES)."
+    },
+    {
+      "id": "C2",
+      "status": "met",
+      "sources": [
+        "Observation/7fc5a38e-c3da-07c2-82ba-34bd83999607"
+      ],
+      "reason": "Window 2025-01-15..2025-04-15: 7.26 % on 2025-03-01, >= 7.0. Attested 7.3 % on 2025-03-01: difference 0.04, agrees."
+    },
+    {
+      "id": "C3",
+      "status": "missing",
+      "sources": [],
+      "reason": "No metformin orders, no metformin allergy; latest eGFR on or before the request is 113.97 (2025-03-01), not under 30."
+    },
+    {
+      "id": "C4",
+      "status": "met",
+      "sources": [],
+      "reason": "No Condition coded 75694006, 255032005, 61808009 or a descendant, and none whose display matches; nothing of the kind anywhere in the Synthea sample."
+    },
+    {
+      "id": "C5",
+      "status": "met",
+      "sources": [
+        "Patient/7fc5a38e-c3da-07c2-2015-d9802d305f0a"
+      ],
+      "reason": "Born 1950-04-08: age 75 on 2025-04-15."
+    }
+  ],
+  "missing_documents": [
+    "Metformin prescription history for 2024-04-15 to 2025-04-15, or documentation of metformin intolerance or contraindication"
+  ],
+  "route": "clinician_review",
+  "evidence_complete": false,
+  "warnings": [
+    "display_match:C1",
+    "request_before_policy_effective"
+  ]
+}

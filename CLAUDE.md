@@ -46,7 +46,8 @@ Comments explain why, not what. Prefer three clear lines over one clever line.
 
 ## Commands
 make up | make down | make reset | make load | make tokens | make reload-policies | make reload-models
-pnpm test | pnpm lint | pnpm eval | pnpm agent <request_id>
+pnpm test | pnpm lint | pnpm eval | pnpm eval:models | pnpm eval:models:html <json> | pnpm agent <request_id>
+make ollama-cpu (CPU-only Ollama on :11435 for pnpm eval:models when the GPU faults; D-085)
 pnpm test:ui (Playwright, mocked API, seconds) | pnpm test:e2e (Playwright, full stack) | pnpm fixtures
 
 ## Process

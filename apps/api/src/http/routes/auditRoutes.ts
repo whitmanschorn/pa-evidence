@@ -1,11 +1,12 @@
 import { Router } from 'express';
+import { RequestIdSchema } from '@pa/shared';
 import { z } from 'zod';
 import { allow } from '../allow.js';
 import { auditEventFor } from '../auditEvents.js';
 import type { AppDeps } from '../../app.js';
 
 const AuditQuery = z.object({
-  request_id: z.string().regex(/^[A-Za-z0-9-]{1,64}$/).optional(),
+  request_id: RequestIdSchema.optional(),
   limit: z.coerce.number().int().min(1).max(1000).default(100),
 });
 

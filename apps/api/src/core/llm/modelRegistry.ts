@@ -1,3 +1,4 @@
+import { dayOf } from '../dates.js';
 import { latestInEffect } from '../versionFolders.js';
 import type { LocalModel } from './localModel.js';
 import type { ModelVersion } from './modelVersions.js';
@@ -24,7 +25,7 @@ export function createModelRegistry(options: {
   clock?: () => Date;
 }): ModelRegistry {
   const clock = options.clock ?? (() => new Date());
-  const today = () => clock().toISOString().slice(0, 10);
+  const today = () => dayOf(clock());
 
   function loadAndConnect(): LocalModel[] {
     const models = options.load().map(options.connect);

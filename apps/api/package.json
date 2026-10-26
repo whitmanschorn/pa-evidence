@@ -8,7 +8,11 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "fixtures": "tsx scripts/fixtures.ts",
-    "dev": "tsx watch --env-file=../../.env src/main.ts"
+    "dev": "tsx watch --env-file=../../.env src/main.ts",
+    "eval": "tsx scripts/eval.ts",
+    "eval:report": "tsx scripts/evalReport.ts",
+    "eval:models": "tsx scripts/compareModels.ts",
+    "eval:models:html": "tsx scripts/modelReportHtml.ts"
   },
   "dependencies": {
     "@ai-sdk/mcp": "2.0.73",

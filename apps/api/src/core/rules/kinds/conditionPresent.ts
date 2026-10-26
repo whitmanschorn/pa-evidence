@@ -32,6 +32,8 @@ export function buildConditionPresent(
     const active: fhir4.Condition[] = [];
     const notActive: fhir4.Condition[] = [];
     const warnings = new Set<string>();
+    const matchedBy = new Map<string, 'code' | 'display'>(); // ref -> how a usable condition matched
+    const targetRefs = new Set<string>(); // usable conditions of the target type (not only a related type)
 
     for (const condition of context.chart.conditions) {
       const targetMatch = matchConcept(condition.code, target);
@@ -56,7 +58,8 @@ export function buildConditionPresent(
         item.reason = 'after_request_date';
       } else {
         item.used = true;
-        if (match === 'display') warnings.add('display_match');
+        matchedBy.set(item.ref, match);
+        if (targetMatch !== null) targetRefs.add(item.ref);
         const isActiveTarget = targetMatch !== null && params.clinicalStatus_in.includes(clinicalStatus);
         if (isActiveTarget) {
           active.push(condition);
@@ -71,10 +74,13 @@ export function buildConditionPresent(
       for (const item of considered) {
         if (item.used && !active.some((condition) => refOf(condition) === item.ref)) {
           item.used = false;
-          item.reason = 'not_active';
+          item.reason = targetRefs.has(item.ref) ? 'not_active' : 'related_condition';
         }
       }
     }
+    // A display match is flagged only when it is cited: that is the one the nurse should check.
+    const cited = active.length > 0 ? active : notActive;
+    if (cited.some((condition) => matchedBy.get(refOf(condition)) === 'display')) warnings.add('display_match');
 
     const claimed = binding.attested === undefined ? undefined : readFormField(context.form, binding.attested.code);
     const claimsTarget = claimed !== undefined && target.codes.has(String(claimed));

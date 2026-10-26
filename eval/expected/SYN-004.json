@@ -1,0 +1,53 @@
+{
+  "request_id": "SYN-004",
+  "request_date": "2026-10-20",
+  "patient": "Patient/a88d8253-7b27-4746-bc0f-c41e671b6237",
+  "policy_id": "MP-SYN-021",
+  "policy_version": "2026.1",
+  "criteria": [
+    {
+      "id": "C1",
+      "status": "met",
+      "sources": [
+        "Condition/a88d8253-7b27-4746-fa56-9a324fe3fff2",
+        "Condition/a88d8253-7b27-4746-e835-361e78edcf6e"
+      ],
+      "reason": "No Condition coded 44054006 or a curated descendant. Two active Conditions are type 2 diabetes complications whose display contains 'type 2 diabetes' (microalbuminuria 90781000119102, proteinuria 157141000119108); in SNOMED they are descendants of 44054006, and the policy allows the display fallback, flagged with display_match. 127013003 (kidney disorder due to diabetes mellitus) is not type 2 specific and is not cited."
+    },
+    {
+      "id": "C2",
+      "status": "missing",
+      "sources": [],
+      "reason": "No HbA1c in the record at all."
+    },
+    {
+      "id": "C3",
+      "status": "missing",
+      "sources": [],
+      "reason": "No metformin orders, no metformin allergy, no eGFR."
+    },
+    {
+      "id": "C4",
+      "status": "met",
+      "sources": [],
+      "reason": "No Condition coded 75694006, 255032005, 61808009 or a descendant, and none whose display matches; nothing of the kind anywhere in the Synthea sample."
+    },
+    {
+      "id": "C5",
+      "status": "met",
+      "sources": [
+        "Patient/a88d8253-7b27-4746-bc0f-c41e671b6237"
+      ],
+      "reason": "Born 1925-12-06: age 100 on 2026-10-20."
+    }
+  ],
+  "missing_documents": [
+    "HbA1c lab result dated 2026-07-22 to 2026-10-20",
+    "Metformin prescription history for 2025-10-20 to 2026-10-20, or documentation of metformin intolerance or contraindication"
+  ],
+  "route": "clinician_review",
+  "evidence_complete": false,
+  "warnings": [
+    "display_match:C1"
+  ]
+}

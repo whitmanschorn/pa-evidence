@@ -1,6 +1,7 @@
 import { DraftItemSchema, findForbiddenTerms, type DraftItem, type Packet } from '@pa/shared';
 import { z } from 'zod';
 import { containsWords } from '../core/rules/matching.js';
+import { datesIn, numbersIn, recommendsADecision } from '../core/safety/claimsInText.js';
 
 // The provider request the agent drafts for the nurse. It is checked against the rules engine's packet, never against
 // the agent's own answer, and it is never sent automatically.
@@ -10,6 +11,18 @@ export const DraftSchema = z.object({ items: z.array(DraftItemSchema) });
 // The criteria that need something from the provider: missing or conflicting.
 function criteriaNeedingDocuments(rulesPacket: Packet) {
   return rulesPacket.criteria.filter((criterion) => criterion.status === 'missing' || criterion.status === 'conflicting');
+}
+
+// What the model is shown for the draft: each criterion that needs a document, with only that criterion's facts.
+export function draftEvidence(rulesPacket: Packet) {
+  return criteriaNeedingDocuments(rulesPacket).map((criterion) => ({
+    criterion_id: criterion.id,
+    status: criterion.status,
+    value: criterion.value ?? null,
+    observed: criterion.observed ?? null,
+    attested: criterion.attested ?? null,
+    missing_document: criterion.missing_document,
+  }));
 }
 
 export type DraftCheck = { failures: string[]; problems: string[] }; // codes for the audit, sentences for the retry
@@ -42,16 +55,13 @@ export function checkDraft(items: DraftItem[], rulesPacket: Packet, memberNames:
     const { considered, paths, ...evidence } = criterion;
     const evidenceText = JSON.stringify(evidence);
     const ask = item.ask.replaceAll(rulesPacket.request_id, ' ');
-    for (const date of ask.match(/\d{4}-\d{2}-\d{2}/g) ?? []) {
+    for (const date of datesIn(ask)) {
       if (!evidenceText.includes(date)) {
         failures.add('unsupported_date');
         problems.push(`The date ${date} in the ask for ${item.criterion_id} is not in its evidence.`);
       }
     }
-    const numbersIn = (text: string) =>
-      (text.replace(/\d{4}-\d{2}-\d{2}/g, ' ').replace(/\b[A-Z]\d+\b/g, ' ').match(/\d+(?:\.\d+)?/g) ?? []).map(Number);
-    // FHIR references are dropped first: the digits inside an id ("…9d69…") are not evidence of a 9.
-    const allowed = new Set(numbersIn(evidenceText.replace(/[A-Z][A-Za-z]+\/[A-Za-z0-9\-.]+/g, ' ')));
+    const allowed = new Set(numbersIn(evidenceText)); // ignores digits inside FHIR ids ("…9d69…" is not a 9)
     for (const number of numbersIn(ask)) {
       if (!allowed.has(number)) {
         failures.add('unsupported_number');
@@ -64,7 +74,7 @@ export function checkDraft(items: DraftItem[], rulesPacket: Packet, memberNames:
       problems.push(`The ask for ${item.criterion_id} uses a form of approve, deny or authorize.`);
     }
     // 4. No recommendation.
-    if (/\b(recommend\w*|eligib\w*|qualif\w*|medically necessary)\b/i.test(item.ask)) {
+    if (recommendsADecision(item.ask)) {
       failures.add('recommendation');
       problems.push(`The ask for ${item.criterion_id} recommends or suggests a decision.`);
     }

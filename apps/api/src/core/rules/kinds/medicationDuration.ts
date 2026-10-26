@@ -94,7 +94,16 @@ export function buildMedicationDuration(
     const claimed = binding.attested === undefined ? undefined : readFormField(context.form, binding.attested.months);
     let attested: Attested | undefined;
     if (binding.attested !== undefined && toleranceMonths !== undefined && typeof claimed === 'number') {
-      const agrees = known.length === 0 ? null : claimed - recordMonths <= toleranceMonths;
+      // The record contradicts the claim only when it shows fewer months with every duration known: an order of
+      // unknown length could make up the difference, so then there is nothing to compare (null), never a conflict.
+      let agrees: boolean | null;
+      if (known.length === 0) {
+        agrees = null;
+      } else if (claimed - recordMonths <= toleranceMonths) {
+        agrees = true;
+      } else {
+        agrees = unknownDurations > 0 ? null : false;
+      }
       attested = { field: binding.attested.months, value: `${claimed} months`, agrees };
     }
 

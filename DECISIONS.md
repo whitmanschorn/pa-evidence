@@ -445,12 +445,137 @@ term from our planning; they say what the code does and why.
 **D-077 Lint: `ignoreRestSiblings` (Phase 6).** `const { notes, ...attested } = form` is how the code leaves a field out (free-text notes
 never reach a model). ESLint's `no-unused-vars` now allows it instead of requiring `_notes`.
 
+**D-078 Things the code and prompts share are defined once (Phase 7, the candidate's request).** The `<clinical_data>` tag is
+`CLINICAL_DATA_TAG` with one `wrapClinicalData()` (summary, tool results, draft). The prompt files still spell the tag out: each file
+is the exact text the model receives, which is what `prompt_version` in the audit points to, so a placeholder would make the file
+something else. A test reads the constant and fails if a prompt does not name the tag and the data-not-instructions rule. Also
+defined once now: the request-id, date and FHIR-reference patterns (`@pa/shared`; the schemas and the text scanners are both built
+from them), the checks on model-written text (`core/safety/claimsInText.ts`: dates, numbers, references, recommendations, shared by
+the summary and draft checkers), roles and permissions (moved to shared, so the web tests stop copying them), the SSE frame format
+(next to the reader), bearer-token parsing, the reload response, the tool names (`TOOL`), and the test helpers for the model version in
+effect. Not merged: the policy and model registries (two explicit 60-line modules beat one generic one here).
+
+**D-079 Prompts may only name what the code uses (Phase 7).** `<criteria_with_evidence>` and the like in the summary prompt are not
+tags; they name fields of the JSON the code sends. `test/llm/prompts.test.ts` takes every snake_case name in each prompt and checks it
+exists in what that prompt is sent or replies with (evidence fields, reply schema, tool names and inputs, statuses). Renaming a field
+in code fails the test until the prompt follows. Suggested, not done: write placeholders as `{field}` in the next prompt versions, so
+they cannot be mistaken for the real `<clinical_data>` delimiter (a measured prompt change, not a silent one).
+
+**D-080 The Synthea eval set (Phase 7; SYN-011 added by D-089).** Ten request forms in `eval/synthea-requests/`, one per sample patient chosen to cover what the
+supplied seven do not: an outside-lab HbA1c, an attested HbA1c contradicted on the same date, a request before the policy took effect,
+diabetes recorded only as complications (display match), prediabetes only, no diabetes, a member under 18, metformin orders without end
+dates, an eGFR contraindication, and a deceased member. The key was derived by hand from the bundles before the first run. After it, the
+key was corrected in three places where it, not the service, was wrong; every correction is listed in `eval/expected/SYNTHEA-NOTES.md`.
+No sample patient can be evidence complete (no HbA1c of 7 % or more in 2026; F-005).
+
+**D-081 How the eval measures (Phase 7).** `pnpm eval` goes through the running service's HTTP API, as a nurse would: statuses,
+sources and warnings against the key; each cited source fetched through the source endpoint; the summary re-checked with the service's
+own faithfulness checker; the banned-word scan over the whole response; latency. The model, digest and prompt version of each summary
+come from the audit trail. Output: `eval/results/<run id>.json`, with shared Zod schemas (`@pa/shared` eval.ts) that the Phase 8
+dashboard will read. `EVAL.md` is generated from the JSON (`pnpm eval:report`) and never edited by hand.
+
+**D-082 Audit events stay readable when the schema grows (Phase 7, a bug the eval found).** Reading the audit trail failed with 400 once
+it reached events written before Phase 6, which lack `tool_name` and the draft fields. Fields that can be "does not apply" now default
+to null or [] when read. `verify()` hashes the stored text, so the chain is unaffected; a test writes an old-shape row and checks both.
+
+**D-083 Two rules fixes from the eval (Phase 7).** (1) F-001: an attested metformin duration longer than the known orders is no longer a
+conflict when some orders have unknown length (they could cover the difference); there is nothing to compare, so C3 is missing. (2)
+F-002: `display_match` is raised only when a display-matched Condition is cited, and an unused related condition is labelled
+`related_condition`, not `not_active`. Both have unit tests; the supplied seven are unchanged.
+
+**D-084 The model comparison runs on Metal only (Phase 7, the candidate's call).** The plan asked for Metal and CPU-only runs because the
+brief sizes the model for "no GPU". The candidate reads that as no datacenter or gaming GPU (an A100, an RTX card); a Mac's own GPU is
+fine. Ollama's documentation also lists no `num_gpu` Modelfile parameter, so a CPU-only variant would have rested on undocumented
+behaviour. Candidates, pinned by digest: qwen3:4b-instruct-2507-q4_K_M (the default), phi4-mini:3.8b-q4_K_M,
+llama3.2:3b-instruct-q4_K_M, granite4:micro, and llama3.1:8b-instruct-q4_K_M as the 8B reference; all list tool calling. Each runs with
+the prompts, settings, caps and timeouts of model version `2026-10-26_1`, so only the model differs; 17 requests × 3 runs; the first
+call (loading the model) is not counted. In-process (`pnpm eval:models`), against the real HAPI server and the real `/mcp`.
+
+**D-085 The comparison ran on CPU after this Mac's GPU began faulting; one run; an HTML page per comparison (Phase 7, the
+candidate's call). Amends D-084.** From 14:28 the M3 Pro's GPU firmware logged resets ("firmware-detected lockup", "progress
+timeout"; the gpuEvent reports blame WindowServer and iTerm2 as well as Ollama). From then on every Metal prompt over a few hundred
+tokens failed with `kIOGPUCommandBufferCallbackErrorInnocentVictim`, and Ollama's runner stayed broken until restarted. It persisted
+through a reboot, with every other app closed, with flash attention off, and after updating macOS 26.5.2 to 26.7.2; earlier the same
+setup had run about 20,000 calls cleanly. CPU inference is unaffected, and with the same weights and temperature 0 its answers should
+match the GPU's closely (only floating-point order differs), so the quality columns stand; the time columns are CPU times.
+`make ollama-cpu` starts a second Ollama on 127.0.0.1:11435 whose runner (llama.cpp's llama-server) is told by its documented
+`LLAMA_ARG_*` environment variables to use no GPU (`LLAMA_ARG_N_GPU_LAYERS=0`, `LLAMA_ARG_DEVICE=none`); verified: 0/37 layers
+offloaded and 0 MB in GPU memory. Ollama 0.40.11's own `OLLAMA_LLM_LIBRARY=cpu` and an oversized `OLLAMA_GPU_OVERHEAD` both still
+put every layer on the GPU. The table's "Where" column records cpu or metal per model. One run per request rather than three:
+decoding is deterministic, so extra runs mostly measure timing, and one run of the five candidates takes about an hour on CPU. A
+test run on one request (PA-004, about 5 % of the data) came first, as the candidate asked. Every comparison also writes a
+self-contained HTML page next to its JSON (no scripts or external files; `pnpm eval:models:html` re-renders one), so results can be
+read in a browser and committed with the JSON before the Phase 8 dashboard exists. Open finding F-011 (a GPU reset leaves Ollama's
+runner broken and `/ready` doesn't notice) still applies to the running service, which uses the GPU Ollama on :11434.
+
+**D-086 Eval results are static files: EVAL.md and EVAL.html; no live eval dashboard (Phase 7, the candidate's call).**
+Supersedes the plan's §12 eval dashboard. The brief's "What to build" is the source of truth. Item 5 asks to record each criterion's
+score, whether sources resolve and whether the summary is faithful, audit by hand and document the findings. It asks for no
+dashboard, and its time box ranks "the dashboard you were thinking of adding" below the endpoint, the eval, the enterprise minimum and
+the plan. `pnpm eval:report` (run by `pnpm eval` and `pnpm eval:models`) now writes EVAL.html beside EVAL.md, from the same JSON in the
+same call, so the two cannot disagree. It is one self-contained page (no scripts, no external files) with EVAL.md's sections, rendered
+with the UI's status colours and icons; a disagreement keeps the service's chip, outlined, with the key's status under it. The model
+comparison sections are shared with the per-comparison page (D-085); `scripts/reportHtml.ts` holds what both pages share (escaping,
+page shell, chips, count cells). The status and route labels move to `@pa/shared` (`STATUS_LABEL`, `ROUTE_LABEL`), used by the UI's
+badges, EVAL.md and EVAL.html, so EVAL.md now reads "Not met" as the UI does. Dropped with the dashboard: the `GET /eval/*` routes,
+the React eval page and its specs, the "Re-run" stretch, and the `eval:read` permission (granted to admin, used by no route). PHI: the
+eval JSON and both pages hold clinical values. Here every value is synthetic and the JSON is committed anyway; with Payer A's data,
+eval output is stored like any PHI (access-controlled), never under the unauthenticated `/ui`.
+
+**D-087 Phase 8 (UI polish) is deferred; docs come next (Phase 7, the candidate's call).** The brief's "What to build" asks for no UI,
+and the panel demo (a request, a refused call, the audit event, the log line) works with the Phase 6 UI or curl. After Phase 7 the
+work goes to Phase 9 (items 6 and 7, the README parts of item 8 and the brief's "Sharing" list), then rehearsal. Phase 8's packet-view
+and admin polish return only if time is left inside the 8-hour box.
+
 **D-088 TypeScript instead of the suggested Python stack (the candidate's call, made with the build plan; recorded in Phase 7).** The
 brief suggests "Python with FastAPI, Pydantic, Docker Compose and FastMCP, unless you are faster in something else". The service is
 TypeScript end to end for two reasons: one language covers the API, the MCP server, the agent, the eval scripts and the UI; and the
 candidate has used TypeScript more intensively than Python, so they can read and check every line Claude Code writes, including code
 that comes out obscure. Express stands in for FastAPI, Zod for Pydantic (every model output is parsed before use, invariant 9), and the
 MCP TypeScript SDK for FastMCP; Docker Compose is used as suggested (`compose.yaml`), and `package.json` stands in for the pyproject.
+
+**D-089 SYN-011: one Synthea chart with a result added by hand, so the eval covers `evidence_complete` (Phase 7, the candidate's
+request).** No sample patient can be evidence complete (F-005): only 2 of the 112 ever have an HbA1c of 7 % or more, the latest on
+2025-03-01, before the policy takes effect. SYN-011 is SYN-001 resubmitted after the HbA1c the nurse asked for was recorded:
+`eval/synthea-overlays/SYN-011.json` adds one Observation (HbA1c 7.6 % on 2026-10-23) to that patient. How:
+- The Synthea files are never edited (their checksums still match). The overlay is a separate transaction bundle that `pnpm load`
+  PUTs after the Synthea patients, so reloading is safe, and the Observation carries the tag `urn:pa-evidence:eval|synthea-overlay`.
+- It is an eleventh request: the brief's ten Synthea requests stay exactly as Synthea generated their charts.
+- All six type 2 diabetics in the sample were already among the ten, so SYN-011 shares SYN-001's patient. The added result is dated
+  after SYN-001's request date (2026-10-20), and results after the request date are excluded, so SYN-001's packet is unchanged
+  (checked after the load: C2 missing, the same ask).
+- The key was written by hand before the run, and the service matches it. EVAL.md, EVAL.html, the README and
+  `eval/synthea-overlays/README.md` name the overlaid chart.
+
+**D-090 The GPU works in short bursts but hangs under sustained load: the comparison reruns on CPU, all five models, all 18
+requests; a counting fix and two traces (Phase 7, all five at the candidate's request).** After the macOS update and restarts, the
+Metal GPU ran the real-model tests (28 calls), generations of 128 to 2048 tokens at about 43 tokens/s, and `pnpm eval` on all 18
+requests (p50 3.1 s). But a Metal comparison hung the GPU after 14 requests, about ten minutes of steady load
+(`kIOGPUCommandBufferCallbackErrorHang`), and the script stopped itself after three failed requests in a row, as designed. So the
+comparison reruns on CPU as in D-085, one run, all 18 requests, with the fix below. Running models side by side was considered and
+not done: on one machine they share the CPU and memory bandwidth, so the total time barely drops, each model's latency would be
+measured while another competes, and five models with their caches come close to the 36 GB of memory. The first CPU run (17
+requests, `eval/results/models-2026-10-26T20-27-19-344Z_524f0aa.json`) stays in eval/results/ but is superseded. Before the rerun:
+- **A counting fix.** A call the MCP server rejects comes back as an error result (`isError`) with a plain-text message. The agent
+  counted only SDK errors and our own `{ error }` answers as invalid, so the CPU run reported llama3.1's calls as 130/130 valid
+  while it agreed with the rules engine on 0 of 85 criteria. `isToolError()` now counts both kinds, and a test sends a call
+  without `request_id` through the real MCP server.
+- **`--trace`** on `pnpm eval:models` prints every agent event, to see what a model actually did.
+- **llama3.1:8b** calls `evaluate_criterion` with only `criterion_id`, leaving out the required `request_id`, every time, and does
+  not correct itself after the error. **phi4-mini** writes its tool calls as text in a code block instead of making them (Ollama
+  lists tool support for it). Both are model limits, not ours.
+- **No more GPU.** Restarted after the hang, the Metal GPU failed again within two minutes, crashed the terminal (which draws with
+  Metal) and the Mac had to reboot. From then on every model call is CPU-only: the Homebrew service stays stopped and
+  `make ollama-cpu OLLAMA_CPU_PORT=11434` takes its port, so the API, the tests and `make up` are unchanged. `pnpm eval` re-ran on
+  CPU (90/90 statuses, 18/18 routes, p50 9.1 s), then the comparison. Time lost to all this is not counted (HOURS.md).
+
+**D-091 Eval outputs are generated, never committed (Phase 7, the candidate's call).** `EVAL.md`, `EVAL.html` and everything in
+`eval/results/` are gitignored: they describe one machine's run (its timings, its hardware, its model digests), and a repo that ships
+them is showing a screenshot, not a system. Every run writes them again, the same way: `pnpm eval` writes the run's JSON and both
+reports, `pnpm eval:models` writes the comparison's JSON and HTML and both reports, and `pnpm eval:report` rebuilds both reports from
+the latest files. Both writers create `eval/results/` when it is missing, so a fresh clone works. What a person wrote or decided is
+committed: the answer key, the Synthea forms and overlay, the findings, the hand audit and its instructions (`eval/HAND-AUDIT.md`).
+Amends D-086, which named the two report files but not whether they were committed.
 
 ## Defaults until the panel answers (plan §7; the candidate is emailing the panel)
 

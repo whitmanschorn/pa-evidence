@@ -1,0 +1,53 @@
+{
+  "request_id": "SYN-001",
+  "request_date": "2026-10-20",
+  "patient": "Patient/37cd4685-45ad-8602-7fff-2b04af9bc008",
+  "policy_id": "MP-SYN-021",
+  "policy_version": "2026.1",
+  "criteria": [
+    {
+      "id": "C1",
+      "status": "met",
+      "sources": [
+        "Condition/37cd4685-45ad-8602-eb79-01dcae0a825c"
+      ],
+      "reason": "T2DM (44054006) active, confirmed. Prediabetes (714628002) is not cited."
+    },
+    {
+      "id": "C2",
+      "status": "missing",
+      "sources": [],
+      "reason": "Latest HbA1c is 6.05 % on 2026-02-27, outside the window 2026-07-22..2026-10-20. The form attests 7.4 % on 2026-09-30 (outside lab); the record has nothing to compare, so agrees is null, never conflicting."
+    },
+    {
+      "id": "C3",
+      "status": "met",
+      "sources": [
+        "MedicationRequest/37cd4685-45ad-8602-985d-df1855f70d44"
+      ],
+      "reason": "Path A: the active order from 2026-02-27 runs to the request date: 235 of 365 days in window. Record total (known orders) 235 days = 7.72 months; attested 7 is within 1 month. The six completed orders (2022-2025) have no end date: not counted, warning medication_end_unknown."
+    },
+    {
+      "id": "C4",
+      "status": "met",
+      "sources": [],
+      "reason": "No Condition coded 75694006, 255032005, 61808009 or a descendant, and none whose display matches; nothing of the kind anywhere in the Synthea sample."
+    },
+    {
+      "id": "C5",
+      "status": "met",
+      "sources": [
+        "Patient/37cd4685-45ad-8602-7fff-2b04af9bc008"
+      ],
+      "reason": "Born 1978-01-06: age 48 on 2026-10-20."
+    }
+  ],
+  "missing_documents": [
+    "HbA1c lab result dated 2026-07-22 to 2026-10-20"
+  ],
+  "route": "clinician_review",
+  "evidence_complete": false,
+  "warnings": [
+    "medication_end_unknown:C3"
+  ]
+}

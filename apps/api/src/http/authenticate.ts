@@ -4,12 +4,16 @@ import type { IdentityVerifier } from '../core/auth/identityVerifier.js';
 import { auditEventFor } from './auditEvents.js';
 import { setIdentity } from './locals.js';
 
+// The token in an "Authorization: Bearer <token>" header, or undefined.
+export function bearerTokenOf(header: string | undefined): string | undefined {
+  return header?.startsWith('Bearer ') === true ? header.slice('Bearer '.length).trim() : undefined;
+}
+
 // Every route below this middleware requires a caller identity. No token or an unknown token
 // is refused with 401 and the refusal is audited.
 export function authenticate(verifier: IdentityVerifier, audit: AuditStore): RequestHandler {
   return (req, res, next) => {
-    const header = req.get('authorization');
-    const token = header?.startsWith('Bearer ') === true ? header.slice('Bearer '.length).trim() : undefined;
+    const token = bearerTokenOf(req.get('authorization'));
     const identity = token === undefined || token === '' ? null : verifier.verify(token);
 
     if (identity === null) {

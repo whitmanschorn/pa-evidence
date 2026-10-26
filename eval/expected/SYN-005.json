@@ -1,0 +1,52 @@
+{
+  "request_id": "SYN-005",
+  "request_date": "2026-10-20",
+  "patient": "Patient/3428c73d-cb8d-c081-e31c-bfee397eb4bb",
+  "policy_id": "MP-SYN-021",
+  "policy_version": "2026.1",
+  "criteria": [
+    {
+      "id": "C1",
+      "status": "missing",
+      "sources": [],
+      "reason": "Only Prediabetes (714628002), which is not diabetes: no diabetes Condition at all, so missing (not conflicting, which needs a non-active or other-type diabetes record)."
+    },
+    {
+      "id": "C2",
+      "status": "conflicting",
+      "sources": [
+        "Observation/3428c73d-cb8d-c081-d510-c5ef33b6c513"
+      ],
+      "reason": "Window 2026-07-22..2026-10-20: 5.94 % on 2026-08-24. The form attests 7.2 % on that same date: difference 1.26, conflicting."
+    },
+    {
+      "id": "C3",
+      "status": "met",
+      "sources": [
+        "Observation/3428c73d-cb8d-c081-39ef-57c2cc166e9c"
+      ],
+      "reason": "Path C: the latest eGFR on or before the request is 12.364 on 2024-12-24, under 30 (contraindication). Path A finds no metformin. Note the unit is mL/min, not mL/min/{1.73_m2}, and nothing in the record explains kidney failure: see findings."
+    },
+    {
+      "id": "C4",
+      "status": "met",
+      "sources": [],
+      "reason": "No Condition coded 75694006, 255032005, 61808009 or a descendant, and none whose display matches; nothing of the kind anywhere in the Synthea sample."
+    },
+    {
+      "id": "C5",
+      "status": "met",
+      "sources": [
+        "Patient/3428c73d-cb8d-c081-e31c-bfee397eb4bb"
+      ],
+      "reason": "Born 1961-05-29: age 65 on 2026-10-20."
+    }
+  ],
+  "missing_documents": [
+    "Documentation of an active type 2 diabetes diagnosis (problem list or visit note)",
+    "Lab report for the HbA1c result reported on the request form (7.2 % on 2026-08-24)"
+  ],
+  "route": "clinician_review",
+  "evidence_complete": false,
+  "warnings": []
+}

@@ -1,6 +1,7 @@
 import type { CriterionResult } from '@pa/shared';
 import { NoObjectGeneratedError, Output, generateText, type ModelMessage } from 'ai';
 import { z } from 'zod';
+import { wrapClinicalData } from '../llm/clinicalData.js';
 import { callSettings, type LocalModel } from '../llm/localModel.js';
 import { loadPrompt } from '../llm/prompts.js';
 import { checkSummary, type SummaryEvidence } from './faithfulness.js';
@@ -15,6 +16,7 @@ import { templateSummary } from './templateSummary.js';
 // v2 spells out the exact sentence shapes; v1 (kept for the eval) let the model split sentence_1 in two.
 // The output cap, timeout and call settings come from the model version in effect (data/models).
 const PROMPT = loadPrompt('summary.v2');
+export const SUMMARY_PROMPT_VERSION = PROMPT.version;
 const MAX_ATTEMPTS = 2; // the first try and one retry
 
 export const SummarySchema = z.object({
@@ -32,6 +34,7 @@ export type SummaryResult = {
   llmMs: number;
   attempts: number;
   failures: string[]; // why each rejected attempt was rejected (for the eval; never shown to the nurse)
+  schemaValidFirstTry: boolean | null; // the first reply parsed as the schema (for the model comparison); null: no call
 };
 
 export function summaryEvidence(criteria: CriterionResult[], missingDocuments: string[]): SummaryEvidence {
@@ -67,16 +70,18 @@ export async function writeSummary(
       llmMs: 0,
       attempts: 0,
       failures: [],
+      schemaValidFirstTry: null,
     };
   }
 
   const evidence = summaryEvidence(criteria, missingDocuments);
   const messages: ModelMessage[] = [
-    { role: 'user', content: `<clinical_data>\n${JSON.stringify(evidence, null, 2)}\n</clinical_data>\nWrite the summary.` },
+    { role: 'user', content: `${wrapClinicalData(JSON.stringify(evidence, null, 2))}\nWrite the summary.` },
   ];
   const failures: string[] = [];
   let llmMs = 0;
   let attempts = 0;
+  let schemaValidFirstTry: boolean | null = null;
 
   while (attempts < MAX_ATTEMPTS) {
     attempts += 1;
@@ -93,8 +98,10 @@ export async function writeSummary(
         ...callSettings(model),
       });
       reply = result.output;
+      if (attempts === 1) schemaValidFirstTry = true;
     } catch (error) {
       llmMs += Math.round(performance.now() - started);
+      if (attempts === 1) schemaValidFirstTry = false;
       if (!NoObjectGeneratedError.isInstance(error)) {
         failures.push('model_unavailable');
         break; // a model that is down will not be up on the retry
@@ -120,6 +127,7 @@ export async function writeSummary(
         llmMs,
         attempts,
         failures,
+        schemaValidFirstTry,
       };
     }
     failures.push(...problems);
@@ -140,5 +148,6 @@ export async function writeSummary(
     llmMs,
     attempts,
     failures,
+    schemaValidFirstTry,
   };
 }

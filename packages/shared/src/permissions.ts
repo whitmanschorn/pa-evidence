@@ -1,7 +1,8 @@
-// Roles map to permissions; routes check permissions, never roles (so a new role is one line here).
+// Roles map to permissions; routes check permissions, never roles (so a new role is one line here). Shared, so the
+// web app's tests use the same map as the API.
 export const PERMISSIONS = {
   nurse: ['evidence:read', 'health:read'],
-  admin: ['evidence:read', 'audit:read', 'eval:read', 'health:read', 'health:detail', 'policies:reload', 'models:reload'],
+  admin: ['evidence:read', 'audit:read', 'health:read', 'health:detail', 'policies:reload', 'models:reload'],
   probe: ['health:read'],
 } as const;
 

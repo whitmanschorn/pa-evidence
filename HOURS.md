@@ -14,6 +14,19 @@ Times are America/Chicago (CDT). "Items" are the brief's numbered deliverables (
 | 4 API and enterprise minimum | 2, 8 | 2026-10-26 12:16 | 2026-10-26 12:29 | 0:13 | 1:39 |
 | 5 Model summary and safety | 4 | 2026-10-26 12:42 | 2026-10-26 12:51 | 0:09 | 1:48 |
 | 6 MCP, agent, model versions, first UI | 3 | 2026-10-26 12:59 | 2026-10-26 13:50 | 0:51 | 2:39 |
+| 7 Evaluation, model comparison, eval reports; drafts of PLAN.md and the README's item 3, 7 and 8 sections | 5, 6, 7, 8 | 2026-10-26 13:47 | 2026-10-26 17:17 | 2:07 (3:30 less 1:23 not counted) | 4:46 |
+
+## Not counted: Apple Silicon GPU and Ollama faults (the candidate's rule)
+
+Time lost to this Mac's Metal GPU faulting under Ollama is not counted as work: it is a problem of this laptop, not of the
+assignment (D-085, D-090). Phase 7's elapsed time leaves these windows out.
+
+| Window | What happened | Time |
+|---|---|---|
+| 14:28 to 15:21 | first GPU faults; batch and flash-attention tests, restarts, the macOS update; a CPU-only Ollama found | 0:53 |
+| 16:21 to 16:24 | GPU retest after the update (128 to 2048 tokens) | 0:03 |
+| 16:39 to 17:06 | the Metal comparison hung the GPU; restart, terminal crashes, a reboot, recovery | 0:27 |
+| **Total** | | **1:23** |
 
 ## Hours per brief item (filled in as phases close)
 
@@ -24,7 +37,7 @@ Times are America/Chicago (CDT). "Items" are the brief's numbered deliverables (
 | 2 | evidence endpoint | 0:45 (rules engine) |
 | 3 | MCP tools + agent | 0:51 (incl. model version folders and the first UI) |
 | 4 | safety | 0:09 |
-| 5 | evaluation | 0:03 (answer key) |
+| 5 | evaluation | 2:10 (answer key; Phase 7, which also drafted PLAN.md and the README's item 3, 7 and 8 sections) |
 | 6 | plan for Payer A | |
 | 7 | security notes | |
 | 8 | enterprise readiness | 0:13 (API, auth, audit, health, FHIR auth, Docker) |

@@ -17,7 +17,7 @@ import { describe, expect, it } from 'vitest';
 import type { LocalModel } from '../../src/core/llm/localModel.js';
 import { createModelRegistry } from '../../src/core/llm/modelRegistry.js';
 import { loadModelVersions } from '../../src/core/llm/modelVersions.js';
-import { TODAY } from '../support/mockModel.js';
+import { TODAY } from '../support/modelVersion.js';
 import { MODELS_DIR, POLICIES_DIR } from '../support/suppliedWorld.js';
 import { bearer, settle, testApp } from '../support/testApp.js';
 

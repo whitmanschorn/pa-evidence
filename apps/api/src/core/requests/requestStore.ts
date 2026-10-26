@@ -1,4 +1,4 @@
-import { IsoDateSchema } from '@pa/shared';
+import { IsoDateSchema, RequestIdSchema } from '@pa/shared';
 import { z } from 'zod';
 import { readJsonFiles } from '../files.js';
 
@@ -6,7 +6,7 @@ import { readJsonFiles } from '../files.js';
 // value, such as a BMI for a new criterion, gets through without a schema change.
 // Free-text `notes` are parsed but never used by the rules and never sent to the model.
 export const RequestFormSchema = z.object({
-  request_id: z.string().regex(/^[A-Za-z0-9-]{1,64}$/),
+  request_id: RequestIdSchema,
   request_date: IsoDateSchema,
   urgency: z.string(),
   policy_id: z.string(),

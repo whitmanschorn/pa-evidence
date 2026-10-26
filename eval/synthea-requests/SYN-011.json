@@ -1,0 +1,29 @@
+{
+  "request_id": "SYN-011",
+  "request_date": "2026-10-24",
+  "urgency": "standard",
+  "payer": "Payer A (synthetic)",
+  "policy_id": "MP-SYN-021",
+  "member": {
+    "patient_id": "37cd4685-45ad-8602-7fff-2b04af9bc008",
+    "fhir_reference": "Patient/37cd4685-45ad-8602-7fff-2b04af9bc008"
+  },
+  "requested_medication": {
+    "rxnorm": "1991302",
+    "display": "Semaglutide 0.25 MG/0.5 MG Injection, weekly"
+  },
+  "diagnosis_claimed": {
+    "snomed": "44054006",
+    "display": "Type 2 diabetes mellitus (disorder)"
+  },
+  "prescriber": {
+    "display": "Dr. Provider Two (synthetic)",
+    "npi": "0000000000"
+  },
+  "prescriber_attestation": {
+    "metformin_trial_months": 7,
+    "hba1c_value": 7.6,
+    "hba1c_date": "2026-10-23"
+  },
+  "note": "SYNTHETIC REQUEST FOR EVALUATION, written for a Synthea sample patient. Case: SYN-001 resubmitted after the requested HbA1c was recorded. The HbA1c is an overlay added by hand (eval/synthea-overlays/SYN-011.json), not Synthea data."
+}

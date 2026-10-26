@@ -1,4 +1,5 @@
 import { findForbiddenTerms, type CriterionStatus } from '@pa/shared';
+import { datesIn, mentionsFhirRef, numbersIn, recommendsADecision } from '../safety/claimsInText.js';
 
 // What the model is shown: compact evidence only (no patient id, no notes, no free text from the chart).
 export type SummaryEvidence = {
@@ -19,22 +20,31 @@ export function checkSummary(sentences: [string, string], evidence: SummaryEvide
   checkDatesAndNumbers(summary, evidence, errors);
   checkClaims(summary, evidence, errors);
 
-  if (/\b[A-Z][A-Za-z]+\/[A-Za-z0-9\-.]+/.test(summary)) {
+  if (mentionsFhirRef(summary)) {
     errors.push('Do not mention FHIR references.');
   }
   if (findForbiddenTerms(summary).length > 0) {
     errors.push('Do not use any form of approve, deny or authorize.');
   }
-  if (/\b(recommend\w*|eligib\w*|qualif\w*|medically necessary)\b/i.test(summary)) {
+  if (recommendsADecision(summary)) {
     errors.push('Do not recommend or suggest a decision.');
   }
   return errors;
 }
 
 // A sentence ends at . ! or ? followed by a space or the end. "8.1 %" does not end one: the dot is followed by a digit.
+const SENTENCE_END = /[.!?](?=\s|$)/g;
+
+// Splits a packet's summary back into its two sentences, at the first sentence end (the eval re-checks summaries).
+export function splitSummary(summary: string): [string, string] {
+  const firstEnd = new RegExp(SENTENCE_END.source).exec(summary);
+  if (firstEnd === null) return [summary.trim(), ''];
+  return [summary.slice(0, firstEnd.index + 1).trim(), summary.slice(firstEnd.index + 1).trim()];
+}
+
 function checkTwoSentences(sentences: [string, string], errors: string[]): void {
   sentences.forEach((sentence, index) => {
-    const ends = sentence.trim().match(/[.!?](?=\s|$)/g) ?? [];
+    const ends = sentence.trim().match(SENTENCE_END) ?? [];
     if (ends.length > 1) {
       errors.push(`sentence_${index + 1} has ${ends.length} sentences; make it one sentence by joining the parts with a semicolon.`);
     } else if (!/[.!?]$/.test(sentence.trim())) {
@@ -81,15 +91,14 @@ function checkCriterionMentions(summary: string, evidence: SummaryEvidence, erro
 // Dates must appear in the evidence, and so must every other number (compared as numbers, so 7 matches 7.0).
 function checkDatesAndNumbers(summary: string, evidence: SummaryEvidence, errors: string[]): void {
   const evidenceText = JSON.stringify(evidence);
-  const evidenceDates = new Set(evidenceText.match(/\d{4}-\d{2}-\d{2}/g) ?? []);
-  for (const date of summary.match(/\d{4}-\d{2}-\d{2}/g) ?? []) {
+  const evidenceDates = new Set(datesIn(evidenceText));
+  for (const date of datesIn(summary)) {
     if (!evidenceDates.has(date)) errors.push(`The date ${date} is not in the data.`);
   }
 
-  const withoutDatesAndIds = (text: string) => text.replace(/\d{4}-\d{2}-\d{2}/g, ' ').replace(/\b[A-Z]\d+\b/g, ' ');
-  const evidenceNumbers = new Set((withoutDatesAndIds(evidenceText).match(/\d+(?:\.\d+)?/g) ?? []).map(Number));
-  for (const number of withoutDatesAndIds(summary).match(/\d+(?:\.\d+)?/g) ?? []) {
-    if (!evidenceNumbers.has(Number(number))) errors.push(`The number ${number} is not in the data.`);
+  const evidenceNumbers = new Set(numbersIn(evidenceText));
+  for (const number of numbersIn(summary)) {
+    if (!evidenceNumbers.has(number)) errors.push(`The number ${number} is not in the data.`);
   }
 }
 

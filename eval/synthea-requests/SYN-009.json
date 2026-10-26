@@ -1,0 +1,28 @@
+{
+  "request_id": "SYN-009",
+  "request_date": "2026-10-20",
+  "urgency": "standard",
+  "payer": "Payer A (synthetic)",
+  "policy_id": "MP-SYN-021",
+  "member": {
+    "patient_id": "007a32fb-33a3-6f75-2161-15a2ea6ed2bf",
+    "fhir_reference": "Patient/007a32fb-33a3-6f75-2161-15a2ea6ed2bf"
+  },
+  "requested_medication": {
+    "rxnorm": "1991302",
+    "display": "Semaglutide 0.25 MG/0.5 MG Injection, weekly"
+  },
+  "diagnosis_claimed": {
+    "snomed": "44054006",
+    "display": "Type 2 diabetes mellitus (disorder)"
+  },
+  "prescriber": {
+    "display": "Dr. Provider Two (synthetic)",
+    "npi": "0000000000"
+  },
+  "prescriber_attestation": {
+    "hba1c_value": 4.0,
+    "hba1c_date": "2026-10-16"
+  },
+  "note": "SYNTHETIC REQUEST FOR EVALUATION, written for a Synthea sample patient. Case: T2DM with diabetic kidney disease, eGFR under 30 (metformin contraindicated), HbA1c below threshold."
+}

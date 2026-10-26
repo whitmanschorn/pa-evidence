@@ -1,0 +1,49 @@
+{
+  "request_id": "SYN-007",
+  "request_date": "2026-10-20",
+  "patient": "Patient/4091b9f5-1779-c891-ea3d-0ef10828bcbd",
+  "policy_id": "MP-SYN-021",
+  "policy_version": "2026.1",
+  "criteria": [
+    {
+      "id": "C1",
+      "status": "missing",
+      "sources": [],
+      "reason": "No diabetes Condition of any kind."
+    },
+    {
+      "id": "C2",
+      "status": "missing",
+      "sources": [],
+      "reason": "No HbA1c in the record."
+    },
+    {
+      "id": "C3",
+      "status": "missing",
+      "sources": [],
+      "reason": "No metformin orders, no allergy, no eGFR."
+    },
+    {
+      "id": "C4",
+      "status": "met",
+      "sources": [],
+      "reason": "No Condition coded 75694006, 255032005, 61808009 or a descendant, and none whose display matches; nothing of the kind anywhere in the Synthea sample."
+    },
+    {
+      "id": "C5",
+      "status": "not_met",
+      "sources": [
+        "Patient/4091b9f5-1779-c891-ea3d-0ef10828bcbd"
+      ],
+      "reason": "Born 2010-11-11: age 15 on 2026-10-20 (16 on 2026-11-11)."
+    }
+  ],
+  "missing_documents": [
+    "Documentation of an active type 2 diabetes diagnosis (problem list or visit note)",
+    "HbA1c lab result dated 2026-07-22 to 2026-10-20",
+    "Metformin prescription history for 2025-10-20 to 2026-10-20, or documentation of metformin intolerance or contraindication"
+  ],
+  "route": "clinician_review",
+  "evidence_complete": false,
+  "warnings": []
+}

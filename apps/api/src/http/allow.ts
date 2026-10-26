@@ -1,6 +1,6 @@
 import type { RequestHandler } from 'express';
 import type { AuditStore } from '../core/audit/auditStore.js';
-import { hasPermission, type Permission } from '../core/auth/permissions.js';
+import { hasPermission, type Permission } from '@pa/shared';
 import { auditEventFor } from './auditEvents.js';
 import { identityOf } from './locals.js';
 

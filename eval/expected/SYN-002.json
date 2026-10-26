@@ -1,0 +1,57 @@
+{
+  "request_id": "SYN-002",
+  "request_date": "2026-09-01",
+  "patient": "Patient/0c1b260c-7f32-fdd5-15dd-1160caf24c2b",
+  "policy_id": "MP-SYN-021",
+  "policy_version": "2026.1",
+  "criteria": [
+    {
+      "id": "C1",
+      "status": "met",
+      "sources": [
+        "Condition/0c1b260c-7f32-fdd5-8139-ad12358f1e42"
+      ],
+      "reason": "T2DM (44054006) active, confirmed."
+    },
+    {
+      "id": "C2",
+      "status": "conflicting",
+      "sources": [
+        "Observation/0c1b260c-7f32-fdd5-0b7e-075b470dbfbd"
+      ],
+      "reason": "Window 2026-06-03..2026-09-01: the only result is 5.31 % on 2026-06-12. The form attests 7.3 % on that same date: a difference of 1.99, so conflicting (which takes precedence over not_met)."
+    },
+    {
+      "id": "C3",
+      "status": "missing",
+      "sources": [
+        "MedicationRequest/0c1b260c-7f32-fdd5-d3ea-96d0c2146eeb"
+      ],
+      "reason": "Path A: the active order from 2026-06-12 gives 81 of 365 days, under 90. Eleven completed orders have no end date, so the true duration is unknown: missing (ask for the fill history), not not_met, warning medication_end_unknown. Attested 3 months against 2.66 known: agrees. No metformin allergy; latest eGFR 107.28 (2026-06-12), not under 30. An older eGFR of 10.683 mL/min (2024-04-14) falls under 30 while the latest is over it: other_in_window_result (see NOTES)."
+    },
+    {
+      "id": "C4",
+      "status": "met",
+      "sources": [],
+      "reason": "No Condition coded 75694006, 255032005, 61808009 or a descendant, and none whose display matches; nothing of the kind anywhere in the Synthea sample."
+    },
+    {
+      "id": "C5",
+      "status": "met",
+      "sources": [
+        "Patient/0c1b260c-7f32-fdd5-15dd-1160caf24c2b"
+      ],
+      "reason": "Born 1966-02-18: age 60 on 2026-09-01."
+    }
+  ],
+  "missing_documents": [
+    "Lab report for the HbA1c result reported on the request form (7.3 % on 2026-06-12)",
+    "Metformin prescription history for 2025-09-01 to 2026-09-01, or documentation of metformin intolerance or contraindication"
+  ],
+  "route": "clinician_review",
+  "evidence_complete": false,
+  "warnings": [
+    "medication_end_unknown:C3",
+    "other_in_window_result:C3"
+  ]
+}

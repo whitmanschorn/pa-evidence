@@ -2,15 +2,11 @@ import type { LanguageModelV4GenerateResult } from '@ai-sdk/provider';
 import { MockLanguageModelV4 } from 'ai/test';
 import type { LocalModel } from '../../src/core/llm/localModel.js';
 import { createModelRegistry, type ModelRegistry } from '../../src/core/llm/modelRegistry.js';
-import { loadModelVersions } from '../../src/core/llm/modelVersions.js';
-import { latestInEffect } from '../../src/core/versionFolders.js';
-import { MODELS_DIR } from './suppliedWorld.js';
+import { TODAY, modelVersionInEffect } from './modelVersion.js';
 
 // The model version in effect (its real prompts, settings and caps from data/models), with the AI SDK's own mock
 // language model in place of Ollama, scripted: each call returns the next reply in order (an Error is thrown instead).
 // `calls` holds what the model was sent, so a test can check what it saw.
-
-export const TODAY = new Date('2026-10-26T12:00:00.000Z');
 
 type Reply = LanguageModelV4GenerateResult;
 
@@ -55,9 +51,7 @@ export function mockModel(replies: (Reply | Error | typeof NEVER_ANSWERS)[]): Lo
       return reply;
     },
   });
-  const version = latestInEffect(loadModelVersions(MODELS_DIR), TODAY.toISOString().slice(0, 10));
-  if (version === undefined) throw new Error('no model version in effect on the test date');
-  return { ...version, languageModel, calls: () => JSON.stringify(languageModel.doGenerateCalls) };
+  return { ...modelVersionInEffect(), languageModel, calls: () => JSON.stringify(languageModel.doGenerateCalls) };
 }
 
 // A registry serving one model, for the app (summaries and agent runs).

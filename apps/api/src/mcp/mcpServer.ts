@@ -6,6 +6,7 @@ import {
   EvaluateCriterionInput,
   GetPolicyInput,
   GetRequestInput,
+  TOOL,
   VerifySourcesInput,
   evaluateCriterion,
   getPolicy,
@@ -35,24 +36,24 @@ export function buildMcpServer(deps: PacketDeps, audit: (event: Partial<AuditEve
   }
 
   server.registerTool(
-    'get_request',
+    TOOL.getRequest,
     { description: 'The structured fields of a request form: request date, policy id, requested drug, claimed diagnosis and attested values.', inputSchema: GetRequestInput },
-    ({ request_id }) => respond('get_request', request_id, () => getRequest(deps, request_id)),
+    ({ request_id }) => respond(TOOL.getRequest, request_id, () => getRequest(deps, request_id)),
   );
   server.registerTool(
-    'get_policy',
+    TOOL.getPolicy,
     { description: 'The policy version in effect on the request date, with the id and requirement of every criterion.', inputSchema: GetPolicyInput },
-    ({ policy_id, request_date }) => respond('get_policy', null, () => getPolicy(deps, policy_id, request_date)),
+    ({ policy_id, request_date }) => respond(TOOL.getPolicy, null, () => getPolicy(deps, policy_id, request_date)),
   );
   server.registerTool(
-    'evaluate_criterion',
+    TOOL.evaluateCriterion,
     { description: "One criterion's status (met, not_met, missing or conflicting), cited FHIR sources, value, date, attested value and the document to request.", inputSchema: EvaluateCriterionInput },
-    ({ request_id, criterion_id }) => respond('evaluate_criterion', request_id, () => evaluateCriterion(deps, request_id, criterion_id)),
+    ({ request_id, criterion_id }) => respond(TOOL.evaluateCriterion, request_id, () => evaluateCriterion(deps, request_id, criterion_id)),
   );
   server.registerTool(
-    'verify_sources',
+    TOOL.verifySources,
     { description: 'Which of these FHIR references ("Type/id") exist on the FHIR server.', inputSchema: VerifySourcesInput },
-    ({ refs }) => respond('verify_sources', null, () => verifySources(deps, refs)),
+    ({ refs }) => respond(TOOL.verifySources, null, () => verifySources(deps, refs)),
   );
   return server;
 }

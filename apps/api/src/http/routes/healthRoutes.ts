@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import type { DependencyCheck } from '../../core/health.js';
 import type { ModelRegistry } from '../../core/llm/modelRegistry.js';
-import { hasPermission, permissionsOf } from '../../core/auth/permissions.js';
+import { hasPermission, permissionsOf } from '@pa/shared';
 import { allow } from '../allow.js';
 import { identityOf } from '../locals.js';
 import type { AppDeps } from '../../app.js';

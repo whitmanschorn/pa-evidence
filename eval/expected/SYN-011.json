@@ -1,0 +1,53 @@
+{
+  "request_id": "SYN-011",
+  "request_date": "2026-10-24",
+  "patient": "Patient/37cd4685-45ad-8602-7fff-2b04af9bc008",
+  "policy_id": "MP-SYN-021",
+  "policy_version": "2026.1",
+  "criteria": [
+    {
+      "id": "C1",
+      "status": "met",
+      "sources": [
+        "Condition/37cd4685-45ad-8602-eb79-01dcae0a825c"
+      ],
+      "reason": "T2DM (44054006) active, confirmed, as in SYN-001. Prediabetes (714628002) is not cited."
+    },
+    {
+      "id": "C2",
+      "status": "met",
+      "sources": [
+        "Observation/eval-overlay-syn-011-hba1c"
+      ],
+      "reason": "HbA1c 7.6 % on 2026-10-23 (the overlay), inside the window 2026-07-26..2026-10-24 and at least 7.0 %. The only result in the window. The form attests 7.6 % on 2026-10-23: agrees."
+    },
+    {
+      "id": "C3",
+      "status": "met",
+      "sources": [
+        "MedicationRequest/37cd4685-45ad-8602-985d-df1855f70d44"
+      ],
+      "reason": "Path A: the active order from 2026-02-27 runs to the request date: 239 of 365 days in window. Record total (known orders) 239 days = 7.85 months; attested 7 is not more than the record. The six completed orders have no end date: not counted, warning medication_end_unknown."
+    },
+    {
+      "id": "C4",
+      "status": "met",
+      "sources": [],
+      "reason": "No Condition coded 75694006, 255032005, 61808009 or a descendant, and none whose display matches."
+    },
+    {
+      "id": "C5",
+      "status": "met",
+      "sources": [
+        "Patient/37cd4685-45ad-8602-7fff-2b04af9bc008"
+      ],
+      "reason": "Born 1978-01-06: age 48 on 2026-10-24."
+    }
+  ],
+  "missing_documents": [],
+  "route": "evidence_complete",
+  "evidence_complete": true,
+  "warnings": [
+    "medication_end_unknown:C3"
+  ]
+}

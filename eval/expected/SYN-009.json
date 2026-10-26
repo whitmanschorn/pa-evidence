@@ -1,0 +1,57 @@
+{
+  "request_id": "SYN-009",
+  "request_date": "2026-10-20",
+  "patient": "Patient/007a32fb-33a3-6f75-2161-15a2ea6ed2bf",
+  "policy_id": "MP-SYN-021",
+  "policy_version": "2026.1",
+  "criteria": [
+    {
+      "id": "C1",
+      "status": "met",
+      "sources": [
+        "Condition/007a32fb-33a3-6f75-31d8-a5cbeb5678cc",
+        "Condition/007a32fb-33a3-6f75-4156-1f8b85ed974c",
+        "Condition/007a32fb-33a3-6f75-9863-82a15ed0058e",
+        "Condition/007a32fb-33a3-6f75-edcf-c6997a902dbd"
+      ],
+      "reason": "T2DM (44054006) active, confirmed, plus three active type 2 complications matched by display (neuropathy, microalbuminuria, proteinuria due to type 2 diabetes), flagged display_match (corrected after the first run; see NOTES). 127013003 is not type 2 specific: not cited."
+    },
+    {
+      "id": "C2",
+      "status": "not_met",
+      "sources": [
+        "Observation/007a32fb-33a3-6f75-3b1d-36777e238004"
+      ],
+      "reason": "Most recent in-window result 4.01 % on 2026-10-16, under 7.0. Attested 4.0 % on 2026-10-16: difference 0.01, agrees."
+    },
+    {
+      "id": "C3",
+      "status": "met",
+      "sources": [
+        "Observation/007a32fb-33a3-6f75-a752-abde50e78d1d"
+      ],
+      "reason": "Path C: the latest eGFR on or before the request is 24.793 mL/min/{1.73_m2} on 2026-10-16, under 30, consistent with the recorded diabetic kidney disease. No metformin orders. Earlier eGFRs include values over 30, so the generic other_in_window_result warning applies (the plan's warning rule is written for C2; path C has no window; see NOTES)."
+    },
+    {
+      "id": "C4",
+      "status": "met",
+      "sources": [],
+      "reason": "No Condition coded 75694006, 255032005, 61808009 or a descendant, and none whose display matches; nothing of the kind anywhere in the Synthea sample."
+    },
+    {
+      "id": "C5",
+      "status": "met",
+      "sources": [
+        "Patient/007a32fb-33a3-6f75-2161-15a2ea6ed2bf"
+      ],
+      "reason": "Born 1931-08-28: age 95 on 2026-10-20."
+    }
+  ],
+  "missing_documents": [],
+  "route": "clinician_review",
+  "evidence_complete": false,
+  "warnings": [
+    "display_match:C1",
+    "other_in_window_result:C3"
+  ]
+}

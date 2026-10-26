@@ -3,6 +3,7 @@ import { createMCPClient } from '@ai-sdk/mcp';
 import type { AgentEvent, DraftEvent } from '@pa/shared';
 import { afterEach, describe, expect, it } from 'vitest';
 import { CRITERIA, NEVER_ANSWERS, PA_004_REFS, draftReply, mockModel, textReply, toolLoop } from '../support/mockModel.js';
+import { isToolError } from '../../src/agent/runAgent.js';
 import { TOKENS, readAgentRun, startTestServer } from '../support/testApp.js';
 
 // The agent end to end with a scripted model: the real MCP server over HTTP with the nurse's token, the real tools,
@@ -97,6 +98,17 @@ describe('/mcp', () => {
     server = await startTestServer();
     const response = await fetch(`${server.baseUrl}/mcp`, { method: 'POST', body: '{}' });
     expect(response.status).toBe(401);
+  });
+
+  it('answers a call without request_id with an MCP error, which the agent counts as an invalid call', async () => {
+    server = await startTestServer();
+    const mcp = await createMCPClient({
+      transport: { type: 'http', url: `${server.baseUrl}/mcp`, headers: { Authorization: `Bearer ${TOKENS.nurse}` } },
+    });
+    const tools = await mcp.tools();
+    const output = await tools.evaluate_criterion?.execute?.({ criterion_id: 'C1' }, { toolCallId: 'call-1', messages: [], context: {} });
+    await mcp.close();
+    expect(isToolError(output)).toBe(true);
   });
 
   it('lists the four evidence tools to a nurse, and the agent prompt names each, with verify_sources last', async () => {

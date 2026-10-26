@@ -10,9 +10,11 @@ import {
 } from '@pa/shared';
 import { NoObjectGeneratedError, Output, ToolLoopAgent, generateText, hasToolCall, isStepCount, type ModelMessage, type ToolSet } from 'ai';
 import { z } from 'zod';
+import { wrapClinicalData } from '../core/llm/clinicalData.js';
 import { callSettings, type LocalModel } from '../core/llm/localModel.js';
 import { loadPrompt } from '../core/llm/prompts.js';
-import { DraftSchema, checkDraft, renderDraft, templateItems } from './draft.js';
+import { TOOL } from '../core/tools/evidenceTools.js';
+import { DraftSchema, checkDraft, draftEvidence, renderDraft, templateItems } from './draft.js';
 
 // The agent: the model gathers the evidence by calling MCP tools, then drafts the provider request.
 //
@@ -31,6 +33,7 @@ import { DraftSchema, checkDraft, renderDraft, templateItems } from './draft.js'
 const AGENT_PROMPT = loadPrompt('agent.v1');
 const DRAFT_PROMPT = loadPrompt('draft.v1');
 export const AGENT_PROMPT_VERSION = AGENT_PROMPT.version;
+export const DRAFT_PROMPT_VERSION = DRAFT_PROMPT.version;
 
 // What evaluate_criterion returned.
 const ToolCriterionSchema = z.object({ criterion_id: z.string(), status: CriterionStatusSchema, sources: z.array(z.string()) });
@@ -38,6 +41,8 @@ type ToolCriterion = z.infer<typeof ToolCriterionSchema>;
 
 export type AgentRunResult = {
   steps: number;
+  toolCalls: number; // every call the model made
+  invalidToolCalls: number; // calls the SDK rejected (bad name or arguments) or the tool answered with an error
   criteria: AgentCriterion[];
   route: Route;
   warnings: string[];
@@ -64,13 +69,15 @@ export async function runAgent(input: {
   // 1. The tool loop (the library's). Each evaluate_criterion result is kept as it arrives.
   const evaluated = new Map<string, ToolCriterion>();
   let steps = 0;
+  let toolCalls = 0;
+  let invalidToolCalls = 0;
   let stepStarted = performance.now();
   const agent = new ToolLoopAgent({
     model: model.languageModel,
     instructions: AGENT_PROMPT.text,
     tools: tagToolResults(input.tools),
     // Stop once the sources are verified (the last tool in the prompt's order), or after max_steps turns.
-    stopWhen: [hasToolCall('verify_sources'), isStepCount(model.agent.max_steps)],
+    stopWhen: [hasToolCall(TOOL.verifySources), isStepCount(model.agent.max_steps)],
     maxOutputTokens: model.max_output_tokens.tool_step,
     ...callSettings(model),
   });
@@ -82,12 +89,15 @@ export async function runAgent(input: {
       onStepEnd: (step) => {
         const ms = Math.round(performance.now() - stepStarted);
         stepStarted = performance.now();
+        toolCalls += step.toolCalls.length;
+        invalidToolCalls += step.content.filter((part) => part.type === 'tool-error').length;
         for (const result of step.toolResults) {
           steps += 1;
           const output = toolJson(result.output);
+          if (isToolError(result.output)) invalidToolCalls += 1;
           const args = (result.input ?? {}) as Record<string, unknown>;
           onEvent({ type: 'step', step: steps, tool: result.toolName, arguments: args, result: traceSummary(result.toolName, output), ms });
-          const criterion = result.toolName === 'evaluate_criterion' ? ToolCriterionSchema.safeParse(output) : null;
+          const criterion = result.toolName === TOOL.evaluateCriterion ? ToolCriterionSchema.safeParse(output) : null;
           if (criterion?.success === true) evaluated.set(criterion.data.criterion_id, criterion.data);
         }
       },
@@ -139,7 +149,7 @@ export async function runAgent(input: {
     };
     onEvent(draft);
   }
-  return { steps, criteria, route, warnings, draft, llmMs: Math.round(performance.now() - started) };
+  return { steps, toolCalls, invalidToolCalls, criteria, route, warnings, draft, llmMs: Math.round(performance.now() - started) };
 }
 
 // The model writes one ask per criterion that needs a document, from that criterion's facts only. The asks are checked
@@ -151,18 +161,9 @@ async function checkedDraft(
   memberNames: string[],
   deadline: AbortSignal,
 ): Promise<{ items: DraftItem[]; source: 'model' | 'template'; failures: string[] }> {
-  const needed = rulesPacket.criteria
-    .filter((criterion) => criterion.status === 'missing' || criterion.status === 'conflicting')
-    .map((criterion) => ({
-      criterion_id: criterion.id,
-      status: criterion.status,
-      value: criterion.value ?? null,
-      observed: criterion.observed ?? null,
-      attested: criterion.attested ?? null,
-      missing_document: criterion.missing_document,
-    }));
+  const needed = draftEvidence(rulesPacket);
   const messages: ModelMessage[] = [
-    { role: 'user', content: `Request ${requestId}.\n<clinical_data>\n${JSON.stringify(needed, null, 2)}\n</clinical_data>` },
+    { role: 'user', content: `Request ${requestId}.\n${wrapClinicalData(JSON.stringify(needed, null, 2))}` },
   ];
   const failures = new Set<string>();
   try {
@@ -217,7 +218,7 @@ function tagToolResults(tools: ToolSet): ToolSet {
       ...tool,
       toModelOutput: ({ output }: { output: unknown }) => ({
         type: 'text' as const,
-        value: `<clinical_data source="tool:${name}">\n${toolText(output)}\n</clinical_data>`,
+        value: wrapClinicalData(toolText(output), `tool:${name}`),
       }),
     };
   }
@@ -228,6 +229,14 @@ function tagToolResults(tools: ToolSet): ToolSet {
 function toolText(output: unknown): string {
   const content = (output as { content?: { type: string; text?: string }[] } | undefined)?.content ?? [];
   return content.filter((part) => part.type === 'text').map((part) => part.text ?? '').join('\n');
+}
+
+// A rejected call: the MCP server refused the arguments (isError, with a plain-text message, e.g. a missing request_id)
+// or our tool answered { error }. Either way the model got no result from it.
+export function isToolError(output: unknown): boolean {
+  if ((output as { isError?: boolean } | undefined)?.isError === true) return true;
+  const json = toolJson(output);
+  return json !== null && typeof json === 'object' && 'error' in json;
 }
 
 function toolJson(output: unknown): unknown {
@@ -242,9 +251,9 @@ function toolJson(output: unknown): unknown {
 function traceSummary(tool: string, result: unknown): Record<string, unknown> {
   const value = (result ?? {}) as Record<string, unknown>;
   if ('error' in value) return { error: value.error };
-  if (tool === 'evaluate_criterion') return { criterion_id: value.criterion_id, status: value.status, sources: value.sources };
-  if (tool === 'get_policy') return { version: value.version, criteria: (value.criteria as { id: string }[] | undefined)?.map((criterion) => criterion.id) };
-  if (tool === 'get_request') return { policy_id: value.policy_id, request_date: value.request_date };
-  if (tool === 'verify_sources') return { verified: (value.verified as unknown[] | undefined)?.length ?? 0, not_found: value.not_found };
+  if (tool === TOOL.evaluateCriterion) return { criterion_id: value.criterion_id, status: value.status, sources: value.sources };
+  if (tool === TOOL.getPolicy) return { version: value.version, criteria: (value.criteria as { id: string }[] | undefined)?.map((criterion) => criterion.id) };
+  if (tool === TOOL.getRequest) return { policy_id: value.policy_id, request_date: value.request_date };
+  if (tool === TOOL.verifySources) return { verified: (value.verified as unknown[] | undefined)?.length ?? 0, not_found: value.not_found };
   return {};
 }

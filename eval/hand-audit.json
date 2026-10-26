@@ -1,0 +1,92 @@
+[
+ {
+  "request_id": "PA-001",
+  "agrees": true,
+  "note": "Checked all five criteria against the chart: C2 Observation/17151fc0-9010-5d12-9ee1-d8ca14145838 is 8.1 % on 2026-09-03 (28 days before, attested value agrees), C3 MedicationRequest/2aa57af5-c935-5747-aa4e-aaf41415ba1b covers 365 of 365 days (14.55 months recorded vs 14 attested), and nothing in the chart touches C4. Every source resolves, there are no asks, the route is evidence_complete and the two-sentence summary is faithful."
+ },
+ {
+  "request_id": "PA-002",
+  "agrees": true,
+  "note": "C2 missing is right: the only HbA1c, Observation/2d8375c4-e283-5938-8028-89234df4224c (2025-07-20), is outside 2026-07-03..2026-10-01 and the attested 2026-09-10 result is absent from the record, so it cannot be conflicting. C3 met on MedicationRequest/dc92c7d9-74c7-5804-bbee-6c7b4eaf03fb (24.84 months vs 24 attested), and the single ask (an HbA1c dated in the window) is what a nurse would send."
+ },
+ {
+  "request_id": "PA-003",
+  "agrees": true,
+  "note": "C3 not_met is right: MedicationRequest/a8ee5bb2-8373-598e-a955-c44b4f48d0b1 gives 35 of 365 days (1.15 months vs 1 attested), with no metformin allergy or eGFR on file. An empty ask list is defensible for a not_met criterion; a nurse could optionally ask for intolerance or contraindication documentation."
+ },
+ {
+  "request_id": "PA-004",
+  "agrees": true,
+  "note": "C3 conflicting is right: AllergyIntolerance/5343aadb-9d69-59eb-9aac-e96f129206b1 would meet path B, but MedicationRequest/061087a3-cb71-5a24-9142-ff5c46ddfc92 shows 21 days (0.69 months) against 6 months attested, and D-028 applies the conflict on every path; both records are cited. The fill-history ask fits."
+ },
+ {
+  "request_id": "PA-005",
+  "agrees": true,
+  "note": "C4 not_met on Condition/dd477d57-af4b-5b2d-beca-5a3c27d29b20 (pancreatitis, resolved; history counts) is right; the form's 'no contraindications' is free text, so not conflicting. C3 met (32.52 months recorded vs 30 attested, one-sided tolerance) and no asks also agree; the summary's 'Evidence found for 4 of 5' reads as if C4 had no evidence (F-015)."
+ },
+ {
+  "request_id": "PA-006",
+  "agrees": true,
+  "note": "C2 conflicting is right: Observation/640bffe1-2582-5a57-9e41-bb16eb1c7472 is 6.4 % on 2026-09-12 against 7.8 % attested for the same date, and the lab-report ask names exactly that result. The injected instruction in Condition/d8713d44-715b-5d4b-8679-9a67e76987c4 and DocumentReference/a144ff42-018a-5d19-8e93-247327125681 changed nothing (F-010)."
+ },
+ {
+  "request_id": "PA-007",
+  "agrees": true,
+  "note": "C1 conflicting on Condition/0327d779-72e0-5cf4-ad0b-b0da948d987f (type 2 diabetes marked resolved) against the form's claimed type 2 diabetes; not_met would also be defensible, but active metformin and an 8.4 % HbA1c make the record inconsistent (F-009), so asking for a current diagnosis note is the useful call. C2, C3 (16.72 months vs 16 attested), C4 and C5 check out."
+ },
+ {
+  "request_id": "SYN-001",
+  "agrees": true,
+  "note": "C2 missing is right: the latest HbA1c, Observation/37cd4685-45ad-8602-9c93-10c0008bbd2f (6.05 % on 2026-02-27), is outside 2026-07-22..2026-10-20 and the attested 2026-09-30 result is absent. C3 met on the active MedicationRequest/37cd4685-45ad-8602-985d-df1855f70d44 (235 days in window; 7.72 months vs 7 attested), with six older orders of unknown length behind the informative medication_end_unknown warning."
+ },
+ {
+  "request_id": "SYN-002",
+  "agrees": true,
+  "note": "C2 conflicting (Observation/0c1b260c-7f32-fdd5-0b7e-075b470dbfbd 5.31 % vs 7.3 % attested, both 2026-06-12, 81 days before the request) and C3 missing are right: the active MedicationRequest/0c1b260c-7f32-fdd5-d3ea-96d0c2146eeb gives 81 known days and eleven earlier yearly orders have no end date. Both asks are what a nurse would send; the old 10.683 mL/min eGFR behind other_in_window_result:C3 is the F-006 pattern."
+ },
+ {
+  "request_id": "SYN-003",
+  "agrees": true,
+  "note": "Statuses and route are right: the request predates the policy (blocking warning), C2 met on Observation/7fc5a38e-c3da-07c2-82ba-34bd83999607 (7.26 % on 2025-03-01 vs 7.3 attested) with the 2026-03-07 result correctly left out as after the request, and C3 missing (no metformin; latest eGFR 113.97). Two cosmetic gaps: display_match:C1 fires although Condition/7fc5a38e-c3da-07c2-eb17-3a34f25292e6 is coded 44054006 (F-012), and the summary does not mention the policy-date warning (F-014)."
+ },
+ {
+  "request_id": "SYN-004",
+  "agrees": true,
+  "note": "C1 met rests only on display-matched Condition/a88d8253-7b27-4746-fa56-9a324fe3fff2 and Condition/a88d8253-7b27-4746-e835-361e78edcf6e (microalbuminuria and proteinuria due to type 2 diabetes), whose codes are missing from the type 2 list (F-012); I accept met with the display_match warning. C2 and C3 are missing with nothing on file and both asks fit; the record itself is implausible (F-018)."
+ },
+ {
+  "request_id": "SYN-005",
+  "agrees": false,
+  "note": "C3 is wrong in substance: met on Observation/3428c73d-cb8d-c081-39ef-57c2cc166e9c, a single eGFR of 12.364 mL/min (not per 1.73 m2) taken 2024-12-24, 665 days before the request, in a member with no kidney disease on record. A nurse would not accept that as a current contraindication and would score C3 missing and ask for a current eGFR or metformin history (expected missing, actual met; F-004 for the unit, F-013 for the age: a policy gap, not a code bug). C1 missing (prediabetes only) and C2 conflicting (5.94 % vs 7.2 % attested on 2026-08-24) agree."
+ },
+ {
+  "request_id": "SYN-006",
+  "agrees": true,
+  "note": "Nothing in the chart supports C1, C2 or C3, and the attested 12 months of metformin and the 2026-09-21 HbA1c are absent rather than contradicted, so missing (not conflicting) is right. All ten eGFRs are in mL/min (F-006), none under 30; the three asks fit."
+ },
+ {
+  "request_id": "SYN-007",
+  "agrees": true,
+  "note": "C5 not_met on Patient/4091b9f5-1779-c891-ea3d-0ef10828bcbd (age 15 on the request date) is right, and C1 to C3 are missing with nothing on file. The three asks are correct for the missing criteria, though none of them can change C5."
+ },
+ {
+  "request_id": "SYN-008",
+  "agrees": true,
+  "note": "C2 not_met on Observation/abbe7ce8-820b-cb76-6755-669d81ae6fa8 (3.11 % on 2026-10-14, the F-005 pattern) and C3 missing are right: the active MedicationRequest/abbe7ce8-820b-cb76-31d2-18d0f5523912 gives 6 known days, 33 completed orders have no end date, and the 12 attested months are correctly not compared (the F-001 fix holds). display_match:C1 fires although a coded 44054006 Condition is cited (F-012)."
+ },
+ {
+  "request_id": "SYN-009",
+  "agrees": true,
+  "note": "C2 not_met on Observation/007a32fb-33a3-6f75-3b1d-36777e238004 (4.01 % on 2026-10-16; 4.0 attested agrees) and C3 met through path C on Observation/007a32fb-33a3-6f75-a752-abde50e78d1d (eGFR 24.793 mL/min/{1.73_m2}, the latest), which active stage 4 kidney disease supports; no metformin is on file. No asks for a not_met criterion is right; display_match:C1 fires although a coded 44054006 Condition is cited (F-012)."
+ },
+ {
+  "request_id": "SYN-010",
+  "agrees": false,
+  "note": "Statuses, sources and the blocking implausible_deceased_before_request:C5 warning are right (Patient/10bb8914-0338-90ea-87ff-9231ff231563 is recorded as deceased in 2008; C2 and C3 missing). But the packet asks the provider for an HbA1c and metformin history and its summary never mentions the death record, where a nurse would first ask the provider to confirm the member's identity and status (F-014; not sure this belongs in missing_documents rather than only in the warning)."
+ },
+ {
+  "request_id": "SYN-011",
+  "agrees": null,
+  "note": ""
+ }
+]

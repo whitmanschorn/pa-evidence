@@ -1,13 +1,21 @@
-import { FhirRefSchema } from '@pa/shared';
+import { FhirRefSchema, IsoDateSchema, RequestIdSchema } from '@pa/shared';
 import { z } from 'zod';
 import { NotFoundError, assemblePacket, type PacketDeps } from '../packet/assemblePacket.js';
 
 // The agent's four tools, as plain functions over the rules engine. They return evaluated facts only: never raw
 // FHIR resources, never free text from the chart or the form. src/mcp/ publishes them over MCP.
 
-export const GetRequestInput = { request_id: z.string().regex(/^[A-Za-z0-9-]{1,64}$/) };
-export const GetPolicyInput = { policy_id: z.string(), request_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) };
-export const EvaluateCriterionInput = { request_id: GetRequestInput.request_id, criterion_id: z.string() };
+// The tool names, as MCP clients (and the agent prompt) see them.
+export const TOOL = {
+  getRequest: 'get_request',
+  getPolicy: 'get_policy',
+  evaluateCriterion: 'evaluate_criterion',
+  verifySources: 'verify_sources',
+} as const;
+
+export const GetRequestInput = { request_id: RequestIdSchema };
+export const GetPolicyInput = { policy_id: z.string(), request_date: IsoDateSchema };
+export const EvaluateCriterionInput = { request_id: RequestIdSchema, criterion_id: z.string() };
 export const VerifySourcesInput = { refs: z.array(FhirRefSchema).max(200) };
 
 // The request form's structured fields. Free-text notes are left out, so they never reach a model.

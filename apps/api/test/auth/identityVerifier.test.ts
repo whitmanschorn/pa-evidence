@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createStaticTokenVerifier, parseAuthTokens, sha256OfToken } from '../../src/core/auth/identityVerifier.js';
-import { hasPermission } from '../../src/core/auth/permissions.js';
+import { hasPermission } from '@pa/shared';
 
 describe('static token verifier', () => {
   const entries = parseAuthTokens(`nurse:nurse-1:${sha256OfToken('n-token')},admin:admin-1:${sha256OfToken('a-token')}`);

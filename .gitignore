@@ -27,3 +27,11 @@ apps/web/playwright-report/
 .DS_Store
 .vscode/
 .idea/
+
+# Eval outputs describe one machine's run, so they are never committed: pnpm eval, pnpm eval:models and pnpm eval:report write
+# them again on whatever machine runs them (D-091). The inputs and judgments (eval/expected/, eval/synthea-*, findings.json,
+# hand-audit.json) are committed.
+EVAL.md
+EVAL.html
+eval/results/*
+!eval/results/.gitkeep

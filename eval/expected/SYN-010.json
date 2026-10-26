@@ -1,0 +1,52 @@
+{
+  "request_id": "SYN-010",
+  "request_date": "2026-10-20",
+  "patient": "Patient/10bb8914-0338-90ea-87ff-9231ff231563",
+  "policy_id": "MP-SYN-021",
+  "policy_version": "2026.1",
+  "criteria": [
+    {
+      "id": "C1",
+      "status": "met",
+      "sources": [
+        "Condition/10bb8914-0338-90ea-5ae3-1b4383bd42f9"
+      ],
+      "reason": "T2DM (44054006), still marked active in a record that ends in 2008."
+    },
+    {
+      "id": "C2",
+      "status": "missing",
+      "sources": [],
+      "reason": "Last HbA1c 6.84 % on 2008-08-08; nothing in the window. Attested 7.1 % on 2026-09-15 has nothing to compare."
+    },
+    {
+      "id": "C3",
+      "status": "missing",
+      "sources": [],
+      "reason": "No metformin, no allergy; the latest eGFRs (2008-08-08) are 81.62 and 94.837, not under 30."
+    },
+    {
+      "id": "C4",
+      "status": "met",
+      "sources": [],
+      "reason": "No Condition coded 75694006, 255032005, 61808009 or a descendant, and none whose display matches; nothing of the kind anywhere in the Synthea sample."
+    },
+    {
+      "id": "C5",
+      "status": "met",
+      "sources": [
+        "Patient/10bb8914-0338-90ea-87ff-9231ff231563"
+      ],
+      "reason": "Born 1931-08-28: age 95 on the request date, but the record says the member died on 2008-11-11: warning implausible_deceased_before_request."
+    }
+  ],
+  "missing_documents": [
+    "HbA1c lab result dated 2026-07-22 to 2026-10-20",
+    "Metformin prescription history for 2025-10-20 to 2026-10-20, or documentation of metformin intolerance or contraindication"
+  ],
+  "route": "clinician_review",
+  "evidence_complete": false,
+  "warnings": [
+    "implausible_deceased_before_request:C5"
+  ]
+}

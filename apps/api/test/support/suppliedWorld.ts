@@ -32,9 +32,13 @@ export function suppliedDeps(overrides: Partial<PacketDeps> = {}): PacketDeps {
   };
 }
 
+// The answer key for the seven supplied requests. (eval/expected/ also holds the Synthea requests' key, which needs
+// their records on the FHIR server: pnpm eval checks those.)
 export function readExpected(): ExpectedPacket[] {
   const dir = join(REPO_ROOT, 'eval/expected');
+  const supplied = new Set(loadRequestStore([join(REPO_ROOT, 'data/requests')]).list().map((form) => form.request_id));
   return readdirSync(dir)
     .filter((name) => name.endsWith('.json'))
-    .map((name) => ExpectedPacketSchema.parse(JSON.parse(readFileSync(join(dir, name), 'utf8'))));
+    .map((name) => ExpectedPacketSchema.parse(JSON.parse(readFileSync(join(dir, name), 'utf8'))))
+    .filter((expected) => supplied.has(expected.request_id));
 }

@@ -1,5 +1,5 @@
 // Public surface of @pa/shared: schemas and helpers used by both the API and the web app.
-export { CriterionStatusSchema, RouteSchema } from './status.js';
+export { CriterionStatusSchema, RouteSchema, STATUS_LABEL, ROUTE_LABEL } from './status.js';
 export type { CriterionStatus, Route } from './status.js';
 export { findForbiddenTerms } from './forbiddenTerms.js';
 export {
@@ -7,9 +7,13 @@ export {
   ConsideredItemSchema,
   CriterionResultSchema,
   ExpectedPacketSchema,
+  FHIR_REF,
   FhirRefSchema,
+  ISO_DATE,
   IsoDateSchema,
   PacketSchema,
+  REQUEST_ID,
+  RequestIdSchema,
   PathResultSchema,
   ThresholdSchema,
   WindowSchema,
@@ -40,4 +44,19 @@ export {
   ErrorEventSchema,
 } from './agent.js';
 export type { AgentCriterion, AgentEvent, DraftEvent, DraftItem } from './agent.js';
-export { readAgentEvents } from './agentStream.js';
+export { formatAgentEvent, readAgentEvents } from './agentStream.js';
+export { PERMISSIONS, ROLES, hasPermission, permissionsOf } from './permissions.js';
+export type { Permission, Role } from './permissions.js';
+export {
+  EvalCriterionSchema,
+  EvalRequestSchema,
+  EvalRunSchema,
+  EvalTotalsSchema,
+  FindingSchema,
+  FindingsSchema,
+  HandAuditEntrySchema,
+  HandAuditSchema,
+  ModelComparisonSchema,
+  ModelResultSchema,
+} from './eval.js';
+export type { EvalCriterion, EvalRequest, EvalRun, Finding, HandAuditEntry, ModelComparison, ModelResult } from './eval.js';

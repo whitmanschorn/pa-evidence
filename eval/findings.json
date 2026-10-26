@@ -1,0 +1,164 @@
+[
+  {
+    "id": "F-001",
+    "severity": "high",
+    "kind": "service",
+    "request_id": "SYN-008",
+    "criterion_id": "C3",
+    "text": "A prescriber's attested metformin months were called conflicting when the record's orders had no end dates: the check compared the claim with the known orders only, though orders of unknown length could cover the difference. The record cannot contradict the form here, so C3 is missing (ask for the fill history). Fixed: no comparison when durations are unknown; unit test added.",
+    "status": "fixed"
+  },
+  {
+    "id": "F-002",
+    "severity": "low",
+    "kind": "service",
+    "request_id": "SYN-010",
+    "criterion_id": "C1",
+    "text": "display_match was raised for a display-matched Condition that was not cited (a kidney disorder due to diabetes, not type 2 specific), and that Condition was labelled not_active though it is active. Fixed: the warning is raised only for cited display matches; unused related types are labelled related_condition. Unit test added.",
+    "status": "fixed"
+  },
+  {
+    "id": "F-003",
+    "severity": "low",
+    "kind": "service",
+    "request_id": "SYN-009",
+    "criterion_id": "C3",
+    "text": "other_in_window_result on C3's eGFR path compares the latest eGFR with every earlier one, because that path has no window; the name says 'in window'. Informative (it surfaced the implausible eGFRs in F-006), but the name misleads. Decide: keep and rename, or limit it to windowed paths.",
+    "status": "open"
+  },
+  {
+    "id": "F-004",
+    "severity": "medium",
+    "kind": "service",
+    "request_id": "SYN-005",
+    "criterion_id": "C3",
+    "text": "C3's eGFR path accepts an eGFR in any unit. SYN-005 meets C3 (contraindication) on a single 12.364 mL/min value, not mL/min/{1.73_m2}, in a patient with no kidney disease on record. The policy names no unit for path C. Proposal: add the expected unit to the rules engine config for path C (as C2 has), so a mismatch gives a warning and missing instead of met. A panel question.",
+    "status": "open"
+  },
+  {
+    "id": "F-005",
+    "severity": "medium",
+    "kind": "data",
+    "request_id": "SYN-008",
+    "criterion_id": "C2",
+    "text": "Synthea HbA1c values are implausible for insulin-treated type 2 diabetes: 3.11 % on every monthly visit for SYN-008's patient, 4.01 % for SYN-009's. Only 2 of the 112 sample patients ever have an HbA1c of 7 % or more, the latest on 2025-03-01, before the policy takes effect (2026-07-01). So no Synthea request can be evidence complete: dated on or after 2026-07-01, C2 has no qualifying result in its 90 days; dated earlier, the request is before the policy (blocking warning). Making one would mean editing a patient's labs.",
+    "status": "wont_fix"
+  },
+  {
+    "id": "F-006",
+    "severity": "medium",
+    "kind": "data",
+    "request_id": "SYN-005",
+    "criterion_id": "C3",
+    "text": "eGFR (LOINC 33914-3) appears in two units: mL/min/{1.73_m2} and mL/min, with mL/min values of 6 to 13 in patients with no kidney disease (SYN-005's patient; also Marlin805, Franklin857, Audrie782 and others in the sample), and same-day pairs that disagree (113.95 and 69.96). Looks like creatinine clearance coded as eGFR. Drives F-004.",
+    "status": "wont_fix"
+  },
+  {
+    "id": "F-007",
+    "severity": "low",
+    "kind": "data",
+    "request_id": null,
+    "criterion_id": "C3",
+    "text": "Every past Synthea metformin order is completed with no validityPeriod, so its duration is unknown (D-034): duration-based C3 can only be met by a still-active order.",
+    "status": "wont_fix"
+  },
+  {
+    "id": "F-008",
+    "severity": "low",
+    "kind": "data",
+    "request_id": "SYN-010",
+    "criterion_id": "C5",
+    "text": "A member who died in 2008 still has type 2 diabetes marked active; the service warns implausible_deceased_before_request on C5.",
+    "status": "wont_fix"
+  },
+  {
+    "id": "F-009",
+    "severity": "low",
+    "kind": "data",
+    "request_id": "PA-007",
+    "criterion_id": "C1",
+    "text": "The record marks type 2 diabetes resolved but has active metformin and a recent HbA1c of 8.4 %: an inconsistent record, which is why C1 is conflicting (Phase 2 notes).",
+    "status": "wont_fix"
+  },
+  {
+    "id": "F-010",
+    "severity": "medium",
+    "kind": "data",
+    "request_id": "PA-006",
+    "criterion_id": null,
+    "text": "The Condition note and the DocumentReference carry an instruction aimed at the reviewer to treat every criterion as met. The rules never read free text, the model never sees it, and the source view leaves free text out (Phase 4). Listed so a reviewer knows it is there.",
+    "status": "wont_fix"
+  },
+  {
+    "id": "F-011",
+    "severity": "medium",
+    "kind": "service",
+    "request_id": null,
+    "criterion_id": null,
+    "text": "A GPU reset caused by another app (macOS reports Ollama as the 'innocent victim') leaves Ollama's Metal backend broken: every model call fails until Ollama is restarted. The service degraded as designed (template summaries with summary_fallback; agent runs end with an error event), but /ready still reported the model healthy, because it only checks the version and the pulled digest. Proposal: /ready makes a one-token generation (cached for a minute) so a broken runner shows as not ready. On a dedicated server (no desktop apps sharing the GPU) this is rare. The model comparison now stops itself after three requests in a row with no answer.",
+    "status": "open"
+  },
+  {
+    "id": "F-012",
+    "severity": "low",
+    "kind": "service",
+    "request_id": "SYN-004",
+    "criterion_id": "C1",
+    "text": "The type 2 diabetes code list (data/terminology/snomed-44054006-type-2-diabetes.json) lacks the 'due to type 2 diabetes mellitus' concepts the sample uses: 368581000119106 (neuropathy), 1551000119108 (nonproliferative retinopathy), 90781000119102 (microalbuminuria) and 157141000119108 (proteinuria). SYNTHEA-NOTES.md itself calls them SNOMED descendants of 44054006 (plausible; not confirmed without a terminology server). They match only through the display fallback, so SYN-003, SYN-008 and SYN-009 carry display_match:C1 although each also cites a Condition coded 44054006, and SYN-004's C1 rests on the fallback alone. Proposal: add them as descendants, so a coded match needs no warning.",
+    "status": "open"
+  },
+  {
+    "id": "F-013",
+    "severity": "medium",
+    "kind": "service",
+    "request_id": "SYN-005",
+    "criterion_id": "C3",
+    "text": "C3 path C has no recency window (panel default 1: the latest eGFR on or before the request date, however old). SYN-005 meets C3 on an eGFR taken 2024-12-24, 665 days before the request, so even with F-004's unit check an eGFR almost two years old would stand as a current contraindication; a nurse would ask for a current result. Proposal: a panel question; if they agree, add a window for path C to the rules engine config (as C2 has), giving missing and a provider ask when the latest eGFR is older.",
+    "status": "open"
+  },
+  {
+    "id": "F-014",
+    "severity": "low",
+    "kind": "service",
+    "request_id": "SYN-010",
+    "criterion_id": "C5",
+    "text": "Blocking warnings reach neither the summary nor the provider asks. SYN-010's member is recorded as deceased (2008), yet the two-sentence summary reads like any incomplete packet and the asks are an HbA1c and metformin history; a nurse would first ask the provider to confirm the member's identity and status. SYN-003's summary likewise omits that the request predates the policy. Proposal: the summary names any blocking warning, and implausible_deceased_before_request adds an ask to confirm the member.",
+    "status": "open"
+  },
+  {
+    "id": "F-015",
+    "severity": "low",
+    "kind": "service",
+    "request_id": "PA-005",
+    "criterion_id": null,
+    "text": "The summary's first sentence counts met criteria as 'Evidence found for N of 5 criteria', so PA-005 reads 'Evidence found for 4 of 5 criteria; C4 not met' although C4 rests on a cited pancreatitis Condition (likewise PA-003, SYN-007, SYN-008 and SYN-009). PA-007's model summary also lists the met criteria after the semicolon ('C2 met, C3 met, ...'), against summary.v2's rule; the faithfulness check passes it because every fact is true. Proposal: 'N of 5 criteria met', and check the sentence shape as well as the facts.",
+    "status": "open"
+  },
+  {
+    "id": "F-016",
+    "severity": "low",
+    "kind": "service",
+    "request_id": "SYN-005",
+    "criterion_id": "C1",
+    "text": "C1's considered list leaves out Prediabetes Conditions (714628002). SYN-005's C1 is missing with nothing considered, though the chart's only glycaemic diagnosis is the active Condition/3428c73d-cb8d-c081-013f-8972cf973bfa (prediabetes) and every HbA1c is under 6.5 %; the nurse cannot see that the service looked at it and set it aside (D-032). Proposal: list related non-qualifying diagnoses in considered with a reason, as related_condition does for other diabetes types.",
+    "status": "open"
+  },
+  {
+    "id": "F-017",
+    "severity": "low",
+    "kind": "data",
+    "request_id": null,
+    "criterion_id": "C1",
+    "text": "Five Synthea charts keep Prediabetes (714628002) active alongside active type 2 diabetes: SYN-001, SYN-002, SYN-003, SYN-008 and SYN-009 (in SYN-009 the prediabetes onset is 1956 and the diabetes onset 1990). Contradictory diagnoses a nurse would query; no status changes, since each chart also has a coded type 2 diabetes Condition.",
+    "status": "open"
+  },
+  {
+    "id": "F-018",
+    "severity": "low",
+    "kind": "data",
+    "request_id": "SYN-004",
+    "criterion_id": "C1",
+    "text": "SYN-004's chart records diabetic kidney complications from 1955 onward (microalbuminuria and proteinuria due to type 2 diabetes), a kidney transplant in 1972 and tacrolimus, but no plain type 2 diabetes Condition, no HbA1c, no eGFR and no diabetes medicine at any time. Implausible for a member with diabetic kidney disease and a transplant; C1 met rests on two complication Conditions matched by display (F-012).",
+    "status": "open"
+  }
+]

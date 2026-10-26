@@ -82,6 +82,15 @@ describe('medication_duration (C3 path A)', () => {
     expect(runPathA([order], { metformin_trial_months: 34 }).status).toBe('conflicting');
   });
 
+  it('does not call a longer claim a conflict when some orders have unknown length: they could cover it', () => {
+    const recent = metforminOrder('a', 'active', '2026-09-25'); // 6 days by the request date
+    const unknownLength = metforminOrder('c', 'completed', '2025-03-01'); // completed, no end date
+    const result = runPathA([recent, unknownLength], { metformin_trial_months: 12 });
+    expect(result.attested?.agrees).toBeNull();
+    expect(result.status).toBe('missing'); // ask for the fill history
+    expect(result.warnings).toEqual(['medication_end_unknown']);
+  });
+
   it('is missing, with nothing to compare, when there are no orders', () => {
     const result = runPathA([], { metformin_trial_months: 6 });
     expect(result.status).toBe('missing');

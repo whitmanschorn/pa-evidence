@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { GENESIS_HASH, openAuditStore } from '../../src/core/audit/auditStore.js';
-import { sha256Hex } from '../../src/core/canonicalJson.js';
+import { canonicalJson, sha256Hex } from '../../src/core/canonicalJson.js';
 import { auditInput } from '../support/auditInput.js';
 
 function tempDbPath(): string {
@@ -37,6 +37,24 @@ describe('audit store', () => {
     store.append(auditInput({ request_id: 'PA-001', action: 'source.read' }));
     expect(store.list({ requestId: 'PA-001', limit: 10 }).map((event) => event.action)).toEqual(['source.read', 'packet.read']);
     expect(store.list({ limit: 1 })).toHaveLength(1);
+  });
+
+  it('still reads events written before a field existed, and their chain still verifies', () => {
+    const path = tempDbPath();
+    const store = openAuditStore(path);
+    store.append(auditInput());
+    // An event as an earlier release wrote it: no tool_name, no draft fields (they were added later).
+    const { tool_name: _tool, draft_source: _draft, draft_check_failures: _failures, ...older } = store.list({ limit: 1 })[0]!;
+    const { prev_hash: _prev, hash: _hash, ...body } = { ...older, event_id: 'older-event', ts: '2026-10-25T12:00:00.000Z' };
+    const prevHash = store.head().hash;
+    const bodyJson = canonicalJson(body);
+    new DatabaseSync(path)
+      .prepare('INSERT INTO audit_events (event_id, request_id, action, body, prev_hash, hash) VALUES (?, ?, ?, ?, ?, ?)')
+      .run('older-event', body.request_id, body.action, bodyJson, prevHash, sha256Hex(prevHash + bodyJson));
+
+    const reopened = openAuditStore(path);
+    expect(reopened.list({ limit: 1 })[0]).toMatchObject({ event_id: 'older-event', tool_name: null, draft_source: null, draft_check_failures: [] });
+    expect(reopened.verify().intact).toBe(true);
   });
 
   it('rejects UPDATE and DELETE (append-only triggers)', () => {

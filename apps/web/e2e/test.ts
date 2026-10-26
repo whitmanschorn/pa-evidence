@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
-import { AgentEventSchema, findForbiddenTerms, type AgentEvent } from '@pa/shared';
+import { AgentEventSchema, PERMISSIONS, findForbiddenTerms, formatAgentEvent, type AgentEvent } from '@pa/shared';
 import { test as base, expect as baseExpect, type Page } from '@playwright/test';
 import { isApiPath } from '../src/apiPaths';
 
@@ -27,10 +27,6 @@ export type MockApi = {
 };
 
 type Role = 'nurse' | 'admin';
-const PERMISSIONS: Record<Role, string[]> = {
-  nurse: ['evidence:read', 'health:read'],
-  admin: ['evidence:read', 'audit:read', 'eval:read', 'health:read', 'health:detail', 'policies:reload', 'models:reload'],
-};
 
 // The real token for a role, written by `make tokens` (never in the bundle; only tests and people read this file).
 function realToken(role: Role): string {
@@ -64,7 +60,7 @@ export const test = base.extend<{
               return;
             }
             if (mock.events !== undefined) {
-              const body = mock.events.map((event) => `event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`).join('');
+              const body = mock.events.map(formatAgentEvent).join('');
               await route.fulfill({ status: 200, contentType: 'text/event-stream', body });
               return;
             }

@@ -1,0 +1,49 @@
+{
+  "request_id": "SYN-006",
+  "request_date": "2026-10-20",
+  "patient": "Patient/4bfbd4ee-8869-b526-ecd0-f889f83e0d7c",
+  "policy_id": "MP-SYN-021",
+  "policy_version": "2026.1",
+  "criteria": [
+    {
+      "id": "C1",
+      "status": "missing",
+      "sources": [],
+      "reason": "No diabetes Condition of any kind."
+    },
+    {
+      "id": "C2",
+      "status": "missing",
+      "sources": [],
+      "reason": "No HbA1c in the record. The form attests 7.5 % on 2026-09-21; nothing to compare, so agrees is null."
+    },
+    {
+      "id": "C3",
+      "status": "missing",
+      "sources": [],
+      "reason": "No metformin orders (the attested 12 months has nothing to compare against, so not conflicting), no allergy; latest eGFR 86.923 (2026-09-21), not under 30."
+    },
+    {
+      "id": "C4",
+      "status": "met",
+      "sources": [],
+      "reason": "No Condition coded 75694006, 255032005, 61808009 or a descendant, and none whose display matches; nothing of the kind anywhere in the Synthea sample."
+    },
+    {
+      "id": "C5",
+      "status": "met",
+      "sources": [
+        "Patient/4bfbd4ee-8869-b526-ecd0-f889f83e0d7c"
+      ],
+      "reason": "Born 1959-06-14: age 67 on 2026-10-20."
+    }
+  ],
+  "missing_documents": [
+    "Documentation of an active type 2 diabetes diagnosis (problem list or visit note)",
+    "HbA1c lab result dated 2026-07-22 to 2026-10-20",
+    "Metformin prescription history for 2025-10-20 to 2026-10-20, or documentation of metformin intolerance or contraindication"
+  ],
+  "route": "clinician_review",
+  "evidence_complete": false,
+  "warnings": []
+}

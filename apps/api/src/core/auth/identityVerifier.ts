@@ -1,5 +1,5 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
-import { ROLES, type Role } from './permissions.js';
+import { ROLES, type Role } from '@pa/shared';
 
 export type Identity = { sub: string; role: Role };
 

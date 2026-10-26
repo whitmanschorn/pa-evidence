@@ -1,11 +1,18 @@
 import { z } from 'zod';
 import { CriterionStatusSchema, RouteSchema } from './status.js';
 
-// Calendar dates are "YYYY-MM-DD" strings everywhere in the contract (no times, no time zones).
-export const IsoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'expected YYYY-MM-DD');
+// The shapes of the identifiers in the contract, defined once. The schemas below match a whole value; the checkers
+// that scan model-written text for dates and references build their searches from the same patterns.
+export const ISO_DATE = /\d{4}-\d{2}-\d{2}/; // a calendar day, "YYYY-MM-DD" (no times, no time zones)
+export const FHIR_REF = /[A-Z][A-Za-z]+\/[A-Za-z0-9\-.]{1,64}/; // a FHIR reference, "Type/id"
+export const REQUEST_ID = /[A-Za-z0-9-]{1,64}/; // a request id, e.g. "PA-001"
 
-// A FHIR reference, "Type/id". `sources` holds nothing else.
-export const FhirRefSchema = z.string().regex(/^[A-Z][A-Za-z]+\/[A-Za-z0-9\-.]{1,64}$/, 'expected Type/id');
+const whole = (pattern: RegExp) => new RegExp(`^${pattern.source}$`);
+
+export const IsoDateSchema = z.string().regex(whole(ISO_DATE), 'expected YYYY-MM-DD');
+// `sources` holds FHIR references and nothing else.
+export const FhirRefSchema = z.string().regex(whole(FHIR_REF), 'expected Type/id');
+export const RequestIdSchema = z.string().regex(whole(REQUEST_ID), 'expected a request id');
 
 // A request-form value checked against the record. `agrees` is null when the record has nothing to compare with.
 export const AttestedSchema = z.object({
