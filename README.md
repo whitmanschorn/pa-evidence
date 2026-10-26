@@ -171,29 +171,31 @@ a code change, which runs the tests and the eval. (D-070, D-071.)
 ## Choosing the model
 
 The brief sizes the model at 3–4B on a laptop with no GPU, and asks for measurements. `pnpm eval:models` ran five candidates
-CPU-only on an Apple M3 Pro, each on 17 requests (all but SYN-011, added later), with the same prompts, call settings and checks the
-service uses (comparison `models-2026-10-26T20-27-19-344Z_524f0aa`, D-092):
+CPU-only on an Apple M3 Pro, each on all 18 requests, with the same prompts, call settings and checks the service uses (comparison
+`models-2026-10-26T22-55-40-092Z_83d473a`, D-092):
 
-| Model | Summaries faithful | Summary p50 | Agent agrees with the rules engine | Drafts that pass the checks | Agent p50 | Memory |
-|---|---|---|---|---|---|---|
-| **qwen3:4b-instruct-2507-q4_K_M** | **17/17** | 9.7 s | **85/85** | **12/13** | 47.3 s | 5.4 GB |
-| granite4:micro | 15/17 | 7.4 s | 85/85 | 12/13 | 32.6 s | 3.6 GB |
-| llama3.2:3b-instruct-q4_K_M | 9/17 | 6.6 s | 60/85 | 6/13 | 23.3 s | 4.0 GB |
-| llama3.1:8b-instruct-q4_K_M | 17/17 | 11.2 s | 0/85 | 0/13 | 24.8 s | 6.9 GB |
-| phi4-mini:3.8b-q4_K_M | 17/17 | 7.3 s | 0/80 | 0/13 | 9.5 s | 4.8 GB |
+| Model | Summaries faithful | Summary p50 | Valid tool calls | Agent agrees with the rules engine | Drafts that pass the checks | Agent p50 | Memory |
+|---|---|---|---|---|---|---|---|
+| **qwen3:4b-instruct-2507-q4_K_M** | **18/18** | 7.6 s | 143/144 | **90/90** | **12/13** | 44.6 s | 5.2 GB |
+| granite4:micro | 16/18 | 6.6 s | 144/144 | 90/90 | 12/13 | 31.7 s | 3.5 GB |
+| llama3.2:3b-instruct-q4_K_M | 10/18 | 6.9 s | 99/130 | 65/90 | 6/13 | 22.3 s | 3.9 GB |
+| llama3.1:8b-instruct-q4_K_M | 18/18 | 9.4 s | 36/138 | 0/90 | 0/13 | 24.5 s | 6.7 GB |
+| phi4-mini:3.8b-q4_K_M | 18/18 | 7.1 s | 0/0 | 0/85 | 0/13 | 10.0 s | 4.7 GB |
 
 "Summaries faithful" counts summaries written by the model that passed the faithfulness check (the rest fell back to the template).
-"Agrees with the rules engine" counts criteria where the agent's packet has the rules engine's status. Drafts are counted on the 13
-requests where the rules engine finds something to ask the provider for; a draft that fails the checks becomes the template. Memory is what Ollama reports for the loaded model.
+"Valid tool calls" counts calls the tools accepted. "Agrees with the rules engine" counts criteria where the agent's packet has the
+rules engine's status. Drafts are counted on the 13 requests where the rules engine finds something to ask the provider for; a draft
+that fails the checks becomes the template. Memory is what Ollama reports for the loaded model.
 
 **qwen3:4b-instruct-2507 stays the default** (D-092). It is the only candidate with a faithful summary on every request, its agent
-matched the rules engine on all 85 criteria, and 12 of 13 drafts passed. granite4:micro is the runner-up: the same agent scores, a
-third faster and 1.8 GB smaller, but 2 of its 17 summaries failed the check. A summary is on every packet; the agent runs only when a
-nurse clicks, so its 47 s matters less. llama3.1:8b leaves `request_id` out of every tool call and does not correct itself after the
-error; phi4-mini writes its tool calls as text instead of making them (D-090). Both are model limits.
+matched the rules engine on all 90 criteria, and 12 of 13 drafts passed. granite4:micro is the runner-up: the same agent scores,
+about 30 % faster and 1.7 GB smaller, but 2 of its 18 summaries failed the check. A summary is on every packet; the agent runs only
+when a nurse clicks, so its 45 s matters less. llama3.1:8b leaves `request_id` out of every `evaluate_criterion` call and does not
+correct itself after the error; phi4-mini writes its tool calls as text instead of making them, and its first request timed out
+while the model loaded (D-090). Both are model limits.
 
-Each model ran once per request. Calls use temperature 0 and seed 42, and that makes runs repeat: two `pnpm eval` runs, one on the GPU
-and one on the CPU, wrote the same 18 summaries word for word.
+Each model ran once per request. Calls use temperature 0 and seed 42, and that makes runs repeat: three `pnpm eval` runs, one on
+the GPU and two on the CPU, wrote the same 18 summaries word for word.
 
 ## Evaluation
 
@@ -202,9 +204,9 @@ key in `eval/expected/`, written by hand before the rules code (supplied request
 writes the run to `eval/results/` and rebuilds EVAL.md and EVAL.html. Those are generated on the machine that runs them and never
 committed (D-091).
 
-The run quoted here (`2026-10-26T22-09-18-951Z_f8c4cf8`), CPU-only on an Apple M3 Pro with `qwen3:4b-instruct-2507-q4_K_M`: 90 of 90
+The run quoted here (`2026-10-26T22-53-17-187Z_83d473a`), CPU-only on an Apple M3 Pro with `qwen3:4b-instruct-2507-q4_K_M`: 90 of 90
 criterion statuses and 18 of 18 routes match the key, all 67 cited sources resolve, and 18 of 18 summaries are faithful and written
-by the model; latency p50 9.1 s, p95 16.1 s. The seven supplied requests line up with the brief: one meets policy, and each of the
+by the model; latency p50 7.5 s, p95 14.5 s. The seven supplied requests line up with the brief: one meets policy, and each of the
 others has exactly one issue.
 
 | Request | C1 | C2 | C3 | C4 | C5 | Route | Sources resolve | Summary faithful | Matches the key | Hand audit |

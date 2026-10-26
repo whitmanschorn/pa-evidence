@@ -17,6 +17,7 @@ Times are America/Chicago (CDT). "Items" are the brief's numbered deliverables (
 | 7 Evaluation, model comparison, eval reports; drafts of PLAN.md and the README's item 3, 7 and 8 sections | 5, 6, 7, 8 | 2026-10-26 13:47 | 2026-10-26 17:17 | 2:07 (3:30 less 1:23 not counted) | 4:46 |
 | 9 README, results and model tables, PLAN.md cut list, findings statuses | 5, 6, overhead | 2026-10-26 17:20 | 2026-10-26 17:35 | 0:15 | 5:01 |
 | 10 Review fixes: the agent's route, audit on hang-up, compose's Ollama URL, `make demo`, README start here | 3, 8, overhead | 2026-10-26 17:55 | 2026-10-26 18:03 | 0:08 | 5:09 |
+| 10 follow-up: README model table and D-092/D-093 from the full rerun; rebuild, `make demo`, real-model tests | 5, 8 | 2026-10-26 18:45 | 2026-10-26 18:56 | 0:11 | 5:20 |
 
 ## Not counted: Apple Silicon GPU and Ollama faults (the candidate's rule)
 
@@ -34,7 +35,7 @@ assignment (D-085, D-090). Phase 7's elapsed time leaves these windows out.
 
 Phases 7 and 9 each touched several items. They are split by the session's message timestamps: in Phase 7, PLAN.md was drafted
 15:55–16:11 and the README's item 3, 7 and 8 sections 16:11–16:21; in Phase 9, the cut list took 0:03 and the results and model
-tables 0:06; in Phase 10, the agent's route took 0:02, the audit, compose and `make demo` fixes 0:04, and the README 0:02.
+tables 0:06; in Phase 10, the agent's route took 0:02, the audit, compose and `make demo` fixes 0:04, and the README 0:02; in its follow-up, the model table 0:08 and the rebuild and `make demo` run 0:03.
 
 | Item | What | Hours |
 |---|---|---|
@@ -43,8 +44,8 @@ tables 0:06; in Phase 10, the agent's route took 0:02, the audit, compose and `m
 | 2 | evidence endpoint | 0:45 (rules engine) |
 | 3 | MCP tools + agent | 0:53 (incl. model version folders and the first UI) |
 | 4 | safety | 0:09 |
-| 5 | evaluation | 1:50 (answer key 0:03; Phase 7 1:41; Phase 9 0:06) |
+| 5 | evaluation | 1:58 (answer key 0:03; Phase 7 1:41; Phase 9 0:06; Phase 10 0:08) |
 | 6 | plan for Payer A | 0:19 |
 | 7 | security notes | 0:10 (with the README's item 3 and 8 sections) |
-| 8 | enterprise readiness | 0:17 (API, auth, audit, health, FHIR auth, Docker, `make demo`) |
-| **Total** | | **5:09** |
+| 8 | enterprise readiness | 0:20 (API, auth, audit, health, FHIR auth, Docker, `make demo`) |
+| **Total** | | **5:20** |
