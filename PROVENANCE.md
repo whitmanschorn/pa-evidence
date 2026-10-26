@@ -35,3 +35,4 @@ Third-party packages are not vendored; they come from npm at the exact versions 
 | `data/synthea/cache/**` (not committed) | Open source: Synthea sample data, MITRE (`synthetichealth/synthea-sample-data` @ `84f59805`) | 1 | fetched by `make synthea`; synthetic output of Synthea (Apache-2.0); the sample repo has no separate license file |
 | HAPI FHIR server (Docker image, not vendored) | Open source: HAPI FHIR JPA Server Starter, Apache-2.0 | 1 | `hapiproject/hapi:v8.12.0-2` |
 | PostgreSQL (Docker image, not vendored) | Open source: PostgreSQL License | 1 | `postgres:17.11-alpine` |
+| `eval/expected/PA-00{1..7}.json`, `eval/expected/NOTES.md` | AI (Claude Code), hand analysis of the supplied data | 2 | answer key written before any rules code; decisions D-028/D-029 pending the candidate's review |

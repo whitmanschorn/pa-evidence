@@ -1,0 +1,43 @@
+{
+  "request_id": "PA-005",
+  "request_date": "2026-10-01",
+  "patient": "Patient/9ad895eb-7cc3-5e8f-a557-c0e33552f250",
+  "policy_id": "MP-SYN-021",
+  "policy_version": "2026.1",
+  "criteria": [
+    {
+      "id": "C1",
+      "status": "met",
+      "sources": ["Condition/54ca638b-8a0b-5813-8b7b-3849310cabb0"],
+      "reason": "T2DM (44054006) Condition, active, confirmed; agrees with diagnosis_claimed."
+    },
+    {
+      "id": "C2",
+      "status": "met",
+      "sources": ["Observation/262dabc5-ff2d-5571-aeae-32f6abe60d0a"],
+      "reason": "HbA1c 8.9 % on 2026-09-08, in window, >= 7.0; matches attested 8.9 % on 2026-09-08."
+    },
+    {
+      "id": "C3",
+      "status": "met",
+      "sources": ["MedicationRequest/fefe022c-ee46-5371-8279-26384a41adda"],
+      "reason": "Path A: metformin active since 2024-01-15 covers 365 of 365 days in window. Record total 990 days = 32.52 months supports the attested 30 months (the record shows more therapy than attested, not less)."
+    },
+    {
+      "id": "C4",
+      "status": "not_met",
+      "sources": ["Condition/dd477d57-af4b-5b2d-beca-5a3c27d29b20"],
+      "reason": "Pancreatitis (75694006) Condition, onset 2019-04-02, clinicalStatus resolved but verificationStatus confirmed: resolved still counts as history."
+    },
+    {
+      "id": "C5",
+      "status": "met",
+      "sources": ["Patient/9ad895eb-7cc3-5e8f-a557-c0e33552f250"],
+      "reason": "birthDate 1969-09-18, age 57 on 2026-10-01."
+    }
+  ],
+  "missing_documents": [],
+  "route": "clinician_review",
+  "evidence_complete": false,
+  "warnings": []
+}

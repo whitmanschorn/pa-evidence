@@ -1,0 +1,46 @@
+{
+  "request_id": "PA-004",
+  "request_date": "2026-10-01",
+  "patient": "Patient/cbe7cb0a-bbe9-5590-b325-609a9467084b",
+  "policy_id": "MP-SYN-021",
+  "policy_version": "2026.1",
+  "criteria": [
+    {
+      "id": "C1",
+      "status": "met",
+      "sources": ["Condition/fd8ad258-26c5-5bff-9f88-24f381482e58"],
+      "reason": "T2DM (44054006) Condition, active, confirmed; agrees with diagnosis_claimed."
+    },
+    {
+      "id": "C2",
+      "status": "met",
+      "sources": ["Observation/3217388e-ed5c-574d-a3b2-fc8fdc9bbda0"],
+      "reason": "HbA1c 8.4 % on 2026-09-15, in window, >= 7.0; matches attested 8.4 % on 2026-09-15."
+    },
+    {
+      "id": "C3",
+      "status": "conflicting",
+      "sources": [
+        "MedicationRequest/061087a3-cb71-5a24-9142-ff5c46ddfc92",
+        "AllergyIntolerance/5343aadb-9d69-59eb-9aac-e96f129206b1"
+      ],
+      "reason": "Attested 6-month metformin trial; the record has one stopped order 2026-02-01..2026-02-22 = 21 days = 0.69 months. Path B (confirmed metformin intolerance) would meet C3, but the policy marks attestation/record disagreement conflicting, and conflicting takes precedence over met. Cites both the order and the intolerance."
+    },
+    {
+      "id": "C4",
+      "status": "met",
+      "sources": [],
+      "reason": "No Condition matching 75694006, 255032005 or 61808009."
+    },
+    {
+      "id": "C5",
+      "status": "met",
+      "sources": ["Patient/cbe7cb0a-bbe9-5590-b325-609a9467084b"],
+      "reason": "birthDate 1958-05-06, age 68 on 2026-10-01."
+    }
+  ],
+  "missing_documents": ["Metformin prescription or pharmacy fill history supporting the reported 6 months"],
+  "route": "clinician_review",
+  "evidence_complete": false,
+  "warnings": []
+}

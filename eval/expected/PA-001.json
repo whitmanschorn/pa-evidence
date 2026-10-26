@@ -1,0 +1,43 @@
+{
+  "request_id": "PA-001",
+  "request_date": "2026-10-01",
+  "patient": "Patient/1805a90b-326d-5089-845f-185dae4679fd",
+  "policy_id": "MP-SYN-021",
+  "policy_version": "2026.1",
+  "criteria": [
+    {
+      "id": "C1",
+      "status": "met",
+      "sources": ["Condition/b1aa0158-c15c-576b-b749-e5c77bc3ad58"],
+      "reason": "T2DM (44054006) Condition, clinicalStatus active, verificationStatus confirmed; agrees with diagnosis_claimed 44054006."
+    },
+    {
+      "id": "C2",
+      "status": "met",
+      "sources": ["Observation/17151fc0-9010-5d12-9ee1-d8ca14145838"],
+      "reason": "Only in-window HbA1c is 8.1 % on 2026-09-03 (window 2026-07-03..2026-10-01), >= 7.0; matches attested 8.1 % on 2026-09-03. The 8.6 % on 2026-03-11 is outside the window and not cited."
+    },
+    {
+      "id": "C3",
+      "status": "met",
+      "sources": ["MedicationRequest/2aa57af5-c935-5747-aa4e-aaf41415ba1b"],
+      "reason": "Path A: metformin 860975 active since 2025-07-15 covers 365 of 365 days in window (2025-10-01..2026-10-01); record total 443 days = 14.55 months, attested 14 months agrees."
+    },
+    {
+      "id": "C4",
+      "status": "met",
+      "sources": [],
+      "reason": "No Condition matching 75694006, 255032005 or 61808009 (only T2DM and essential hypertension 59621000)."
+    },
+    {
+      "id": "C5",
+      "status": "met",
+      "sources": ["Patient/1805a90b-326d-5089-845f-185dae4679fd"],
+      "reason": "birthDate 1972-03-14, age 54 on 2026-10-01."
+    }
+  ],
+  "missing_documents": [],
+  "route": "evidence_complete",
+  "evidence_complete": true,
+  "warnings": []
+}

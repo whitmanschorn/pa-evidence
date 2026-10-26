@@ -1,0 +1,43 @@
+{
+  "request_id": "PA-002",
+  "request_date": "2026-10-01",
+  "patient": "Patient/6c1c6863-68ff-5463-9265-82ff32b83ab1",
+  "policy_id": "MP-SYN-021",
+  "policy_version": "2026.1",
+  "criteria": [
+    {
+      "id": "C1",
+      "status": "met",
+      "sources": ["Condition/79827375-1035-5d3b-b935-9ccacefa8ef5"],
+      "reason": "T2DM (44054006) Condition, active, confirmed; agrees with diagnosis_claimed."
+    },
+    {
+      "id": "C2",
+      "status": "missing",
+      "sources": [],
+      "reason": "Only HbA1c in the record is 7.9 % on 2025-07-20, outside the window 2026-07-03..2026-10-01. Attested 8.0 % on 2026-09-10 has no record to compare with, and an absent record is missing, never conflicting."
+    },
+    {
+      "id": "C3",
+      "status": "met",
+      "sources": ["MedicationRequest/dc92c7d9-74c7-5804-bbee-6c7b4eaf03fb"],
+      "reason": "Path A: metformin 860975 active since 2024-09-05 covers 365 of 365 days in window; record total 756 days = 24.84 months, attested 24 months agrees."
+    },
+    {
+      "id": "C4",
+      "status": "met",
+      "sources": [],
+      "reason": "No Condition matching 75694006, 255032005 or 61808009."
+    },
+    {
+      "id": "C5",
+      "status": "met",
+      "sources": ["Patient/6c1c6863-68ff-5463-9265-82ff32b83ab1"],
+      "reason": "birthDate 1965-11-02, age 60 on 2026-10-01."
+    }
+  ],
+  "missing_documents": ["HbA1c lab result dated 2026-07-03 to 2026-10-01"],
+  "route": "clinician_review",
+  "evidence_complete": false,
+  "warnings": []
+}

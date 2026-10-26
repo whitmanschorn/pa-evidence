@@ -1,0 +1,43 @@
+{
+  "request_id": "PA-007",
+  "request_date": "2026-10-01",
+  "patient": "Patient/5b2b65b1-e350-56fd-95a0-512da5b8e5a5",
+  "policy_id": "MP-SYN-021",
+  "policy_version": "2026.1",
+  "criteria": [
+    {
+      "id": "C1",
+      "status": "conflicting",
+      "sources": ["Condition/0327d779-72e0-5cf4-ad0b-b0da948d987f"],
+      "reason": "The only T2DM Condition has clinicalStatus resolved (not in active/recurrence/relapse); the form's structured diagnosis_claimed is 44054006 (T2DM), so the form and the record disagree."
+    },
+    {
+      "id": "C2",
+      "status": "met",
+      "sources": ["Observation/e86c6e85-dbe2-5d71-b67a-dc33079629b5"],
+      "reason": "HbA1c 8.4 % on 2026-09-20, in window, >= 7.0; matches attested 8.4 % on 2026-09-20."
+    },
+    {
+      "id": "C3",
+      "status": "met",
+      "sources": ["MedicationRequest/93bfb536-a005-5596-8d12-2fd439b1ffc0"],
+      "reason": "Path A: metformin active since 2025-05-10 covers 365 of 365 days in window; record total 509 days = 16.72 months, attested 16 months agrees."
+    },
+    {
+      "id": "C4",
+      "status": "met",
+      "sources": [],
+      "reason": "No Condition matching 75694006, 255032005 or 61808009."
+    },
+    {
+      "id": "C5",
+      "status": "met",
+      "sources": ["Patient/5b2b65b1-e350-56fd-95a0-512da5b8e5a5"],
+      "reason": "birthDate 1961-01-27, age 65 on 2026-10-01."
+    }
+  ],
+  "missing_documents": ["Clinical note confirming the type 2 diabetes diagnosis and its current status"],
+  "route": "clinician_review",
+  "evidence_complete": false,
+  "warnings": []
+}

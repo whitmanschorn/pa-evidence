@@ -1,0 +1,43 @@
+{
+  "request_id": "PA-003",
+  "request_date": "2026-10-01",
+  "patient": "Patient/db62ce62-d28b-5506-9913-fb2e6bbde087",
+  "policy_id": "MP-SYN-021",
+  "policy_version": "2026.1",
+  "criteria": [
+    {
+      "id": "C1",
+      "status": "met",
+      "sources": ["Condition/5ae4d6ba-f2e3-5e4a-8479-a60243c48808"],
+      "reason": "T2DM (44054006) Condition, active, confirmed (onset 2026-08-20); agrees with diagnosis_claimed."
+    },
+    {
+      "id": "C2",
+      "status": "met",
+      "sources": ["Observation/a1a2bf25-abed-5c74-82e5-e988ba805073"],
+      "reason": "HbA1c 9.2 % on 2026-08-20, in window, >= 7.0; matches attested 9.2 % on 2026-08-20."
+    },
+    {
+      "id": "C3",
+      "status": "not_met",
+      "sources": ["MedicationRequest/a8ee5bb2-8373-598e-a955-c44b4f48d0b1"],
+      "reason": "Path A: metformin active since 2026-08-27 gives 35 of 365 days in window, under 90. No metformin AllergyIntolerance (path B) and no eGFR (path C). Attested 1 month vs record 1.15 months agrees, so not conflicting."
+    },
+    {
+      "id": "C4",
+      "status": "met",
+      "sources": [],
+      "reason": "No Condition matching 75694006, 255032005 or 61808009."
+    },
+    {
+      "id": "C5",
+      "status": "met",
+      "sources": ["Patient/db62ce62-d28b-5506-9913-fb2e6bbde087"],
+      "reason": "birthDate 1980-07-29, age 46 on 2026-10-01."
+    }
+  ],
+  "missing_documents": [],
+  "route": "clinician_review",
+  "evidence_complete": false,
+  "warnings": []
+}
