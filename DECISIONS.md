@@ -166,11 +166,12 @@ counts every resource type it saw rather than a hand-picked list.
 reason, plus missing_documents, route, evidence_complete and warnings. Day counts are `end − start`, so a full 365-day window reads
 "365 of 365". Metformin months are total record days across all orders (not clipped) / 30.44. Rationale and ambiguities: `eval/expected/NOTES.md`.
 
-**D-028 PENDING REVIEW: C3 attestation conflicts apply on every path (Phase 2).** Departs from plan §7 ("only a warning" when C3 is met via
-path B or C). With the plan's rule PA-004 would meet all five criteria, contradicting the brief's "only one of the seven meets policy" and
-the policy's `attestation_handling`. The key marks PA-004 C3 conflicting.
+**D-028 C3 attestation conflicts apply on every path (Phase 2; accepted by the candidate 2026-10-26).** Supersedes plan §7 ("only a
+warning" when C3 is met via path B or C); the plan file stays verbatim. With the plan's rule PA-004 would meet all five criteria, and the
+brief says "Only one of the seven requests meets policy". The policy's `attestation_handling` ("mark the criterion conflicting and cite
+both") and its precedence rule agree. PA-004 C3 is conflicting. Explained up front in the README.
 
-**D-029 PENDING REVIEW: the C3 months tolerance is one-sided (Phase 2).** Departs from the plan's ±1 month default (panel default 3).
+**D-029 The C3 months tolerance is one-sided (Phase 2; accepted by the candidate 2026-10-26).** Departs from the plan's ±1 month default (panel default 3).
 Conflicting only when attested months exceed the record total by more than 1 month. A record showing more therapy than attested agrees.
 Under the two-sided default PA-005 C3 would be conflicting (30 vs 32.52) with a provider ask that the chart already answers.
 C2 stays two-sided (0.1).

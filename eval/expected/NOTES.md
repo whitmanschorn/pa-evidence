@@ -28,7 +28,7 @@ Every field matches: C1 cites `Condition/b1aa0158…`. C2 cites only `Observatio
 C3: metformin active since 2025-07-15 covers 365 of 365 days; record total 443 days = 14.55 months, attested 14 agrees. C4 met with no
 sources. C5 age 54. The LDL Observation and the hypertension Condition are not cited. Route `evidence_complete`.
 
-## Two decisions for the candidate (the key departs from the plan's §7 wording)
+## Two departures from the plan's §7 wording (accepted by the candidate 2026-10-26; see README)
 
 **1. PA-004 C3: conflicting, not met.** The plan says "if C3 is met via path B or C, a mismatch in months is only a warning".
 Under that rule PA-004 has all five criteria met (path B: confirmed metformin intolerance) and routes `evidence_complete`.
