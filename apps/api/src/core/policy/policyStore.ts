@@ -1,24 +1,20 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import {
-  RulesEngineConfigSchema,
-  mergeRulesEngineConfigIntoPolicy,
-  type RulesEngineConfig,
-} from './mergeRulesEngineConfigIntoPolicy.js';
+import { RulesEngineConfigSchema, mergeRulesEngineConfigIntoPolicy } from './mergeRulesEngineConfigIntoPolicy.js';
 import { PolicySchema, type Policy } from './policySchema.js';
 
-// One folder per policy, e.g. data/policies/MP-SYN-021/:
-//   policy_MP-SYN-021.json          a policy version (the supplied file)
-//   policy_MP-SYN-021@2026.2.json   later versions, as new files
-//   rules-engine-config.json        values the policy has no field for (age limit, tolerances)
-const POLICY_FILE = /^policy_.+\.json$/;
+// One folder per policy, and one policy in effect at a time, e.g. data/policies/MP-SYN-021/:
+//   policy.json                the payer's policy (its version and effective date are inside)
+//   rules-engine-config.json   values the policy has no field for (age limit, tolerances); optional
+// Updating a policy means replacing these files; git history is the record, and the version inside the file
+// goes into every packet and audit event.
+const POLICY_FILE = 'policy.json';
 const RULES_ENGINE_CONFIG_FILE = 'rules-engine-config.json';
 
 export type PolicyChoice = { policy: Policy; warnings: string[] };
 
 export type PolicyStore = {
   all(): Policy[];
-  // The version in effect on the request date: the latest one whose `effective` date is on or before it.
   policyFor(policyId: string, requestDate: string): PolicyChoice | null;
 };
 
@@ -30,50 +26,48 @@ export function policyFoldersIn(policiesDir: string): string[] {
     .sort();
 }
 
-// Loads every policy version in the given folders, with its rules engine config merged in (matched by policy_id).
-// Any other file in a policy folder is an error, so a folder's contents are always exactly what they look like.
+// Loads one policy from each folder, with the rules engine config next to it merged in.
+// Anything unexpected in a folder is an error, so a folder's contents are always exactly what they look like.
 export function loadPolicyStore(policyFolders: string[]): PolicyStore {
-  const policies: Policy[] = [];
-  const configs: RulesEngineConfig[] = [];
+  return policyStoreFrom(policyFolders.map(loadPolicyFolder));
+}
 
-  for (const folder of policyFolders) {
-    const names = readdirSync(folder).filter((name) => name.endsWith('.json')).sort();
-    for (const name of names) {
-      const path = join(folder, name);
-      const json = JSON.parse(readFileSync(path, 'utf8')) as unknown;
-      if (name === RULES_ENGINE_CONFIG_FILE) {
-        const parsed = RulesEngineConfigSchema.safeParse(json);
-        if (!parsed.success) throw new Error(`Invalid rules engine config ${path}: ${parsed.error.message}`);
-        configs.push(parsed.data);
-      } else if (POLICY_FILE.test(name)) {
-        const parsed = PolicySchema.safeParse(json);
-        if (!parsed.success) throw new Error(`Invalid policy file ${path}: ${parsed.error.message}`);
-        policies.push(parsed.data);
-      } else {
-        throw new Error(`Unexpected file ${path}: a policy folder holds policy_*.json and ${RULES_ENGINE_CONFIG_FILE} only`);
-      }
-    }
+function loadPolicyFolder(folder: string): Policy {
+  const unexpected = readdirSync(folder).filter((name) => name !== POLICY_FILE && name !== RULES_ENGINE_CONFIG_FILE);
+  if (unexpected.length > 0) {
+    throw new Error(`Unexpected file in ${folder}: ${unexpected.join(', ')}. A policy folder holds ${POLICY_FILE} and ${RULES_ENGINE_CONFIG_FILE} only`);
   }
 
-  return policyStoreFrom(policies.map((policy) => mergeRulesEngineConfigIntoPolicy(policy, configs)));
+  const policyPath = join(folder, POLICY_FILE);
+  if (!existsSync(policyPath)) throw new Error(`${folder} has no ${POLICY_FILE}`);
+  const policy = PolicySchema.safeParse(JSON.parse(readFileSync(policyPath, 'utf8')));
+  if (!policy.success) throw new Error(`Invalid policy file ${policyPath}: ${policy.error.message}`);
+
+  const configPath = join(folder, RULES_ENGINE_CONFIG_FILE);
+  if (!existsSync(configPath)) return policy.data;
+  const config = RulesEngineConfigSchema.safeParse(JSON.parse(readFileSync(configPath, 'utf8')));
+  if (!config.success) throw new Error(`Invalid rules engine config ${configPath}: ${config.error.message}`);
+  return mergeRulesEngineConfigIntoPolicy(policy.data, config.data);
 }
 
 export function policyStoreFrom(policies: Policy[]): PolicyStore {
+  const byId = new Map<string, Policy>();
+  for (const policy of policies) {
+    if (byId.has(policy.policy_id)) {
+      throw new Error(`Two policy folders hold ${policy.policy_id}; only one version is loaded at a time`);
+    }
+    byId.set(policy.policy_id, policy);
+  }
+
   return {
     all: () => policies,
     policyFor(policyId, requestDate) {
-      const versions = policies
-        .filter((policy) => policy.policy_id === policyId)
-        .sort((a, b) => a.effective.localeCompare(b.effective));
-      if (versions.length === 0) return null;
-
-      const inEffect = versions.filter((policy) => policy.effective <= requestDate);
-      const latestInEffect = inEffect[inEffect.length - 1];
-      if (latestInEffect !== undefined) {
-        return { policy: latestInEffect, warnings: [] };
-      }
-      // The request predates every version. Use the earliest, and say so: the nurse must review it.
-      return { policy: versions[0] as Policy, warnings: ['request_before_policy_effective'] };
+      const policy = byId.get(policyId);
+      if (policy === undefined) return null;
+      // The loaded version took effect after the request was made, so it may not be the criteria the request was
+      // made under. Evaluate it anyway, and say so: the warning blocks evidence_complete and the nurse reviews it.
+      const warnings = requestDate < policy.effective ? ['request_before_policy_effective'] : [];
+      return { policy, warnings };
     },
   };
 }

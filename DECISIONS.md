@@ -204,7 +204,7 @@ the criterion failing. Synthea's many `completed` orders without end dates will 
 (`display_match`, `other_in_window_result`, `medication_end_unknown`, `unit_mismatch`, `observation_date_from_issued`) inform the nurse but
 do not change the route. The list is in `core/rules/route.ts`.
 
-**D-036 A request dated before every policy version (Phase 3).** It uses the earliest version and gets the blocking warning
+**D-036 (superseded by D-044) A request dated before every policy version (Phase 3).** It uses the earliest version and gets the blocking warning
 `request_before_policy_effective`, so the nurse reviews it rather than the service refusing it.
 
 **D-037 Source verification is one batch request (Phase 3).** Every cited source and every considered reference is checked with a single
@@ -227,21 +227,32 @@ tests. `fixturesCurrent.test.ts` fails if a committed fixture differs from today
 **D-042 No clinical numbers in code: the rules engine config (Phase 3 follow-up, at the candidate's request).** The age limit (18), the HbA1c
 conflict tolerance (0.1) and the metformin months tolerance (1, one-sided) live in
 `data/policies/MP-SYN-021/rules-engine-config.json` (see D-043), so they change without a code change, like the criteria. The config mirrors
-the policy's `fhir` blocks and is merged into each criterion's params when the policy loads (every version of that policy), so each kind reads
+the policy's `fhir` blocks and is merged into each criterion's params when the policy loads, so each kind reads
 all its numbers from one params object and the startup check validates them like any other param (a missing value stops the service). The
 config may only add values: one that would change a value the payer's policy sets fails at load. Bindings now hold no numbers, only the kind,
 the comparison direction, the attested form-field paths and the provider-request wording. CLAUDE.md invariant 6 was amended to match (the plan
 file stays verbatim). What remains in code are calendar and unit constants (ms per day, 365.25 / 12 days per month) and float-comparison
-precision. The config has a `version`; Phase 4 records it in the audit event next to the policy version, since it changes outcomes.
+precision. The config has no version of its own (D-044): Phase 4 records a sha256 fingerprint of policy.json plus the config in the audit
+event, so an edit to either is traceable even without a version bump.
 (First named "policy supplement"; renamed to "rules engine config" at the candidate's request so the file name says what it is.)
 
 **D-043 One folder per policy (Phase 3 follow-up, at the candidate's request).** `data/policies/MP-SYN-021/` holds the supplied policy
-(`policy_MP-SYN-021.json`, moved from `data/` byte-identical; `CHECKSUMS.sha256` now lists the new path and still guards it), its
-`rules-engine-config.json`, and any later versions (`policy_MP-SYN-021@2026.2.json`). This supersedes the plan's "the supplied file stays where it is".
-The loader takes policy folders: `policy_*.json` files are versions, `rules-engine-config.json` is the config, and any other file is an error.
-One env var, `POLICIES_DIR`, replaces `POLICY_PATHS` and the config path; a new policy is a new folder. The supplied `data/README.md` still
-says the policy is `policy_MP-SYN-021.json`; it is a supplied file and stays unchanged. The C6 extension fixture is its own policy folder under
-`apps/api/test/fixtures/extension/policy/`, so the real `data/policies/` holds only real policies.
+(moved from `data/` byte-identical; `CHECKSUMS.sha256` lists the new path and still guards it) and its `rules-engine-config.json`.
+Supersedes the plan's "the supplied file stays where it is". One env var, `POLICIES_DIR`, replaces `POLICY_PATHS` and the config path;
+a new policy (another drug class) is a new folder. The supplied `data/README.md` still names the old location; it is a supplied file and stays
+unchanged. The C6 extension fixture is a complete policy folder under `apps/api/test/fixtures/extension/policy/`, loaded in place of the real
+one, so `data/policies/` holds only real policies.
+
+**D-044 One policy version loaded at a time (Phase 3 follow-up, at the candidate's request).** Supersedes plan §7.1 "Policy versions" (load
+every version, pick the one in effect on the request date) and D-036. Each policy folder holds exactly `policy.json` and
+`rules-engine-config.json`; anything else, including a second version file, is a load error, and two folders with the same policy id are an
+error too. Why: multiple versions on the box only matter for a request dated before a policy change that is still worked after the change is
+deployed. That case is surfaced instead: a request dated before the loaded policy's `effective` date gets the blocking warning
+`request_before_policy_effective`, so it goes to clinician review. A policy update replaces the files; git history is the record; the version
+inside `policy.json` goes into every packet and audit event, plus (Phase 4) a fingerprint of both files. The supplied file is renamed
+`policy.json` because the folder already names the policy; the config dropped its own `version` field because it never had a meaning
+separate from the policy's. Effect on the plan's live-change drills: drill 1 (120-day HbA1c window) becomes an edit of `policy.json`
+(window and version); drill 8 becomes "a request dated before the loaded version's effective date is flagged for review".
 
 ## Defaults until the panel answers (plan §7; the candidate is emailing the panel)
 

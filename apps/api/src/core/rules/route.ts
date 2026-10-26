@@ -10,7 +10,7 @@ const BLOCKING_WARNINGS = [
   'implausible_deceased_before_request', // the record says the member died before the request
 ];
 
-// evidence_complete only when every criterion in the policy version in effect is met and nothing blocks it.
+// evidence_complete only when every criterion in the loaded policy is met and nothing blocks it.
 // The list of criteria comes from the policy, so this never names or counts them.
 export function decideRoute(criteria: CriterionResult[], warnings: string[]): Route {
   const allMet = criteria.every((criterion) => criterion.status === 'met');

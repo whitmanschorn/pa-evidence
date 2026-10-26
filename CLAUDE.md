@@ -16,8 +16,8 @@ Build plan: docs/BUILD-PLAN.md. Decisions: DECISIONS.md. Brief: ../fde-v2-data/ 
    "access denied"). JSON responses pass `outputGuard`; SSE events and MCP tool results pass the same
    `assertNoForbiddenTerms()`. Error bodies use only: unauthenticated, forbidden, not_found,
    invalid_request, internal_error, output_policy_violation.
-6. Thresholds, windows, tolerances, age limits and code lists come from data: the policy file, the rules-engine-config.json
-   next to it in data/policies/<policy id>/ (values the policy has no field for), and data/terminology/. Never hard-code them; no
+6. Thresholds, windows, tolerances, age limits and code lists come from data: data/policies/<policy id>/policy.json, the
+   rules-engine-config.json next to it (values the policy has no field for), and data/terminology/. Never hard-code them; no
    magic numbers in code. (Amended 2026-10-26 at the owner's request; was: C5's 18 years in bindings.ts.)
 7. All clinical date math is anchored to request_form.request_date and lives in core/dates.ts.
    Never use the current date for clinical logic.
@@ -31,8 +31,9 @@ Build plan: docs/BUILD-PLAN.md. Decisions: DECISIONS.md. Brief: ../fde-v2-data/ 
     clinical values, headers, bodies, prompts or model output.
 12. Dependencies: prefer the allowlist in DECISIONS.md, with exact versions. Anything added beyond it gets a line in
     DECISIONS.md (what and why) and a mention in the phase summary.
-13. Supplied data under data/ is read-only. New policy versions go in data/policies/<policy id>/ as new files.
-    (The supplied policy lives there too, byte-identical, moved 2026-10-26 at the owner's request.)
+13. Supplied data under data/ is read-only. One policy version is loaded at a time: data/policies/<policy id>/policy.json
+    (the supplied file, byte-identical, moved and renamed 2026-10-26 at the owner's request). A policy update replaces
+    that file; git history is the record, and the version inside the file goes into every packet and audit event.
 14. Criteria are data. Criterion ids (C1, C2, …) may appear in code only in core/rules/bindings.ts, tests and fixtures.
     Everything else (packet, summary, route, MCP, agent, audit, eval, UI) loops over the policy's criteria list,
     so adding a criterion never touches those layers.

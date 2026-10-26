@@ -1,7 +1,6 @@
 {
   "policy_id": "MP-SYN-021",
-  "version": "2026-10-26",
-  "note": "Rules engine config for policy MP-SYN-021: values the payer's policy file has no structured field for, kept as data so they change without a code change. Merged into each criterion's fhir block when the policy loads (every version of this policy). It may only add values: if the policy already sets a key, loading fails. Defaults from DECISIONS.md (panel defaults 2 and 3, D-029); the panel may revise them.",
+  "note": "Rules engine config for the policy in this folder: values the payer's policy file has no structured field for, kept as data so they change without a code change. Merged into the policy's criteria when it loads. It may only add values: if the policy already sets a key, loading fails. Defaults from DECISIONS.md (panel defaults 2 and 3, D-029); the panel may revise them.",
   "criteria": {
     "C2": {
       "attested_tolerance": 0.1

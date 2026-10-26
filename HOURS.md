@@ -9,7 +9,7 @@ Times are America/Chicago (CDT). "Items" are the brief's numbered deliverables (
 | 1 FHIR server and loader | 1 | 2026-10-26 10:41 | 2026-10-26 10:57 | 0:16 | 0:38 |
 | 2 Answer key | 5 (prep) | 2026-10-26 11:00 | 2026-10-26 11:03 | 0:03 | 0:41 |
 | 3 Rules engine and packet | 2 | 2026-10-26 11:08 | 2026-10-26 11:36 | 0:28 | 1:09 |
-| 3 follow-up: numbers to data | 2 | 2026-10-26 11:48 | 2026-10-26 11:56 | 0:08 | 1:17 |
+| 3 follow-up: numbers to data, policy folder, one version | 2 | 2026-10-26 11:48 | 2026-10-26 12:02 | 0:15 | 1:24 |
 
 ## Hours per brief item (filled in as phases close)
 
@@ -17,7 +17,7 @@ Times are America/Chicago (CDT). "Items" are the brief's numbered deliverables (
 |---|---|---|
 | overhead | environment, guardrails, process docs | 0:22 |
 | 1 | FHIR server + loader | 0:16 |
-| 2 | evidence endpoint | 0:36 (rules engine) |
+| 2 | evidence endpoint | 0:43 (rules engine) |
 | 3 | MCP tools + agent | |
 | 4 | safety | |
 | 5 | evaluation | 0:03 (answer key) |

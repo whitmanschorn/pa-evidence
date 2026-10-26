@@ -64,20 +64,18 @@ describe('checkBindings (startup check)', () => {
 });
 
 describe('policyStore.policyFor', () => {
-  const v1 = { ...policy, version: '2026.1', effective: '2026-07-01' };
-  const v2 = { ...policy, version: '2026.2', effective: '2027-01-01' };
-  const store = policyStoreFrom([v2, v1]);
+  const store = policyStoreFrom([policy]); // 2026.1, effective 2026-07-01
 
-  it('uses the latest version in effect on the request date', () => {
-    expect(store.policyFor('MP-SYN-021', '2026-10-01')?.policy.version).toBe('2026.1');
-    expect(store.policyFor('MP-SYN-021', '2027-01-01')?.policy.version).toBe('2026.2');
+  it('returns the one loaded policy for its id', () => {
+    expect(store.policyFor('MP-SYN-021', '2026-10-01')).toEqual({ policy, warnings: [] });
   });
 
-  it('falls back to the earliest version, with a warning, for a request before every version', () => {
-    expect(store.policyFor('MP-SYN-021', '2026-01-01')).toEqual({
-      policy: v1,
+  it('flags a request made before the loaded version took effect (a blocking warning: the nurse reviews it)', () => {
+    expect(store.policyFor('MP-SYN-021', '2026-06-30')).toEqual({
+      policy,
       warnings: ['request_before_policy_effective'],
     });
+    expect(store.policyFor('MP-SYN-021', '2026-07-01')?.warnings).toEqual([]);
   });
 
   it('returns null for an unknown policy', () => {

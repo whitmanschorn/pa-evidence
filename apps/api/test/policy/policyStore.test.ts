@@ -17,10 +17,19 @@ describe('loadPolicyStore (one folder per policy)', () => {
     expect(policy?.criteria.find((criterion) => criterion.id === 'C5')?.fhir.min_years).toBe(18);
   });
 
-  it('refuses any other file in a policy folder', () => {
+  it('refuses any other file in a policy folder, including a second version', () => {
     const folder = mkdtempSync(join(tmpdir(), 'policy-folder-'));
-    copyFileSync(join(POLICY_FOLDER, 'policy_MP-SYN-021.json'), join(folder, 'policy_MP-SYN-021.json'));
-    writeFileSync(join(folder, 'notes.json'), '{}');
-    expect(() => loadPolicyStore([folder])).toThrow('a policy folder holds policy_*.json and rules-engine-config.json only');
+    copyFileSync(join(POLICY_FOLDER, 'policy.json'), join(folder, 'policy.json'));
+    writeFileSync(join(folder, 'policy@2026.2.json'), '{}');
+    expect(() => loadPolicyStore([folder])).toThrow('Unexpected file');
+  });
+
+  it('refuses a folder without policy.json', () => {
+    const folder = mkdtempSync(join(tmpdir(), 'policy-folder-'));
+    expect(() => loadPolicyStore([folder])).toThrow('has no policy.json');
+  });
+
+  it('refuses two folders holding the same policy: one version is loaded at a time', () => {
+    expect(() => loadPolicyStore([POLICY_FOLDER, POLICY_FOLDER])).toThrow('only one version is loaded at a time');
   });
 });

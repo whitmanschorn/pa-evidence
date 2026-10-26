@@ -8,9 +8,8 @@ import { contextWith, evaluatorFor, hba1c, patient, policy, terminology } from '
 
 // No clinical number lives in code: the age limit and the conflict tolerances come from
 // data/policies/MP-SYN-021/rules-engine-config.json, merged into the policy when it loads.
-const config = (criteria: RulesEngineConfig['criteria']): RulesEngineConfig => ({
-  policy_id: 'MP-SYN-021',
-  version: 'test',
+const config = (criteria: RulesEngineConfig['criteria'], policyId = 'MP-SYN-021'): RulesEngineConfig => ({
+  policy_id: policyId,
   note: 'test',
   criteria,
 });
@@ -24,8 +23,14 @@ describe('rules engine config', () => {
   });
 
   it('may only add: changing a value the payer\'s policy sets fails loudly', () => {
-    expect(() => mergeRulesEngineConfigIntoPolicy(policy, [config({ C2: { value_min: 6.5 } })])).toThrow(
+    expect(() => mergeRulesEngineConfigIntoPolicy(policy, config({ C2: { value_min: 6.5 } }))).toThrow(
       'Rules engine config would change MP-SYN-021@2026.1 C2.value_min, which the policy already sets',
+    );
+  });
+
+  it('must be for the policy next to it', () => {
+    expect(() => mergeRulesEngineConfigIntoPolicy(policy, config({}, 'MP-SYN-999'))).toThrow(
+      'Rules engine config is for MP-SYN-999, but the policy next to it is MP-SYN-021',
     );
   });
 
