@@ -169,7 +169,7 @@ reason, plus missing_documents, route, evidence_complete and warnings. Day count
 **D-028 C3 attestation conflicts apply on every path (Phase 2; accepted by the candidate 2026-10-26).** Supersedes plan §7 ("only a
 warning" when C3 is met via path B or C); the plan file stays verbatim. With the plan's rule PA-004 would meet all five criteria, and the
 brief says "Only one of the seven requests meets policy". The policy's `attestation_handling` ("mark the criterion conflicting and cite
-both") and its precedence rule agree. PA-004 C3 is conflicting. Explained up front in the README.
+both") and its precedence rule agree. PA-004 C3 is conflicting. Explained up front in the README; the Phase 9 README must keep that section near the top.
 
 **D-029 The C3 months tolerance is one-sided (Phase 2; accepted by the candidate 2026-10-26).** Departs from the plan's ±1 month default (panel default 3).
 Conflicting only when attested months exceed the record total by more than 1 month. A record showing more therapy than attested agrees.
