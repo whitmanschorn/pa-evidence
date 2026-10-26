@@ -1,4 +1,3 @@
-<!-- Draft written during Phase 7. The cut list and hours are finalised in Phase 9 from DECISIONS.md and HOURS.md. -->
 # Plan for Payer A
 
 ## What ships in week one
@@ -36,27 +35,35 @@ change nothing in the decision process.
 ## What we would need from Payer A
 
 - **For week one:** a FHIR sandbox with SMART credentials, the GLP-1 policy and their value sets, 20–30 de-identified past requests,
-  and a nurse lead plus labelling time.
+  a nurse lead plus labelling time, and two answers the policy does not give: which eGFR unit counts for metformin's kidney
+  contraindication, and how recent that eGFR must be (F-004, F-013).
 - **By week six:** the security review, IdP groups, hosting and a CPU model node, SIEM and KMS access, the BAA, and the integration
   point in their UM system.
 
 ## What we cut from this assignment, and why
 
-_Finalised in Phase 9._ Nothing from the brief has been cut so far.
+Every numbered item in the brief is delivered. What we left out to stay inside eight hours:
+
+- **A terminology server.** The policy accepts a code "or any descendant"; we check hand-curated code lists and fall back to a
+  flagged display-name match. Payer A's value sets replace the lists in week one. Cost: four Synthea concepts match only by display
+  name (F-012).
+- **Fixes for the open service findings.** Each one is written up with a proposed fix in `eval/findings.json` instead of being fixed,
+  so the hours went to the endpoint, the evaluation and the enterprise minimum, which the brief ranks first. The one a nurse would
+  feel most: a blocking warning, such as a deceased member, does not reach the summary or the provider asks (F-014).
 
 ## Hours per part
 
-_Copied from HOURS.md at Phase 9._
+5:01 of the eight hours, from [HOURS.md](HOURS.md), which also lists the time lost to this laptop's GPU and not counted.
 
 | Item | Hours |
 |---|---|
-| 1. FHIR server and loader | |
-| 2. Evidence endpoint | |
-| 3. MCP tools and agent | |
-| 4. Safety | |
-| 5. Evaluation | |
-| 6. This plan | |
-| 7. Security notes | |
-| 8. Enterprise readiness | |
-| Overhead (environment, guardrails, process) | |
-| **Total** | |
+| 1. FHIR server and loader | 0:16 |
+| 2. Evidence endpoint | 0:45 |
+| 3. MCP tools and agent | 0:51 |
+| 4. Safety | 0:09 |
+| 5. Evaluation | 1:50 |
+| 6. This plan | 0:19 |
+| 7. Security notes | 0:10 |
+| 8. Enterprise readiness | 0:13 |
+| Overhead (environment, guardrails, process, README) | 0:28 |
+| **Total** | **5:01** |

@@ -24,7 +24,7 @@
     "request_id": "SYN-009",
     "criterion_id": "C3",
     "text": "other_in_window_result on C3's eGFR path compares the latest eGFR with every earlier one, because that path has no window; the name says 'in window'. Informative (it surfaced the implausible eGFRs in F-006), but the name misleads. Decide: keep and rename, or limit it to windowed paths.",
-    "status": "open"
+    "status": "wont_fix"
   },
   {
     "id": "F-004",
@@ -105,7 +105,7 @@
     "request_id": "SYN-004",
     "criterion_id": "C1",
     "text": "The type 2 diabetes code list (data/terminology/snomed-44054006-type-2-diabetes.json) lacks the 'due to type 2 diabetes mellitus' concepts the sample uses: 368581000119106 (neuropathy), 1551000119108 (nonproliferative retinopathy), 90781000119102 (microalbuminuria) and 157141000119108 (proteinuria). SYNTHEA-NOTES.md itself calls them SNOMED descendants of 44054006 (plausible; not confirmed without a terminology server). They match only through the display fallback, so SYN-003, SYN-008 and SYN-009 carry display_match:C1 although each also cites a Condition coded 44054006, and SYN-004's C1 rests on the fallback alone. Proposal: add them as descendants, so a coded match needs no warning.",
-    "status": "open"
+    "status": "wont_fix"
   },
   {
     "id": "F-013",
@@ -150,7 +150,7 @@
     "request_id": null,
     "criterion_id": "C1",
     "text": "Five Synthea charts keep Prediabetes (714628002) active alongside active type 2 diabetes: SYN-001, SYN-002, SYN-003, SYN-008 and SYN-009 (in SYN-009 the prediabetes onset is 1956 and the diabetes onset 1990). Contradictory diagnoses a nurse would query; no status changes, since each chart also has a coded type 2 diabetes Condition.",
-    "status": "open"
+    "status": "wont_fix"
   },
   {
     "id": "F-018",
@@ -159,6 +159,6 @@
     "request_id": "SYN-004",
     "criterion_id": "C1",
     "text": "SYN-004's chart records diabetic kidney complications from 1955 onward (microalbuminuria and proteinuria due to type 2 diabetes), a kidney transplant in 1972 and tacrolimus, but no plain type 2 diabetes Condition, no HbA1c, no eGFR and no diabetes medicine at any time. Implausible for a member with diabetic kidney disease and a transplant; C1 met rests on two complication Conditions matched by display (F-012).",
-    "status": "open"
+    "status": "wont_fix"
   }
 ]

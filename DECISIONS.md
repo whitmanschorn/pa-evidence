@@ -577,6 +577,21 @@ the latest files. Both writers create `eval/results/` when it is missing, so a f
 committed: the answer key, the Synthea forms and overlay, the findings, the hand audit and its instructions (`eval/HAND-AUDIT.md`).
 Amends D-086, which named the two report files but not whether they were committed.
 
+**D-092 The default model stays qwen3:4b-instruct-2507, on measurements (Phase 9).** D-059 left the pin for Phase 7 to measure. The
+last full comparison (`models-2026-10-26T20-27-19-344Z_524f0aa.json`: five models, CPU-only, 17 requests, all but SYN-011) has
+qwen3:4b as the only candidate with a faithful summary on all 17, agent agreement with the rules engine on 85 of 85 criteria, and 12
+of 13 drafts passing. granite4:micro ties on the agent and is faster and smaller, but 2 of its 17 summaries failed the check; the
+summary is on every packet, the agent runs only on a click. That run predates the counting fix in D-090, which changes only the count
+of valid tool calls, so the README's table leaves that column out. One run per model is enough: calls use temperature 0 and seed 42,
+and the Metal and CPU `pnpm eval` runs at f8c4cf8 wrote the same 18 summaries word for word. The 18-request rerun D-090 started was
+stopped once the candidate chose to quote this run; it is run again after the Phase 9 commit so EVAL.html covers all 18.
+
+**D-093 The README carries one snapshot of the results (Phase 9, the candidate's call; amends D-091).** The brief's Sharing list asks
+for "the evaluation results", and item 5 for a per-request record, so a reviewer with only the repo link must see them. The README has
+two tables copied from named runs: per request from `pnpm eval` run `2026-10-26T22-09-18-951Z_f8c4cf8` (CPU), and per model from the
+comparison in D-092. EVAL.md, EVAL.html and `eval/results/` stay generated and uncommitted, as D-091 says; the README names the run
+each table came from.
+
 ## Defaults until the panel answers (plan §7; the candidate is emailing the panel)
 
 1. **eGFR threshold.** The policy has `value_max: 30` but its note says "< 30". Default: strict `< 30`, using the latest eGFR on or before
