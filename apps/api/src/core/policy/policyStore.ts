@@ -1,5 +1,6 @@
 import { readJsonFiles } from '../files.js';
 import { PolicySchema, type Policy } from './policySchema.js';
+import { SupplementSchema, applySupplements, type Supplement } from './supplements.js';
 
 export type PolicyChoice = { policy: Policy; warnings: string[] };
 
@@ -9,13 +10,21 @@ export type PolicyStore = {
   policyFor(policyId: string, requestDate: string): PolicyChoice | null;
 };
 
-export function loadPolicyStore(paths: string[]): PolicyStore {
-  const policies = readJsonFiles(paths).map(({ path, json }) => {
+// Loads every policy version found in `policyPaths`, each with its supplements (data/policy-supplements/) applied.
+export function loadPolicyStore(policyPaths: string[], supplementPaths: string[]): PolicyStore {
+  const supplements: Supplement[] = readJsonFiles(supplementPaths).map(({ path, json }) => {
+    const parsed = SupplementSchema.safeParse(json);
+    if (!parsed.success) {
+      throw new Error(`Invalid policy supplement ${path}: ${parsed.error.message}`);
+    }
+    return parsed.data;
+  });
+  const policies = readJsonFiles(policyPaths).map(({ path, json }) => {
     const parsed = PolicySchema.safeParse(json);
     if (!parsed.success) {
       throw new Error(`Invalid policy file ${path}: ${parsed.error.message}`);
     }
-    return parsed.data;
+    return applySupplements(parsed.data, supplements);
   });
   return policyStoreFrom(policies);
 }

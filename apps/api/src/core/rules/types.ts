@@ -44,8 +44,10 @@ export type Evaluator = {
 // ----- Bindings: criterion id -> kind, plus what the policy JSON lacks (see bindings.ts) -----
 
 // Request-form fields compared with the record. Paths are dotted, e.g. "prescriber_attestation.hba1c_value".
-export type AttestedValueBinding = { value: string; date: string; tolerance: number };
-export type AttestedMonthsBinding = { months: string; tolerance_months: number };
+// The tolerances for these comparisons are data (attested_tolerance, attested_tolerance_months in the
+// policy or its supplement), never numbers in code.
+export type AttestedValueBinding = { value: string; date: string };
+export type AttestedMonthsBinding = { months: string };
 
 // `from` names the sub-block of the criterion's `fhir` object that holds this kind's params (e.g. "path_a").
 type BindingCommon = { from?: string; documents?: DocumentWording };
@@ -62,7 +64,7 @@ export type MedicationDurationBinding = BindingCommon & {
 };
 export type AllergyPresentBinding = BindingCommon & { kind: 'allergy_present' };
 export type ConditionAbsentEverBinding = BindingCommon & { kind: 'condition_absent_ever' };
-export type PatientAgeBinding = BindingCommon & { kind: 'patient_age'; min_years: number };
+export type PatientAgeBinding = BindingCommon & { kind: 'patient_age' }; // min_years comes from data
 
 // Any kind except any_of can be one path of an any_of.
 export type PathBinding =

@@ -1,0 +1,10 @@
+{
+  "policy_id": "MP-SYN-021",
+  "version": "2026-10-26",
+  "note": "Values the payer's policy file has no structured field for, kept as data so they change without a code change. Merged into each criterion's fhir block when the policy loads (every version of this policy). A supplement may only add values: if the policy already sets a key, loading fails. Defaults from DECISIONS.md (panel defaults 2 and 3, D-029); the panel may revise them.",
+  "criteria": {
+    "C2": { "attested_tolerance": 0.1 },
+    "C3": { "path_a": { "attested_tolerance_months": 1 } },
+    "C5": { "min_years": 18 }
+  }
+}

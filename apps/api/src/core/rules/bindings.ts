@@ -1,9 +1,10 @@
 import type { Binding } from './types.js';
 
 // The only file in the code that names criterion ids (invariant 14). Each policy criterion is bound to an
-// evaluator kind. A binding adds only what the policy JSON lacks: the comparison direction, the request-form
-// fields to check for conflicts and their tolerances, the C5 age limit, and the provider-request wording.
-// Thresholds, windows and codes that the policy does hold are read from the policy file.
+// evaluator kind. A binding adds only what the policy JSON lacks and is not a number: the comparison direction,
+// the request-form fields to check for conflicts, and the provider-request wording.
+// Every number (thresholds, windows, tolerances, the age limit) is data: the policy file, or its supplement in
+// data/policy-supplements/ for values the policy has no field for.
 //
 // Wording placeholders: {from} {to} = the look-back window, {value} {date} = the attested lab result,
 // {months} = the attested months of therapy.
@@ -19,8 +20,7 @@ export const BINDINGS: Record<string, Binding> = {
   C2: {
     kind: 'observation_threshold',
     compare: 'gte',
-    // A difference of 0.1 or more between the form and the record is a conflict (DECISIONS: panel default 2).
-    attested: { value: 'prescriber_attestation.hba1c_value', date: 'prescriber_attestation.hba1c_date', tolerance: 0.1 },
+    attested: { value: 'prescriber_attestation.hba1c_value', date: 'prescriber_attestation.hba1c_date' },
     documents: {
       missing: 'HbA1c lab result dated {from} to {to}',
       conflicting: 'Lab report for the HbA1c result reported on the request form ({value} % on {date})',
@@ -31,8 +31,7 @@ export const BINDINGS: Record<string, Binding> = {
     primary: {
       kind: 'medication_duration',
       from: 'path_a',
-      // Conflicting only when the form claims more than 1 month beyond the record (D-029; panel default 3).
-      attested: { months: 'prescriber_attestation.metformin_trial_months', tolerance_months: 1 },
+      attested: { months: 'prescriber_attestation.metformin_trial_months' },
     },
     alternatives: [
       { kind: 'allergy_present', from: 'path_b' },
@@ -48,7 +47,6 @@ export const BINDINGS: Record<string, Binding> = {
   C4: { kind: 'condition_absent_ever' },
   C5: {
     kind: 'patient_age',
-    min_years: 18, // the policy has no structured field for the age limit (invariant 6 exception)
     documents: { missing: 'Proof of member date of birth' },
   },
 };

@@ -3,17 +3,18 @@ import { ageRangeOn, isAfter, parsePartialDate, toDay } from '../../dates.js';
 import { refOf } from '../../fhir/resources.js';
 import type { EvaluationContext, Evaluator, KindResult, PatientAgeBinding } from '../types.js';
 
-// "The member is at least N years old on the request date." The age limit comes from the binding because
-// the policy has no structured field for it. The birth date itself never leaves this function: the packet
-// carries only the age.
+// "The member is at least N years old on the request date." N is `min_years`: the supplied policy has no
+// structured field for it, so it comes from the policy supplement. The birth date itself never leaves this
+// function: the packet carries only the age.
 const ParamsSchema = z.object({
   resource: z.literal('Patient'),
   element: z.literal('birthDate'),
+  min_years: z.number().int().positive(),
 });
 
 export function buildPatientAge(block: unknown, binding: PatientAgeBinding): Evaluator {
-  ParamsSchema.parse(block);
-  const minYears = binding.min_years;
+  const params = ParamsSchema.parse(block);
+  const minYears = params.min_years;
 
   function evaluate(context: EvaluationContext): KindResult {
     const patient = context.chart.patient;

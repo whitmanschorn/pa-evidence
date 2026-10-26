@@ -15,10 +15,14 @@ const ParamsSchema = z.object({
   ingredient_rxnorm: z.string(),
   min_days_in_window: z.number().int().positive(),
   window_days: z.number().int().positive(),
+  // How many months the form may claim beyond the record before it is a conflict (policy supplement; one-sided, D-029).
+  attested_tolerance_months: z.number().nonnegative().optional(),
 });
 
 const EXCLUDED_STATUSES = ['entered-in-error', 'cancelled', 'draft'];
-const DAYS_PER_MONTH = 30.44;
+// Average month length (365.25 / 12), to turn record days into the months a prescriber attests. A unit
+// conversion, not a policy value.
+const DAYS_PER_MONTH = 365.25 / 12;
 
 type Interval = { start: string; end: string };
 
@@ -30,6 +34,10 @@ export function buildMedicationDuration(
   const params = ParamsSchema.parse(block);
   const expansion = terminology.expand({ system: RXNORM, code: params.ingredient_rxnorm });
   const name = expansion.label;
+  const toleranceMonths = params.attested_tolerance_months;
+  if (binding.attested !== undefined && toleranceMonths === undefined) {
+    throw new Error('medication_duration with attested months needs "attested_tolerance_months" in the policy or its supplement');
+  }
 
   function evaluate(context: EvaluationContext): KindResult {
     const window = lookbackWindow(context.requestDate, params.window_days);
@@ -85,8 +93,8 @@ export function buildMedicationDuration(
     // One-sided check (D-029): conflicting only when the form claims more months than the record supports.
     const claimed = binding.attested === undefined ? undefined : readFormField(context.form, binding.attested.months);
     let attested: Attested | undefined;
-    if (binding.attested !== undefined && typeof claimed === 'number') {
-      const agrees = known.length === 0 ? null : claimed - recordMonths <= binding.attested.tolerance_months;
+    if (binding.attested !== undefined && toleranceMonths !== undefined && typeof claimed === 'number') {
+      const agrees = known.length === 0 ? null : claimed - recordMonths <= toleranceMonths;
       attested = { field: binding.attested.months, value: `${claimed} months`, agrees };
     }
 

@@ -18,6 +18,8 @@ const ParamsSchema = z.object({
   value_max: z.number().optional(),
   unit: z.string().optional(),
   window_days: z.number().int().positive().optional(),
+  // Smallest difference between the form's value and the record's that counts as a conflict (policy supplement).
+  attested_tolerance: z.number().positive().optional(),
 });
 
 const COUNTED_STATUSES = ['final', 'amended', 'corrected'];
@@ -36,6 +38,10 @@ export function buildObservationThreshold(
     throw new Error(`observation_threshold with compare "${binding.compare}" needs "${needed}" in the policy`);
   }
   const threshold: Threshold = { compare: binding.compare, value: thresholdValue, unit: params.unit ?? '' };
+  const tolerance = params.attested_tolerance;
+  if (binding.attested !== undefined && tolerance === undefined) {
+    throw new Error('observation_threshold with an attested value needs "attested_tolerance" in the policy or its supplement');
+  }
   const expansion = terminology.expand(params.code);
   const name = expansion.label;
 
@@ -126,9 +132,9 @@ export function buildObservationThreshold(
     // Compare the form with the record result on the attested date, or else with the latest in-window result.
     let agrees: boolean | null = null;
     let compared: Candidate | undefined;
-    if (binding.attested !== undefined && typeof attestedValue === 'number') {
+    if (tolerance !== undefined && typeof attestedValue === 'number') {
       compared = usable.find((candidate) => candidate.day === attestedDate) ?? latest;
-      agrees = roundedDifference(attestedValue, compared.numeric) < binding.attested.tolerance;
+      agrees = roundedDifference(attestedValue, compared.numeric) < tolerance;
     }
 
     const status = agrees === false ? 'conflicting' : passes(latest.numeric) ? 'met' : 'not_met';
@@ -170,9 +176,11 @@ function observationDay(observation: fhir4.Observation): { day: string | null; f
   return { day: issued, fromIssued: issued !== null };
 }
 
-// |a - b| rounded to 3 decimals, so 8.0 vs 7.9 is exactly 0.1 rather than 0.0999999.
+// |a - b| without floating-point noise, so 8.0 vs 7.9 is exactly 0.1 rather than 0.09999999999999964.
+// Rounding to 6 decimals is far finer than any lab reports, so it never changes a real comparison.
+const COMPARISON_DECIMALS = 6;
 function roundedDifference(a: number, b: number): number {
-  return Math.round(Math.abs(a - b) * 1000) / 1000;
+  return Number(Math.abs(a - b).toFixed(COMPARISON_DECIMALS));
 }
 
 function attestedFor(
