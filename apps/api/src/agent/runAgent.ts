@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { wrapClinicalData } from '../core/llm/clinicalData.js';
 import { callSettings, type LocalModel } from '../core/llm/localModel.js';
 import { loadPrompt } from '../core/llm/prompts.js';
+import { decideRoute } from '../core/rules/route.js';
 import { TOOL } from '../core/tools/evidenceTools.js';
 import { DraftSchema, checkDraft, draftEvidence, renderDraft, templateItems } from './draft.js';
 
@@ -123,8 +124,9 @@ export async function runAgent(input: {
     ...runWarnings,
     ...criteria.filter((criterion) => criterion.check === 'not_evaluated').map((criterion) => `agent_not_evaluated:${criterion.id}`),
   ];
-  const allMet = criteria.every((criterion) => criterion.status === 'met');
-  const route: Route = allMet ? 'evidence_complete' : 'clinician_review';
+  // The tools return statuses, not warnings, so the rules engine's blocking warnings (a deceased member, a drug not on
+  // the policy list) are added here: otherwise all five met would route differently from the rules engine.
+  const route = decideRoute(criteria, [...rulesPacket.warnings, ...warnings]);
   onEvent({ type: 'packet', criteria, route, warnings });
 
   // 3. The provider-request draft, only when the rules engine says something is needed.

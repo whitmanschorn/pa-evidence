@@ -4,7 +4,9 @@ import type { AgentEvent, DraftEvent } from '@pa/shared';
 import { afterEach, describe, expect, it } from 'vitest';
 import { CRITERIA, NEVER_ANSWERS, PA_004_REFS, draftReply, mockModel, textReply, toolLoop } from '../support/mockModel.js';
 import { isToolError } from '../../src/agent/runAgent.js';
-import { TOKENS, readAgentRun, startTestServer } from '../support/testApp.js';
+import { requestStoreFrom } from '../../src/core/requests/requestStore.js';
+import { suppliedDeps } from '../support/suppliedWorld.js';
+import { TOKENS, bearer, readAgentRun, startTestServer } from '../support/testApp.js';
 
 // The agent end to end with a scripted model: the real MCP server over HTTP with the nurse's token, the real tools,
 // checks and audit. Only the model's replies are scripted.
@@ -36,6 +38,17 @@ describe('agent runs (scripted model, real MCP over HTTP)', () => {
     expect(packet?.criteria.every((criterion) => criterion.check === 'evaluated' && criterion.agrees_with_rules)).toBe(true);
     expect(ofType(events, 'draft')).toEqual([]); // nothing to ask the provider for
     expect(events.at(-1)?.type).toBe('done');
+  });
+
+  it('routes like the rules engine when every criterion is met but a blocking warning holds the packet in review', async () => {
+    const pa001 = suppliedDeps().requests.get('PA-001')!;
+    const notCovered = { ...pa001, requested_medication: { rxnorm: '2601723', display: 'tirzepatide' } };
+    server = await startTestServer({ model: mockModel(toolLoop('PA-001', [])), requests: requestStoreFrom([notCovered]) });
+    const events = await readAgentRun(server.baseUrl, 'PA-001');
+
+    const [packet] = ofType(events, 'packet');
+    expect(packet?.criteria.every((criterion) => criterion.status === 'met' && criterion.agrees_with_rules)).toBe(true);
+    expect(packet?.route).toBe('clinician_review'); // medication_not_in_policy_list blocks, as in the rules engine's packet
   });
 
   it("audits every MCP tool call as the nurse who started the run, and the run itself", async () => {
@@ -90,6 +103,19 @@ describe('agent runs (scripted model, real MCP over HTTP)', () => {
     expect(packet?.criteria.every((criterion) => criterion.check === 'not_evaluated')).toBe(true);
     expect(ofType(events, 'draft')[0]).toMatchObject({ source: 'template', check_failures: ['agent_time_limit'] });
     expect(events.at(-1)?.type).toBe('done');
+  });
+
+  it('audits a run the client hangs up on as an error, not a success', async () => {
+    const slow = { ...mockModel([NEVER_ANSWERS]), timeouts_ms: { call: 5_000, agent_run: 300 } };
+    server = await startTestServer({ model: slow });
+    const hangUp = new AbortController();
+    const run = fetch(`${server.baseUrl}/requests/PA-004/agent-runs`, { method: 'POST', headers: bearer('nurse'), signal: hangUp.signal });
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    hangUp.abort();
+    await run.catch(() => undefined);
+    await new Promise((resolve) => setTimeout(resolve, 500)); // past the run's 300 ms time limit
+
+    expect(server.audit.list({ limit: 50 }).find((event) => event.action === 'agent.run')).toMatchObject({ outcome: 'error' });
   });
 });
 

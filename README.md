@@ -22,9 +22,29 @@ every decision. All data is synthetic.
 The model choice is defended with measurements in [Choosing the model](#choosing-the-model). Technical decisions are in
 [DECISIONS.md](DECISIONS.md), and where every file came from is in [PROVENANCE.md](PROVENANCE.md).
 
+**Why TypeScript, not the suggested Python.** One language covers the API, the MCP server, the agent, the eval scripts and the UI,
+and the candidate has used TypeScript more than Python, so they can read and check every line, including the code Claude Code wrote.
+Express does FastAPI's job, Zod does Pydantic's, and the MCP TypeScript SDK does FastMCP's (D-088).
+
+## Start here
+
+Five files, in reading order:
+
+1. [assemblePacket.ts](apps/api/src/core/packet/assemblePacket.ts): builds the packet. Every status, source and the route are
+   decided here, in code ([route.ts](apps/api/src/core/rules/route.ts) holds the route rule).
+2. [bindings.ts](apps/api/src/core/rules/bindings.ts): the only file that names criterion ids. It binds each policy criterion to an
+   evaluator kind; every number (threshold, window, tolerance, age) comes from the policy's data.
+3. [observationThreshold.ts](apps/api/src/core/rules/kinds/observationThreshold.ts): one evaluator kind, the latest qualifying lab
+   against a threshold and a window (HbA1c, eGFR), with every result it set aside listed in `considered` and why.
+4. [requestRoutes.ts](apps/api/src/http/routes/requestRoutes.ts): the endpoint. Permission check, Zod, the core call, one audit
+   event, the log fields; the output guard and the error bodies sit around it in [app.ts](apps/api/src/app.ts).
+5. [runAgent.ts](apps/api/src/agent/runAgent.ts): the agent. The model calls the MCP tools; its packet is built in code from what
+   the tools returned and compared with the rules engine's; then the provider-request draft, checked before it is shown.
+
 ## Run it
 
-Needs Docker Desktop, Node 24, pnpm 12 and Ollama (Homebrew).
+Needs Docker, Node 24, pnpm 12, jq and Ollama (Homebrew on a Mac). Without a native Ollama, on Linux for example, use compose.yaml's
+`ollama-in-docker` profile: its comment at the top of the file says how.
 
 ```sh
 pnpm install
@@ -45,6 +65,7 @@ need no change (D-085, D-090).
 ```sh
 pnpm lint      # ESLint (with the import boundaries) and TypeScript
 pnpm test      # vitest: rules engine, API, audit, auth, loader, agent, guard tests
+               # (the real-model tests run when Ollama has the model; OLLAMA_BASE_URL_FOR_TESTS=http://127.0.0.1:9 skips them)
 pnpm test:ui   # Playwright against Vite with a mocked API   (review: pnpm test:ui:report)
 pnpm test:e2e  # Playwright against the running stack        (review: pnpm test:e2e:report)
 pnpm eval      # all 18 requests through the running service -> eval/results/, EVAL.md, EVAL.html (about 3 minutes on CPU)
@@ -60,7 +81,8 @@ its tool calls, and shows an editable draft (never sent automatically) beside it
 
 ## The demo
 
-A packet, a refused call, the audit event for the packet, and the log line it produced:
+A packet, a refused call, the audit event for the packet, and the log line it produced. `make demo` runs the same lines
+(`make demo REQUEST=PA-002` for another request) and ends with `GET /audit/verify`, which recomputes the audit hash chain:
 
 ```sh
 NURSE=$(grep '^nurse=' .tokens.local | cut -d= -f2); ADMIN=$(grep '^admin=' .tokens.local | cut -d= -f2)

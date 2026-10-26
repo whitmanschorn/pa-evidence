@@ -1,8 +1,8 @@
 # The whole stack: HAPI FHIR (with its Postgres) and the API (which also serves the UI at /ui).
 # Images are pinned by multi-arch index digest; the tag is kept for readability.
-# Ollama normally runs natively on the host (Metal), reached at host.docker.internal:11434. For a machine without
-# native Ollama there is an opt-in profile: `docker compose --profile ollama-in-docker up -d`, then set
-# OLLAMA_BASE_URL=http://ollama:11434 in .env (CPU-only inside Docker on a Mac: much slower).
+# Ollama normally runs natively on the host, reached at host.docker.internal:11434. For a machine without native
+# Ollama (Linux included) there is an opt-in profile: set OLLAMA_BASE_URL=http://ollama:11434 in .env, then
+# `docker compose --profile ollama-in-docker up -d` (CPU-only inside Docker).
 name: pa-evidence
 
 services:
@@ -59,8 +59,8 @@ services:
       FHIR_BASE_URL: http://hapi:8080/fhir
       AUDIT_DB_PATH: /app/var/audit.db
       POLICIES_DIR: /app/data/policies
-      # Ollama runs natively on the host (Metal); it listens on the host's 127.0.0.1 only.
-      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      # The host's Ollama (it listens on the host's 127.0.0.1 only), unless .env names another, such as the profile's.
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
     ports:
       - "127.0.0.1:8080:8080"
     volumes:

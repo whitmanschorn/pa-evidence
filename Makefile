@@ -1,5 +1,5 @@
 # One entry point for the stack. Targets not built yet say which phase fills them in.
-.PHONY: help up down reset load load-supplied synthea model tokens reload-policies reload-models ollama-cpu
+.PHONY: help up down reset load load-supplied synthea model tokens reload-policies reload-models demo ollama-cpu
 
 # Official Synthea sample, pinned to a commit so the bytes never change (see data/synthea/SOURCE.md).
 SYNTHEA_URL := https://raw.githubusercontent.com/synthetichealth/synthea-sample-data/84f59805d481b9f01f3141ef39e68bdbbeb80132/downloads/latest/synthea_sample_data_fhir_latest.zip
@@ -18,6 +18,7 @@ help:
 	@echo "make tokens   generate nurse/admin/probe tokens (.env hashes, .tokens.local plaintext)"
 	@echo "make reload-policies  pick up a dropped-in policy version folder without a restart (admin token)"
 	@echo "make reload-models    pick up a dropped-in model version folder without a restart (run make model first)"
+	@echo "make demo             the panel demo against the running stack (REQUEST=PA-002 for another request)"
 	@echo "make ollama-cpu       a second Ollama on :11435 with no GPU layers, for pnpm eval:models when the GPU faults (D-085)"
 
 up: synthea
@@ -61,6 +62,26 @@ reload-policies:
 
 reload-models:
 	@curl -s -X POST -H "Authorization: Bearer $$(grep '^admin=' .tokens.local | cut -d= -f2)" http://localhost:8080/admin/models/reload; echo
+
+# The panel demo, as in the README: a packet, two refused calls, the packet's audit event, the refusals in the audit
+# trail, the packet's log line, and a recomputation of the audit hash chain.
+REQUEST ?= PA-004
+demo:
+	@NURSE=$$(grep '^nurse=' .tokens.local | cut -d= -f2); ADMIN=$$(grep '^admin=' .tokens.local | cut -d= -f2); \
+	echo "== The packet for $(REQUEST), as a nurse"; \
+	curl -s -H "Authorization: Bearer $$NURSE" localhost:8080/requests/$(REQUEST)/evidence | jq; \
+	echo "== No token: refused"; \
+	curl -s -w ' HTTP %{http_code}\n' localhost:8080/requests/$(REQUEST)/evidence; \
+	echo "== A nurse asking for the audit trail: refused"; \
+	curl -s -w ' HTTP %{http_code}\n' -H "Authorization: Bearer $$NURSE" localhost:8080/audit; \
+	echo "== The packet's audit event, as an admin"; \
+	curl -s -H "Authorization: Bearer $$ADMIN" 'localhost:8080/audit?request_id=$(REQUEST)' | jq 'map(select(.action == "packet.read")) | .[0]'; \
+	echo "== The two refusals, audited"; \
+	curl -s -H "Authorization: Bearer $$ADMIN" 'localhost:8080/audit?limit=3' | jq 'map(select(.outcome == "refused") | {action, outcome, http_status, refusal_reason, required_permission})'; \
+	echo "== The packet's log line"; \
+	docker compose logs api --no-log-prefix | grep '"request_id":"$(REQUEST)"' | grep '/requests/:id/evidence' | tail -1; \
+	echo "== The audit hash chain, recomputed"; \
+	curl -s -H "Authorization: Bearer $$ADMIN" localhost:8080/audit/verify | jq
 
 # Runs in the foreground; leave it in its own terminal, then: OLLAMA_HOST_URL=http://127.0.0.1:11435 pnpm eval:models
 # Ollama's runner is llama.cpp's llama-server, which reads LLAMA_ARG_* from the environment: no layers and no device on the

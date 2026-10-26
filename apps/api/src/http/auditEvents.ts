@@ -43,6 +43,8 @@ export function auditWhenDone(
 ): void {
   res.once('close', () => {
     const status = res.statusCode;
-    audit.append(auditEventFor(res, { ...fields, http_status: status, outcome: status < 400 ? 'success' : 'error' }));
+    // A client that hangs up before the response is sent leaves the status at its default 200: not a success.
+    const outcome = res.writableFinished && status < 400 ? 'success' : 'error';
+    audit.append(auditEventFor(res, { ...fields, http_status: status, outcome }));
   });
 }

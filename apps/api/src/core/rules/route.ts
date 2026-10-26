@@ -1,4 +1,4 @@
-import type { CriterionResult, Route } from '@pa/shared';
+import type { CriterionStatus, Route } from '@pa/shared';
 
 // Warnings that keep a request in clinician review even when every criterion is met.
 // Codes may carry a criterion suffix ("display_match:<criterion id>"); only the part before ":" is compared.
@@ -11,8 +11,9 @@ const BLOCKING_WARNINGS = [
 ];
 
 // evidence_complete only when every criterion in the loaded policy is met and nothing blocks it.
-// The list of criteria comes from the policy, so this never names or counts them.
-export function decideRoute(criteria: CriterionResult[], warnings: string[]): Route {
+// The list of criteria comes from the policy, so this never names or counts them. The agent's packet is routed here
+// too, where a criterion the agent never evaluated has no status.
+export function decideRoute(criteria: { status: CriterionStatus | null }[], warnings: string[]): Route {
   const allMet = criteria.every((criterion) => criterion.status === 'met');
   const blocked = warnings.some((warning) => BLOCKING_WARNINGS.includes(warning.split(':')[0] ?? warning));
   return allMet && !blocked ? 'evidence_complete' : 'clinician_review';

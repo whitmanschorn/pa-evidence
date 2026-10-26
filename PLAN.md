@@ -53,17 +53,17 @@ Every numbered item in the brief is delivered. What we left out to stay inside e
 
 ## Hours per part
 
-5:01 of the eight hours, from [HOURS.md](HOURS.md), which also lists the time lost to this laptop's GPU and not counted.
+5:09 of the eight hours, from [HOURS.md](HOURS.md), which also lists the time lost to this laptop's GPU and not counted.
 
 | Item | Hours |
 |---|---|
 | 1. FHIR server and loader | 0:16 |
 | 2. Evidence endpoint | 0:45 |
-| 3. MCP tools and agent | 0:51 |
+| 3. MCP tools and agent | 0:53 |
 | 4. Safety | 0:09 |
 | 5. Evaluation | 1:50 |
 | 6. This plan | 0:19 |
 | 7. Security notes | 0:10 |
-| 8. Enterprise readiness | 0:13 |
-| Overhead (environment, guardrails, process, README) | 0:28 |
-| **Total** | **5:01** |
+| 8. Enterprise readiness | 0:17 |
+| Overhead (environment, guardrails, process, README) | 0:30 |
+| **Total** | **5:09** |

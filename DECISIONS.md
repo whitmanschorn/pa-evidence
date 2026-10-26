@@ -585,6 +585,19 @@ two tables copied from named runs: per request from `pnpm eval` run `2026-10-26T
 comparison in D-092. EVAL.md, EVAL.html and `eval/results/` stay generated and uncommitted, as D-091 says; the README names the run
 each table came from.
 
+**D-094 Fixes from a review before sharing (Phase 10).**
+- The agent's route goes through `decideRoute` with the rules engine's warnings. The tools return statuses, not warnings, so a
+  packet with every criterion met but held in review by a blocking warning (a drug not on the policy list, a deceased member)
+  showed the agent disagreeing with the rules engine for the wrong reason. `decideRoute` takes any list of statuses, null for a
+  criterion the agent never evaluated. Test: PA-001 with a drug not on the list.
+- A client that hangs up before the response is sent is audited as `error`, not `success`: the status is still the default
+  200 at that point, so `auditWhenDone` also checks `res.writableFinished`. Test: an agent run aborted mid-stream.
+- compose.yaml takes `OLLAMA_BASE_URL` from `.env`, defaulting to the host's Ollama. The value under `environment:` used to win
+  over `env_file`, so the `ollama-in-docker` profile's instructions did not work.
+- `make demo` runs the README's demo lines and ends with `GET /audit/verify`.
+- Left as is: the faithfulness checker's id pattern is case-insensitive because the status words need the flag; a lowercase id
+  matches no criterion, so nothing changes. F-015 stays open and listed in the README.
+
 ## Defaults until the panel answers (the candidate is emailing the panel)
 
 1. **eGFR threshold.** The policy has `value_max: 30` but its note says "< 30". Default: strict `< 30`, using the latest eGFR on or before
