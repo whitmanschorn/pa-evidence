@@ -4,7 +4,7 @@ import { refOf } from '../../fhir/resources.js';
 import type { EvaluationContext, Evaluator, KindResult, PatientAgeBinding } from '../types.js';
 
 // "The member is at least N years old on the request date." N is `min_years`: the supplied policy has no
-// structured field for it, so it comes from the policy supplement. The birth date itself never leaves this
+// structured field for it, so it comes from the rules engine config. The birth date itself never leaves this
 // function: the packet carries only the age.
 const ParamsSchema = z.object({
   resource: z.literal('Patient'),

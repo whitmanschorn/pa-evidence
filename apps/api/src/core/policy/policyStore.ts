@@ -1,6 +1,6 @@
 import { readJsonFiles } from '../files.js';
 import { PolicySchema, type Policy } from './policySchema.js';
-import { SupplementSchema, applySupplements, type Supplement } from './supplements.js';
+import { RulesEngineConfigSchema, applyRulesEngineConfig, type RulesEngineConfig } from './rulesEngineConfig.js';
 
 export type PolicyChoice = { policy: Policy; warnings: string[] };
 
@@ -10,12 +10,12 @@ export type PolicyStore = {
   policyFor(policyId: string, requestDate: string): PolicyChoice | null;
 };
 
-// Loads every policy version found in `policyPaths`, each with its supplements (data/policy-supplements/) applied.
-export function loadPolicyStore(policyPaths: string[], supplementPaths: string[]): PolicyStore {
-  const supplements: Supplement[] = readJsonFiles(supplementPaths).map(({ path, json }) => {
-    const parsed = SupplementSchema.safeParse(json);
+// Loads every policy version found in `policyPaths`, each with its rules engine config (data/rules-engine-config/) applied.
+export function loadPolicyStore(policyPaths: string[], rulesEngineConfigPaths: string[]): PolicyStore {
+  const configs: RulesEngineConfig[] = readJsonFiles(rulesEngineConfigPaths).map(({ path, json }) => {
+    const parsed = RulesEngineConfigSchema.safeParse(json);
     if (!parsed.success) {
-      throw new Error(`Invalid policy supplement ${path}: ${parsed.error.message}`);
+      throw new Error(`Invalid rules engine config ${path}: ${parsed.error.message}`);
     }
     return parsed.data;
   });
@@ -24,7 +24,7 @@ export function loadPolicyStore(policyPaths: string[], supplementPaths: string[]
     if (!parsed.success) {
       throw new Error(`Invalid policy file ${path}: ${parsed.error.message}`);
     }
-    return applySupplements(parsed.data, supplements);
+    return applyRulesEngineConfig(parsed.data, configs);
   });
   return policyStoreFrom(policies);
 }

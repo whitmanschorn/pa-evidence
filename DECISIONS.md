@@ -224,15 +224,16 @@ as the plan states.
 **D-041 Fixtures (Phase 3).** `pnpm fixtures` writes real packets to `apps/web/e2e/fixtures/packets/` using the same in-memory wiring as the
 tests. `fixturesCurrent.test.ts` fails if a committed fixture differs from today's rules engine, so the Playwright mocks cannot drift.
 
-**D-042 No clinical numbers in code: policy supplements (Phase 3 follow-up, at the candidate's request).** The age limit (18), the HbA1c
-conflict tolerance (0.1) and the metformin months tolerance (1, one-sided) live in `data/policy-supplements/MP-SYN-021.json`, so they change
-without a code change, like the criteria. The supplement mirrors the policy's `fhir` blocks and is merged into each criterion's params when
-the policy loads (every version of that policy), so each kind reads all its numbers from one params object and the startup check validates
-them like any other param (a missing value stops the service). A supplement may only add values: one that would change a value the
-payer's policy sets fails at load. Bindings now hold no numbers, only the kind, the comparison direction, the attested form-field paths and
-the provider-request wording. CLAUDE.md invariant 6 was amended to match (the plan file stays verbatim). What remains in code are calendar and
-unit constants (ms per day, 365.25 / 12 days per month) and float-comparison precision. The supplement has a `version`; Phase 4 records it in the
-audit event next to the policy version, since it changes outcomes.
+**D-042 No clinical numbers in code: the rules engine config (Phase 3 follow-up, at the candidate's request).** The age limit (18), the HbA1c
+conflict tolerance (0.1) and the metformin months tolerance (1, one-sided) live in
+`data/rules-engine-config/MP-SYN-021-rules-engine-config.json`, so they change without a code change, like the criteria. The config mirrors
+the policy's `fhir` blocks and is merged into each criterion's params when the policy loads (every version of that policy), so each kind reads
+all its numbers from one params object and the startup check validates them like any other param (a missing value stops the service). The
+config may only add values: one that would change a value the payer's policy sets fails at load. Bindings now hold no numbers, only the kind,
+the comparison direction, the attested form-field paths and the provider-request wording. CLAUDE.md invariant 6 was amended to match (the plan
+file stays verbatim). What remains in code are calendar and unit constants (ms per day, 365.25 / 12 days per month) and float-comparison
+precision. The config has a `version`; Phase 4 records it in the audit event next to the policy version, since it changes outcomes.
+(First named "policy supplement"; renamed to "rules engine config" at the candidate's request so the file name says what it is.)
 
 ## Defaults until the panel answers (plan §7; the candidate is emailing the panel)
 

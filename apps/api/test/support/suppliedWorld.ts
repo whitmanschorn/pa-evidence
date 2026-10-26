@@ -11,7 +11,7 @@ import { REPO_ROOT } from './repoRoot.js';
 
 export const SUPPLIED_POLICY = join(REPO_ROOT, 'data/policy_MP-SYN-021.json');
 export const TERMINOLOGY_DIR = join(REPO_ROOT, 'data/terminology');
-export const SUPPLEMENTS_DIR = join(REPO_ROOT, 'data/policy-supplements');
+export const RULES_ENGINE_CONFIG_DIR = join(REPO_ROOT, 'data/rules-engine-config');
 
 export function readBundles(dir: string): fhir4.Bundle[] {
   return readdirSync(dir)
@@ -23,7 +23,7 @@ export function readBundles(dir: string): fhir4.Bundle[] {
 export function suppliedDeps(overrides: Partial<PacketDeps> = {}): PacketDeps {
   return {
     fhir: createBundleFhirClient(readBundles(join(REPO_ROOT, 'data/bundles'))),
-    policies: loadPolicyStore([SUPPLIED_POLICY, join(REPO_ROOT, 'data/policies')], [SUPPLEMENTS_DIR]),
+    policies: loadPolicyStore([SUPPLIED_POLICY, join(REPO_ROOT, 'data/policies')], [RULES_ENGINE_CONFIG_DIR]),
     requests: loadRequestStore([join(REPO_ROOT, 'data/requests')]),
     terminology: loadTerminology(TERMINOLOGY_DIR),
     bindings: BINDINGS,

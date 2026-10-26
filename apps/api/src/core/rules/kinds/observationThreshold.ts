@@ -18,7 +18,7 @@ const ParamsSchema = z.object({
   value_max: z.number().optional(),
   unit: z.string().optional(),
   window_days: z.number().int().positive().optional(),
-  // Smallest difference between the form's value and the record's that counts as a conflict (policy supplement).
+  // Smallest difference between the form's value and the record's that counts as a conflict (rules engine config).
   attested_tolerance: z.number().positive().optional(),
 });
 
@@ -40,7 +40,7 @@ export function buildObservationThreshold(
   const threshold: Threshold = { compare: binding.compare, value: thresholdValue, unit: params.unit ?? '' };
   const tolerance = params.attested_tolerance;
   if (binding.attested !== undefined && tolerance === undefined) {
-    throw new Error('observation_threshold with an attested value needs "attested_tolerance" in the policy or its supplement');
+    throw new Error('observation_threshold with an attested value needs "attested_tolerance" in the policy or the rules engine config');
   }
   const expansion = terminology.expand(params.code);
   const name = expansion.label;

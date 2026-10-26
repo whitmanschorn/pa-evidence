@@ -16,8 +16,8 @@ Build plan: docs/BUILD-PLAN.md. Decisions: DECISIONS.md. Brief: ../fde-v2-data/ 
    "access denied"). JSON responses pass `outputGuard`; SSE events and MCP tool results pass the same
    `assertNoForbiddenTerms()`. Error bodies use only: unauthenticated, forbidden, not_found,
    invalid_request, internal_error, output_policy_violation.
-6. Thresholds, windows, tolerances, age limits and code lists come from data: the policy file, its supplement in
-   data/policy-supplements/ (values the policy has no field for), and data/terminology/. Never hard-code them; no
+6. Thresholds, windows, tolerances, age limits and code lists come from data: the policy file, the rules engine config
+   in data/rules-engine-config/ (values the policy has no field for), and data/terminology/. Never hard-code them; no
    magic numbers in code. (Amended 2026-10-26 at the owner's request; was: C5's 18 years in bindings.ts.)
 7. All clinical date math is anchored to request_form.request_date and lives in core/dates.ts.
    Never use the current date for clinical logic.

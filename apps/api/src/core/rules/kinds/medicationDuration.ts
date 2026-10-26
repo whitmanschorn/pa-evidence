@@ -15,7 +15,7 @@ const ParamsSchema = z.object({
   ingredient_rxnorm: z.string(),
   min_days_in_window: z.number().int().positive(),
   window_days: z.number().int().positive(),
-  // How many months the form may claim beyond the record before it is a conflict (policy supplement; one-sided, D-029).
+  // How many months the form may claim beyond the record before it is a conflict (rules engine config; one-sided, D-029).
   attested_tolerance_months: z.number().nonnegative().optional(),
 });
 
@@ -36,7 +36,7 @@ export function buildMedicationDuration(
   const name = expansion.label;
   const toleranceMonths = params.attested_tolerance_months;
   if (binding.attested !== undefined && toleranceMonths === undefined) {
-    throw new Error('medication_duration with attested months needs "attested_tolerance_months" in the policy or its supplement');
+    throw new Error('medication_duration with attested months needs "attested_tolerance_months" in the policy or the rules engine config');
   }
 
   function evaluate(context: EvaluationContext): KindResult {

@@ -45,7 +45,7 @@ export type Evaluator = {
 
 // Request-form fields compared with the record. Paths are dotted, e.g. "prescriber_attestation.hba1c_value".
 // The tolerances for these comparisons are data (attested_tolerance, attested_tolerance_months in the
-// policy or its supplement), never numbers in code.
+// rules engine config), never numbers in code.
 export type AttestedValueBinding = { value: string; date: string };
 export type AttestedMonthsBinding = { months: string };
 

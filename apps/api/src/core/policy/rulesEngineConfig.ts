@@ -1,28 +1,28 @@
 import { z } from 'zod';
 import type { Policy } from './policySchema.js';
 
-// A policy supplement holds values the payer's policy file has no structured field for (an age limit,
-// conflict tolerances), so they live in data and change without a code change.
+// Rules engine config: values the payer's policy file has no structured field for (the age limit, the conflict
+// tolerances), kept as data in data/rules-engine-config/ so they change without a code change.
 // Its `criteria`, keyed by criterion id, mirror the policy's own `fhir` blocks: { "<id>": { "min_years": 18 } }
-// adds fhir.min_years to that criterion.
-export const SupplementSchema = z.object({
+// adds fhir.min_years to that criterion when the policy loads.
+export const RulesEngineConfigSchema = z.object({
   policy_id: z.string(),
   version: z.string(),
   note: z.string(),
   criteria: z.record(z.string(), z.record(z.string(), z.unknown())),
 });
-export type Supplement = z.infer<typeof SupplementSchema>;
+export type RulesEngineConfig = z.infer<typeof RulesEngineConfigSchema>;
 
-// Adds every matching supplement's values to the policy's criteria. A supplement may only add: if the policy
-// already sets a value at the same key, this throws, so a supplement can never quietly change the payer's policy.
-export function applySupplements(policy: Policy, supplements: Supplement[]): Policy {
-  const matching = supplements.filter((supplement) => supplement.policy_id === policy.policy_id);
+// Adds every matching config's values to the policy's criteria. A config may only add: if the policy already
+// sets a value at the same key, this throws, so the config can never quietly change the payer's policy.
+export function applyRulesEngineConfig(policy: Policy, configs: RulesEngineConfig[]): Policy {
+  const matching = configs.filter((config) => config.policy_id === policy.policy_id);
   if (matching.length === 0) return policy;
 
   const criteria = policy.criteria.map((criterion) => {
     let fhir = criterion.fhir;
-    for (const supplement of matching) {
-      const extra = supplement.criteria[criterion.id];
+    for (const config of matching) {
+      const extra = config.criteria[criterion.id];
       if (extra !== undefined) {
         fhir = addOnly(fhir, extra, `${policy.policy_id}@${policy.version} ${criterion.id}`);
       }
@@ -39,7 +39,7 @@ function addOnly(target: Record<string, unknown>, extra: Record<string, unknown>
     if (isPlainObject(existing) && isPlainObject(value)) {
       result[key] = addOnly(existing, value, `${where}.${key}`); // e.g. into fhir.path_a
     } else if (existing !== undefined) {
-      throw new Error(`Supplement would change ${where}.${key}, which the policy already sets`);
+      throw new Error(`Rules engine config would change ${where}.${key}, which the policy already sets`);
     } else {
       result[key] = value;
     }

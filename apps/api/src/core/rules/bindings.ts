@@ -3,8 +3,8 @@ import type { Binding } from './types.js';
 // The only file in the code that names criterion ids (invariant 14). Each policy criterion is bound to an
 // evaluator kind. A binding adds only what the policy JSON lacks and is not a number: the comparison direction,
 // the request-form fields to check for conflicts, and the provider-request wording.
-// Every number (thresholds, windows, tolerances, the age limit) is data: the policy file, or its supplement in
-// data/policy-supplements/ for values the policy has no field for.
+// Every number (thresholds, windows, tolerances, the age limit) is data: the policy file, or the rules engine
+// config in data/rules-engine-config/ for values the policy has no field for.
 //
 // Wording placeholders: {from} {to} = the look-back window, {value} {date} = the attested lab result,
 // {months} = the attested months of therapy.
