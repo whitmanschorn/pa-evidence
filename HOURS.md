@@ -6,13 +6,14 @@ Times are America/Chicago (CDT). "Items" are the brief's numbered deliverables (
 | Phase | Items | Start | End | Elapsed | Running total |
 |---|---|---|---|---|---|
 | 0 Environment and guardrails | overhead | 2026-10-26 10:15 | 2026-10-26 10:37 | 0:22 | 0:22 |
+| 1 FHIR server and loader | 1 | 2026-10-26 10:41 | 2026-10-26 10:57 | 0:16 | 0:38 |
 
 ## Hours per brief item (filled in as phases close)
 
 | Item | What | Hours |
 |---|---|---|
 | overhead | environment, guardrails, process docs | 0:22 |
-| 1 | FHIR server + loader | |
+| 1 | FHIR server + loader | 0:16 |
 | 2 | evidence endpoint | |
 | 3 | MCP tools + agent | |
 | 4 | safety | |

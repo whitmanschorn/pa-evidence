@@ -9,6 +9,9 @@ dist/
 *.pem
 *.key
 
+# fetched Synthea sample (pinned URL + sha256 in data/synthea/)
+data/synthea/cache/
+
 # local state (audit database, HAPI volume exports)
 var/
 *.db

@@ -12,7 +12,8 @@
     "lint": "eslint . && pnpm typecheck",
     "test": "pnpm build:shared && pnpm -r --if-present test",
     "test:ui": "pnpm build:shared && pnpm --filter @pa/web test:ui",
-    "test:e2e": "pnpm build:shared && pnpm --filter @pa/web test:e2e"
+    "test:e2e": "pnpm build:shared && pnpm --filter @pa/web test:e2e",
+    "load": "pnpm --filter @pa/scripts load-fhir"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

@@ -1,6 +1,7 @@
 packages:
   - apps/*
   - packages/*
+  - scripts
 
 # pnpm blocks dependency install scripts unless listed here. esbuild (used by tsx)
 # only verifies its platform binary in postinstall.

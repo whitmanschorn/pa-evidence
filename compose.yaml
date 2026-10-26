@@ -1,0 +1,48 @@
+# The stack: HAPI FHIR (with its Postgres) now; the API joins in Phase 4.
+# Images are pinned by multi-arch index digest; the tag is kept for readability.
+# Ollama is NOT here: it runs natively on the host (Metal) and containers reach it at host.docker.internal:11434.
+name: pa-evidence
+
+services:
+  hapi-db:
+    image: postgres:17.11-alpine@sha256:266d3c257594e195b309ae9d1805e54c788f1d7b375f56bf6c367aac6c917e7b
+    environment:
+      POSTGRES_DB: hapi
+      POSTGRES_USER: hapi
+      # No password: this database publishes no port and is reachable only from the compose network.
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - hapi-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hapi -d hapi"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  hapi:
+    image: hapiproject/hapi:v8.12.0-2@sha256:0ff86aac4c7bd13a1ee226444a70263bb46ed1c28ef543c30a44f865b80ca04e
+    depends_on:
+      hapi-db:
+        condition: service_healthy
+    ports:
+      # Host-only: the FHIR server is reachable from this machine, never from the network.
+      - "127.0.0.1:8090:8080"
+    environment:
+      spring.datasource.url: jdbc:postgresql://hapi-db:5432/hapi
+      spring.datasource.username: hapi
+      spring.datasource.password: ""
+      spring.datasource.driverClassName: org.postgresql.Driver
+      spring.jpa.properties.hibernate.dialect: ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgresDialect
+      hapi.fhir.fhir_version: R4
+      # Never answer a search from a cached result set: a reload must be visible to the next search.
+      hapi.fhir.reuse_cached_search_results_millis: 0
+    healthcheck:
+      # The image is distroless (no shell, no curl); it ships this Java probe of /actuator/health.
+      test: ["CMD", "java", "-cp", "/app", "HealthCheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+volumes:
+  hapi-db:

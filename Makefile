@@ -1,24 +1,48 @@
-# One entry point for the stack. Each target is filled in by the phase named in its message.
-.PHONY: help up down reset load tokens
+# One entry point for the stack. Targets not built yet say which phase fills them in.
+.PHONY: help up down reset load load-supplied synthea tokens
+
+# Official Synthea sample, pinned to a commit so the bytes never change (see data/synthea/SOURCE.md).
+SYNTHEA_URL := https://raw.githubusercontent.com/synthetichealth/synthea-sample-data/84f59805d481b9f01f3141ef39e68bdbbeb80132/downloads/latest/synthea_sample_data_fhir_latest.zip
+SYNTHEA_CACHE := data/synthea/cache
+SYNTHEA_ZIP := $(SYNTHEA_CACHE)/synthea_sample_data_fhir_latest.zip
+SYNTHEA_FHIR := $(SYNTHEA_CACHE)/fhir
 
 help:
-	@echo "make up      start HAPI + API (and check native Ollama)"
-	@echo "make down    stop the stack"
-	@echo "make reset   stop the stack and delete its volumes"
-	@echo "make load    load the supplied bundles and the Synthea sample into HAPI"
-	@echo "make tokens  generate nurse/admin/probe tokens (.env hashes, .tokens.local plaintext)"
+	@echo "make up       start HAPI (Postgres-backed), then load the Synthea sample and the supplied bundles"
+	@echo "make down     stop the stack (data is kept)"
+	@echo "make reset    stop the stack and delete its data volume"
+	@echo "make load     (re)load all bundles into a running HAPI; safe to repeat"
+	@echo "make load-supplied  reload only the 7 supplied bundles (about a second)"
+	@echo "make synthea  download and verify the pinned Synthea sample (done by make up)"
+	@echo "make tokens   generate nurse/admin/probe tokens (.env hashes, .tokens.local plaintext)"
 
-up:
-	@echo "make up: not built yet (Phase 1)"; exit 1
+up: synthea
+	docker compose up -d --wait
+	pnpm load
 
 down:
-	@echo "make down: not built yet (Phase 1)"; exit 1
+	docker compose down
 
 reset:
-	@echo "make reset: not built yet (Phase 1)"; exit 1
+	docker compose down --volumes
 
 load:
-	@echo "make load: not built yet (Phase 1)"; exit 1
+	pnpm load
+
+load-supplied:
+	pnpm load --supplied-only
+
+# Download once, verify the checksum, unzip into an empty directory. The marker file makes it a no-op afterwards.
+synthea: $(SYNTHEA_FHIR)/.unpacked
+
+$(SYNTHEA_FHIR)/.unpacked:
+	mkdir -p $(SYNTHEA_CACHE)
+	curl -fsSL -o $(SYNTHEA_ZIP) $(SYNTHEA_URL)
+	cd data/synthea && shasum -a 256 -c SHA256SUMS
+	rm -rf $(SYNTHEA_FHIR)
+	mkdir -p $(SYNTHEA_FHIR)
+	unzip -q $(SYNTHEA_ZIP) -d $(SYNTHEA_FHIR)
+	touch $@
 
 tokens:
 	@echo "make tokens: not built yet (Phase 4)"; exit 1

@@ -28,3 +28,10 @@ Third-party packages are not vendored; they come from npm at the exact versions 
 | `apps/api/package.json`, `apps/api/tsconfig.json` | AI (Claude Code) | 0 | |
 | `apps/api/test/guards/*.test.ts`, `apps/api/test/support/repoRoot.ts` | AI (Claude Code) | 0 | data checksum and criterion-id guards |
 | `apps/web/**` (config, `src/`, `e2e/`) | AI (Claude Code) | 0 | Vite + Mantine shell, Playwright config, helpers, smoke spec |
+| `compose.yaml` | AI (Claude Code) | 1 | HAPI FHIR + Postgres, pinned by digest |
+| `scripts/package.json`, `scripts/tsconfig.json` | AI (Claude Code) | 1 | |
+| `scripts/load-fhir.ts`, `scripts/fhirBundles.ts`, `scripts/test/fhirBundles.test.ts` | AI (Claude Code) | 1 | idempotent loader (POST→PUT rewrite) + unit tests |
+| `data/synthea/SOURCE.md`, `data/synthea/SHA256SUMS` | AI (Claude Code) | 1 | pinned URL, sha256, contents survey |
+| `data/synthea/cache/**` (not committed) | Open source: Synthea sample data, MITRE (`synthetichealth/synthea-sample-data` @ `84f59805`) | 1 | fetched by `make synthea`; synthetic output of Synthea (Apache-2.0); the sample repo has no separate license file |
+| HAPI FHIR server (Docker image, not vendored) | Open source: HAPI FHIR JPA Server Starter, Apache-2.0 | 1 | `hapiproject/hapi:v8.12.0-2` |
+| PostgreSQL (Docker image, not vendored) | Open source: PostgreSQL License | 1 | `postgres:17.11-alpine` |

@@ -8,6 +8,7 @@ import { REPO_ROOT } from '../support/repoRoot.js';
 const SOURCE_DIRS = ['apps/api/src', 'apps/web/src', 'packages/shared/src', 'scripts'];
 const ALLOWED_FILE = 'apps/api/src/core/rules/bindings.ts';
 const CRITERION_ID = /\bC[1-9]\b/;
+const SKIPPED_DIRS = ['node_modules', 'dist'];
 
 function listSourceFiles(dir: string): string[] {
   const absoluteDir = join(REPO_ROOT, dir);
@@ -19,6 +20,7 @@ function listSourceFiles(dir: string): string[] {
   }
   const files: string[] = [];
   for (const name of names) {
+    if (SKIPPED_DIRS.includes(name)) continue;
     const relativePath = join(dir, name);
     if (statSync(join(REPO_ROOT, relativePath)).isDirectory()) {
       files.push(...listSourceFiles(relativePath));
