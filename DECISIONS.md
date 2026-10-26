@@ -445,6 +445,13 @@ term from our planning; they say what the code does and why.
 **D-077 Lint: `ignoreRestSiblings` (Phase 6).** `const { notes, ...attested } = form` is how the code leaves a field out (free-text notes
 never reach a model). ESLint's `no-unused-vars` now allows it instead of requiring `_notes`.
 
+**D-088 TypeScript instead of the suggested Python stack (the candidate's call, made with the build plan; recorded in Phase 7).** The
+brief suggests "Python with FastAPI, Pydantic, Docker Compose and FastMCP, unless you are faster in something else". The service is
+TypeScript end to end for two reasons: one language covers the API, the MCP server, the agent, the eval scripts and the UI; and the
+candidate has used TypeScript more intensively than Python, so they can read and check every line Claude Code writes, including code
+that comes out obscure. Express stands in for FastAPI, Zod for Pydantic (every model output is parsed before use, invariant 9), and the
+MCP TypeScript SDK for FastMCP; Docker Compose is used as suggested (`compose.yaml`), and `package.json` stands in for the pyproject.
+
 ## Defaults until the panel answers (plan §7; the candidate is emailing the panel)
 
 1. **eGFR threshold.** The policy has `value_max: 30` but its note says "< 30". Default: strict `< 30`, using the latest eGFR on or before
