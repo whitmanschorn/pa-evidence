@@ -17,7 +17,8 @@
     "fixtures": "pnpm build:shared && pnpm --filter @pa/api fixtures",
     "tokens": "pnpm --filter @pa/scripts tokens",
     "test:ui:report": "pnpm --filter @pa/web test:ui:report",
-    "test:e2e:report": "pnpm --filter @pa/web test:e2e:report"
+    "test:e2e:report": "pnpm --filter @pa/web test:e2e:report",
+    "model": "pnpm --filter @pa/scripts model"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

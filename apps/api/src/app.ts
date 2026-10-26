@@ -5,6 +5,7 @@ import type { Logger } from 'pino';
 import type { AuditStore } from './core/audit/auditStore.js';
 import type { IdentityVerifier } from './core/auth/identityVerifier.js';
 import type { FhirClient } from './core/fhir/fhirClient.js';
+import type { ChatModel } from './core/llm/chatModel.js';
 import type { DependencyCheck } from './core/health.js';
 import type { PolicyRegistry } from './core/policy/policyRegistry.js';
 import type { RequestStore } from './core/requests/requestStore.js';
@@ -28,6 +29,7 @@ export type AppDeps = {
   requests: RequestStore;
   terminology: Terminology;
   bindings: Record<string, Binding>;
+  summaryModel?: ChatModel;
   verifier: IdentityVerifier;
   audit: AuditStore;
   logger: Logger;

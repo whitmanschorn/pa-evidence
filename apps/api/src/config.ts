@@ -24,6 +24,8 @@ const EnvSchema = z
     OLLAMA_MODEL: optional,
     OLLAMA_MODEL_DIGEST: optional,
     OLLAMA_EXPECTED_VERSION: optional,
+    // How long one model call may take before the summary falls back to the template (CPU-only inference is slower).
+    OLLAMA_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
     AUTH_TOKENS: z.string().min(1, 'run `make tokens`'),
     AUDIT_DB_PATH: z.string().default('var/audit.db'),
     POLICIES_DIR: z.string().default('data/policies'),

@@ -1,5 +1,5 @@
 # One entry point for the stack. Targets not built yet say which phase fills them in.
-.PHONY: help up down reset load load-supplied synthea tokens reload-policies
+.PHONY: help up down reset load load-supplied synthea model tokens reload-policies
 
 # Official Synthea sample, pinned to a commit so the bytes never change (see data/synthea/SOURCE.md).
 SYNTHEA_URL := https://raw.githubusercontent.com/synthetichealth/synthea-sample-data/84f59805d481b9f01f3141ef39e68bdbbeb80132/downloads/latest/synthea_sample_data_fhir_latest.zip
@@ -14,11 +14,13 @@ help:
 	@echo "make load     (re)load all bundles into a running HAPI; safe to repeat"
 	@echo "make load-supplied  reload only the 7 supplied bundles (about a second)"
 	@echo "make synthea  download and verify the pinned Synthea sample (done by make up)"
+	@echo "make model    check native Ollama, pull the pinned model, verify its digest (done by make up)"
 	@echo "make tokens   generate nurse/admin/probe tokens (.env hashes, .tokens.local plaintext)"
 	@echo "make reload-policies  pick up a dropped-in policy version folder without a restart (admin token)"
 
 up: synthea
 	@test -f .env || $(MAKE) tokens
+	pnpm model
 	docker compose up -d --build --wait
 	pnpm load
 
@@ -48,6 +50,9 @@ $(SYNTHEA_FHIR)/.unpacked:
 
 tokens:
 	pnpm tokens
+
+model:
+	pnpm model
 
 reload-policies:
 	@curl -s -X POST -H "Authorization: Bearer $$(grep '^admin=' .tokens.local | cut -d= -f2)" http://localhost:8080/admin/policies/reload; echo

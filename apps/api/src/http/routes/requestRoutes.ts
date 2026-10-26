@@ -45,10 +45,14 @@ export function requestRoutes(deps: AppDeps): Router {
       cited_sources: packet.criteria.flatMap((criterion) => criterion.sources),
       route: packet.route,
       warnings: packet.warnings,
+      model: metrics.summary.model,
+      model_digest: metrics.summary.modelDigest,
+      prompt_version: metrics.summary.promptVersion,
     });
     addLogFields(res, {
       request_id: requestId,
       fhir_ms: metrics.fhirMs,
+      llm_ms: metrics.summary.llmMs,
       sources: metrics.sourceCount,
       warnings: packet.warnings.length,
       route: packet.route,

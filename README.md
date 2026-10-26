@@ -36,7 +36,7 @@ Needs Docker Desktop, Node 24 and pnpm 12.
 ```sh
 pnpm install
 make tokens    # nurse/admin/probe tokens: hashes to .env, plaintext to .tokens.local (both gitignored)
-make up        # HAPI + Postgres + the API, then loads the Synthea sample and the 7 supplied bundles
+make up        # checks native Ollama + the pinned model, starts HAPI + Postgres + the API, loads the Synthea sample and the 7 bundles
 make reload-policies   # pick up a dropped-in data/policies/<id>/<effective>_<version>/ folder without a restart
 make down      # stop (data kept)   |   make reset   # stop and delete the data
 ```

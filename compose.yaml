@@ -1,6 +1,8 @@
 # The whole stack: HAPI FHIR (with its Postgres) and the API (which also serves the UI at /ui).
 # Images are pinned by multi-arch index digest; the tag is kept for readability.
-# Ollama is NOT here: it runs natively on the host (Metal) and containers reach it at host.docker.internal:11434.
+# Ollama normally runs natively on the host (Metal), reached at host.docker.internal:11434. For a machine without
+# native Ollama there is an opt-in profile: `docker compose --profile ollama-in-docker up -d`, then set
+# OLLAMA_BASE_URL=http://ollama:11434 in .env (CPU-only inside Docker on a Mac: much slower).
 name: pa-evidence
 
 services:
@@ -73,6 +75,14 @@ services:
       retries: 12
       start_period: 10s
 
+  ollama:
+    profiles: ["ollama-in-docker"]
+    image: ollama/ollama:0.40.11@sha256:dea72d1e22270fe095b68fdf756d2b489d615643c5a2eaebbc5f569181e322d8
+    volumes:
+      - ollama-models:/root/.ollama
+    # No published port: only the API, on the compose network, talks to it.
+
 volumes:
   hapi-db:
   audit:
+  ollama-models:

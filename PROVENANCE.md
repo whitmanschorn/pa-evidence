@@ -50,3 +50,8 @@ Third-party packages are not vendored; they come from npm at the exact versions 
 | `apps/api/src/app.ts`, `main.ts`, `config.ts`, `src/http/**` | AI (Claude Code) | 4 | composition root, middleware, routes |
 | `apps/api/test/{audit,auth,http}/**`, `test/core/fhirAuth.test.ts`, `test/policy/policyRegistry.test.ts`, `test/support/{auditInput,testApp}.ts` | AI (Claude Code) | 4 | |
 | `apps/api/Dockerfile`, `.dockerignore`, `apps/api/tsconfig.build.json`, `scripts/tokens.ts` | AI (Claude Code) | 4 | |
+| `apps/api/src/core/llm/` (chatModel, prompts loader, `prompts/summary.v1.md`, `prompts/summary.v2.md`) | AI (Claude Code) | 5 | prompts are versioned files |
+| `apps/api/src/core/packet/faithfulness.ts`, `writeSummary.ts` | AI (Claude Code) | 5 | checker, retry, template fallback |
+| `apps/api/test/packet/{faithfulness,writeSummary,promptInjection}.test.ts`, `test/llm/ollama.integration.test.ts`, `test/support/scriptedModel.ts` | AI (Claude Code) | 5 | |
+| `scripts/model.ts` | AI (Claude Code) | 5 | `make model` |
+| Ollama model `qwen3:4b-instruct-2507-q4_K_M` (not vendored) | Open source: Qwen3 by Alibaba Cloud, Apache-2.0; via the Ollama library | 5 | pinned by digest |

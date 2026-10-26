@@ -5,6 +5,7 @@ import { fhirAuthConfig, loadConfig } from './config.js';
 import { openAuditStore } from './core/audit/auditStore.js';
 import { createStaticTokenVerifier, parseAuthTokens } from './core/auth/identityVerifier.js';
 import { createFhirAuth } from './core/fhir/fhirAuth.js';
+import { createOllamaChatModel } from './core/llm/chatModel.js';
 import { createHttpFhirClient } from './core/fhir/fhirClient.js';
 import { checkFhir, checkModel } from './core/health.js';
 import { createPolicyRegistry } from './core/policy/policyRegistry.js';
@@ -31,6 +32,16 @@ try {
   const fhir = createHttpFhirClient({ baseUrl: config.FHIR_BASE_URL, authHeader: fhirAuth });
   mkdirSync(dirname(config.AUDIT_DB_PATH), { recursive: true });
   const audit = openAuditStore(config.AUDIT_DB_PATH);
+  // Without OLLAMA_MODEL the service runs on the template summary alone (no model is called).
+  const summaryModel =
+    config.OLLAMA_MODEL === undefined
+      ? undefined
+      : createOllamaChatModel({
+          baseUrl: config.OLLAMA_BASE_URL,
+          model: config.OLLAMA_MODEL,
+          digest: config.OLLAMA_MODEL_DIGEST ?? null,
+          timeoutMs: config.OLLAMA_TIMEOUT_MS,
+        });
 
   const app = buildApp({
     fhir,
@@ -38,6 +49,7 @@ try {
     requests,
     terminology,
     bindings: BINDINGS,
+    summaryModel,
     verifier: createStaticTokenVerifier(parseAuthTokens(config.AUTH_TOKENS)),
     audit,
     logger,
@@ -59,6 +71,7 @@ try {
       {
         port: config.PORT,
         fhir_auth: config.FHIR_AUTH,
+        summary_model: summaryModel?.name ?? 'none (template summaries)',
         requests: requests.list().length,
         policies: policies.versions().map((version) => `${version.policy_id}@${version.version}`),
       },

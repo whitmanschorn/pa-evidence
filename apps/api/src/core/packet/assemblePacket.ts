@@ -1,6 +1,7 @@
 import { PacketSchema, type Packet } from '@pa/shared';
 import { fetchChart } from '../fhir/chart.js';
 import type { FhirClient } from '../fhir/fhirClient.js';
+import type { ChatModel } from '../llm/chatModel.js';
 import type { PolicyStore } from '../policy/policyStore.js';
 import type { RequestStore } from '../requests/requestStore.js';
 import { buildEvaluator } from '../rules/buildEvaluator.js';
@@ -10,8 +11,8 @@ import { rulesFingerprint } from '../policy/policyRegistry.js';
 import { decideRoute } from '../rules/route.js';
 import type { Binding } from '../rules/types.js';
 import type { Terminology } from '../terminology.js';
-import { templateSummary } from './templateSummary.js';
 import { findUnverifiedRefs } from './verifySources.js';
+import { writeSummary, type SummaryResult } from './writeSummary.js';
 
 export type PacketDeps = {
   fhir: FhirClient;
@@ -19,16 +20,20 @@ export type PacketDeps = {
   requests: RequestStore;
   terminology: Terminology;
   bindings: Record<string, Binding>;
+  // The local model that writes the two-sentence summary. Without it, the code template is the summary.
+  summaryModel?: ChatModel;
 };
 
 // Thrown for a request id or policy we do not have; the HTTP layer turns it into 404 not_found.
 export class NotFoundError extends Error {}
 
-// For the log line and the audit event: timings, counts and which exact rules were used. Never clinical values.
-export type PacketMetrics = { fhirMs: number; sourceCount: number; rulesFingerprint: string };
+// For the log line and the audit event: timings, counts, which exact rules and which model and prompt were used.
+// Never clinical values.
+export type PacketMetrics = { fhirMs: number; sourceCount: number; rulesFingerprint: string; summary: SummaryResult };
 
 // Door 1: builds the evidence packet for one request with the rules engine alone. Every status, source and the
-// route are decided here, in code. The summary is the code template (Phase 5 adds the model, with a fallback).
+// route are decided here, in code. The model only writes the two-sentence summary, which is checked, and replaced
+// by the code template if it fails (writeSummary.ts).
 export async function assemblePacket(
   deps: PacketDeps,
   requestId: string,
@@ -78,8 +83,10 @@ export async function assemblePacket(
   const missingDocuments = criteria
     .map((criterion) => criterion.missing_document)
     .filter((document): document is string => document !== null);
-  const uniqueWarnings = unique(warnings);
-  const route = decideRoute(criteria, uniqueWarnings);
+  const route = decideRoute(criteria, unique(warnings));
+  // The summary comes last: it describes the decided statuses and cannot change them, or the route.
+  const summary = await writeSummary(deps.summaryModel, criteria, missingDocuments);
+  const uniqueWarnings = unique([...warnings, ...summary.warnings]);
 
   const packet = PacketSchema.parse({
     request_id: form.request_id,
@@ -89,12 +96,12 @@ export async function assemblePacket(
     policy_version: policy.version,
     criteria,
     missing_documents: missingDocuments,
-    summary: templateSummary(criteria, missingDocuments),
-    summary_source: 'template',
+    summary: summary.summary,
+    summary_source: summary.source,
     evidence_complete: route === 'evidence_complete',
     route,
     warnings: uniqueWarnings,
   });
   const sourceCount = unique(criteria.flatMap((criterion) => criterion.sources)).length;
-  return { packet, metrics: { fhirMs, sourceCount, rulesFingerprint: rulesFingerprint(policy) } };
+  return { packet, metrics: { fhirMs, sourceCount, rulesFingerprint: rulesFingerprint(policy), summary } };
 }

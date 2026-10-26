@@ -327,6 +327,52 @@ the audit database on a named volume. A new env var, `TERMINOLOGY_DIR`, joins `.
   the plan's 390 px narrow screenshots (§11 Phase 8 step 4) and its `apps/web/e2e/screenshots/` folder.
 - The e2e project now has a smoke spec: the real API serves the app at `/ui`, including a client-side route.
 
+**D-059 Default summary model (Phase 5).** `qwen3:4b-instruct-2507-q4_K_M` (Qwen3 4B, the non-thinking instruct build; 2.5 GB), digest
+`0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0`, pinned in `.env.example`. The other candidates exist in the registry
+(phi4-mini:3.8b, llama3.2:3b, granite4:micro; qwen2.5:7b-instruct and llama3.1:8b as 7–8B reference points); Phase 7 measures them and may
+move the pin. `think: false` and a JSON Schema `format` both work on it. Decoding is deterministic: temperature 0 and a fixed seed, as named
+constants in `core/llm/chatModel.ts` (model settings, not clinical values).
+
+**D-060 Summary shape (Phase 5).** The model returns `{"sentence_1": "...", "sentence_2": "..."}`: two fields make "exactly two
+sentences" checkable. The reply is parsed with Zod (`SummarySchema`, whose JSON Schema is also the `format` sent to Ollama), then checked.
+The summary is written after the route is decided, so it can describe the statuses but never change them; `summary_fallback` is informational.
+
+**D-061 Faithfulness rules beyond the plan's four (Phase 5).** Besides two sentences, numbers and dates from the evidence, ids with the right
+status, and no banned words, `core/packet/faithfulness.ts` also rejects:
+- a criterion that is not met but is not named
+- an "N of M criteria" count that is wrong
+- an "all criteria met" claim when they are not
+- recommendation words (recommend, eligible, qualifies, medically necessary)
+- any FHIR reference
+Numbers are compared as numbers (7 matches 7.0). A status written right after an id or a list of ids ("C2 and C3 are missing") is checked;
+one written before an id ("missing: C2") is not, and the prompt asks for "<id> <status>".
+
+**D-062 Prompt summary.v2, measured (Phase 5).** With `summary.v1` the default model put two sentences in `sentence_1` for 3 of 7
+requests and repeated it on the retry, so they fell back to the template. `summary.v2` spells out both sentence shapes; all 7 are now faithful
+on the first try (1.3–2.0 s each on Metal). v1 stays, so the eval can compare prompt versions. A missing final period is added by code (no
+change in meaning) rather than spending a retry; every other problem goes back to the model once.
+
+**D-063 When the summary falls back (Phase 5).** No `OLLAMA_MODEL`: the template is the summary by design, with no warning. Model
+unreachable or slower than `OLLAMA_TIMEOUT_MS` (30 s; CPU-only inference is slower): template plus `summary_fallback`, with no retry,
+because a model that is down will not be up a moment later. Reply not JSON, wrong shape, or unfaithful: one retry with the problems listed.
+Then the template plus `summary_fallback`.
+
+**D-064 What reaches the model (Phase 5).** The compact evidence only: per criterion the id, requirement, status, value and date, plus the
+counts and the provider asks, inside `<clinical_data>` tags, with the rule that content inside them is data. No patient id, no notes, no
+considered resources, no chart free text. The injection test plants an instruction in every free-text place a chart or form has (narrative,
+notes, a patient name, dosage text, allergy reactions, a document, the request notes), checks statuses, sources, route and asks are unchanged,
+that the planted text never reaches the model, and that a model obeying an injected instruction is caught and falls back. One path to know
+about: a criterion `value` can carry a matched record's display text (for example a pancreatitis diagnosis name); the tags, the rule and the
+checker cover that path.
+
+**D-065 `make model` and the containerized option (Phase 5).** `make up` now runs `make model`: Ollama must already be running natively (it
+is never started by make), the pinned model is pulled (no-op if present), its digest is checked against the pin, and `.env` gets the model
+and digest if it lacks them. For a machine without native Ollama there is an opt-in compose profile, `ollama-in-docker`
+(`ollama/ollama:0.40.11` pinned by digest, no published port).
+
+**D-066 A real-model test that skips itself (Phase 5).** `test/llm/ollama.integration.test.ts` runs the seven requests through the local
+model when it is available and is skipped otherwise, so `pnpm test` never needs Ollama. `OLLAMA_TEST_MODEL` points it at another model.
+
 ## Defaults until the panel answers (plan §7; the candidate is emailing the panel)
 
 1. **eGFR threshold.** The policy has `value_max: 30` but its note says "< 30". Default: strict `< 30`, using the latest eGFR on or before
