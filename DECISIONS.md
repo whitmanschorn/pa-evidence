@@ -204,7 +204,7 @@ the criterion failing. Synthea's many `completed` orders without end dates will 
 (`display_match`, `other_in_window_result`, `medication_end_unknown`, `unit_mismatch`, `observation_date_from_issued`) inform the nurse but
 do not change the route. The list is in `core/rules/route.ts`.
 
-**D-036 (superseded by D-044) A request dated before every policy version (Phase 3).** It uses the earliest version and gets the blocking warning
+**D-036 (restored by D-045) A request dated before every policy version (Phase 3).** It uses the earliest version and gets the blocking warning
 `request_before_policy_effective`, so the nurse reviews it rather than the service refusing it.
 
 **D-037 Source verification is one batch request (Phase 3).** Every cited source and every considered reference is checked with a single
@@ -240,10 +240,9 @@ event, so an edit to either is traceable even without a version bump.
 (moved from `data/` byte-identical; `CHECKSUMS.sha256` lists the new path and still guards it) and its `rules-engine-config.json`.
 Supersedes the plan's "the supplied file stays where it is". One env var, `POLICIES_DIR`, replaces `POLICY_PATHS` and the config path;
 a new policy (another drug class) is a new folder. The supplied `data/README.md` still names the old location; it is a supplied file and stays
-unchanged. The C6 extension fixture is a complete policy folder under `apps/api/test/fixtures/extension/policy/`, loaded in place of the real
-one, so `data/policies/` holds only real policies.
+unchanged. The layout inside the folder is now one subfolder per version (D-045).
 
-**D-044 One policy version loaded at a time (Phase 3 follow-up, at the candidate's request).** Supersedes plan §7.1 "Policy versions" (load
+**D-044 (superseded by D-045) One policy version loaded at a time (Phase 3 follow-up).** Supersedes plan §7.1 "Policy versions" (load
 every version, pick the one in effect on the request date) and D-036. Each policy folder holds exactly `policy.json` and
 `rules-engine-config.json`; anything else, including a second version file, is a load error, and two folders with the same policy id are an
 error too. Why: multiple versions on the box only matter for a request dated before a policy change that is still worked after the change is
@@ -253,6 +252,20 @@ inside `policy.json` goes into every packet and audit event, plus (Phase 4) a fi
 `policy.json` because the folder already names the policy; the config dropped its own `version` field because it never had a meaning
 separate from the policy's. Effect on the plan's live-change drills: drill 1 (120-day HbA1c window) becomes an edit of `policy.json`
 (window and version); drill 8 becomes "a request dated before the loaded version's effective date is flagged for review".
+
+**D-045 Policy versions are dropped-in folders (Phase 3 follow-up, the candidate's design).** Supersedes D-044 and restores the plan's
+"version in effect on the request date". Layout: `data/policies/<policy id>/<effective date>_<version>/policy.json` plus its own
+`rules-engine-config.json`, so the config is versioned together with the policy. An update is one new folder, the way rules are often handed
+off (e.g. an SFTP drop); a folder can arrive before its effective date and stays inert until requests reach that date. A new folder is picked up
+at the next start. The loader (`core/policy/loadPolicyVersions.ts`) refuses to start when:
+- a version folder's name disagrees with the effective date or version inside its `policy.json`
+- a policy id disagrees with its parent folder
+- two versions take effect on the same day, or version order contradicts effective-date order (`compareVersions`: 2026.10 > 2026.9)
+- a version folder has no `policy.json`, or holds any other file
+Dotfiles (`.DS_Store`, partial-upload markers) are ignored. A request dated before every version uses the earliest with the blocking
+`request_before_policy_effective` warning (D-036). The C6 extension fixture is now a second version folder (`2026-09-01_2026.9`) dropped in
+next to the supplied one from `apps/api/test/fixtures/extension/policies/`, and a test shows a request dated 2026-08-15 still gets 2026.1
+with five criteria (the plan's drill 8). Drill 1 is "drop in a 2026.2 folder with a 120-day window".
 
 ## Defaults until the panel answers (plan §7; the candidate is emailing the panel)
 

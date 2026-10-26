@@ -2,9 +2,9 @@ import { z } from 'zod';
 import type { Policy } from './policySchema.js';
 
 // Why this file exists: some values the rules need (the age limit, the conflict tolerances) have no field in the
-// payer's policy file. They live as data, in rules-engine-config.json next to policy.json in the policy's folder
-// (data/policies/<policy id>/; the values are there, not here). This file checks that config's shape and merges
-// its values into the policy's criteria when the policy loads.
+// payer's policy file. They live as data, in rules-engine-config.json next to policy.json in each version folder
+// (data/policies/<policy id>/<effective date>_<version>/; the values are there, not here). This file checks that
+// config's shape and merges its values into the policy's criteria when the policy loads.
 // The config's `criteria`, keyed by criterion id, mirror the policy's own `fhir` blocks:
 // { "<id>": { "min_years": 18 } } adds fhir.min_years to that criterion.
 export const RulesEngineConfigSchema = z.object({

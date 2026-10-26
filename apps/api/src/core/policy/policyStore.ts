@@ -1,73 +1,75 @@
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
-import { RulesEngineConfigSchema, mergeRulesEngineConfigIntoPolicy } from './mergeRulesEngineConfigIntoPolicy.js';
-import { PolicySchema, type Policy } from './policySchema.js';
-
-// One folder per policy, and one policy in effect at a time, e.g. data/policies/MP-SYN-021/:
-//   policy.json                the payer's policy (its version and effective date are inside)
-//   rules-engine-config.json   values the policy has no field for (age limit, tolerances); optional
-// Updating a policy means replacing these files; git history is the record, and the version inside the file
-// goes into every packet and audit event.
-const POLICY_FILE = 'policy.json';
-const RULES_ENGINE_CONFIG_FILE = 'rules-engine-config.json';
+import { loadPolicyVersions } from './loadPolicyVersions.js';
+import type { Policy } from './policySchema.js';
 
 export type PolicyChoice = { policy: Policy; warnings: string[] };
 
 export type PolicyStore = {
   all(): Policy[];
+  // The version in effect on the request date: the latest one whose `effective` date is on or before it.
   policyFor(policyId: string, requestDate: string): PolicyChoice | null;
 };
 
-// The policy folders inside a policies directory (data/policies/), one per policy.
-export function policyFoldersIn(policiesDir: string): string[] {
-  return readdirSync(policiesDir, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => join(policiesDir, entry.name))
-    .sort();
-}
-
-// Loads one policy from each folder, with the rules engine config next to it merged in.
-// Anything unexpected in a folder is an error, so a folder's contents are always exactly what they look like.
-export function loadPolicyStore(policyFolders: string[]): PolicyStore {
-  return policyStoreFrom(policyFolders.map(loadPolicyFolder));
-}
-
-function loadPolicyFolder(folder: string): Policy {
-  const unexpected = readdirSync(folder).filter((name) => name !== POLICY_FILE && name !== RULES_ENGINE_CONFIG_FILE);
-  if (unexpected.length > 0) {
-    throw new Error(`Unexpected file in ${folder}: ${unexpected.join(', ')}. A policy folder holds ${POLICY_FILE} and ${RULES_ENGINE_CONFIG_FILE} only`);
-  }
-
-  const policyPath = join(folder, POLICY_FILE);
-  if (!existsSync(policyPath)) throw new Error(`${folder} has no ${POLICY_FILE}`);
-  const policy = PolicySchema.safeParse(JSON.parse(readFileSync(policyPath, 'utf8')));
-  if (!policy.success) throw new Error(`Invalid policy file ${policyPath}: ${policy.error.message}`);
-
-  const configPath = join(folder, RULES_ENGINE_CONFIG_FILE);
-  if (!existsSync(configPath)) return policy.data;
-  const config = RulesEngineConfigSchema.safeParse(JSON.parse(readFileSync(configPath, 'utf8')));
-  if (!config.success) throw new Error(`Invalid rules engine config ${configPath}: ${config.error.message}`);
-  return mergeRulesEngineConfigIntoPolicy(policy.data, config.data);
+// Every version of every policy found under the policies directories (see loadPolicyVersions.ts for the layout).
+export function loadPolicyStore(policiesDirs: string[]): PolicyStore {
+  return policyStoreFrom(loadPolicyVersions(policiesDirs));
 }
 
 export function policyStoreFrom(policies: Policy[]): PolicyStore {
-  const byId = new Map<string, Policy>();
+  const versionsById = new Map<string, Policy[]>();
   for (const policy of policies) {
-    if (byId.has(policy.policy_id)) {
-      throw new Error(`Two policy folders hold ${policy.policy_id}; only one version is loaded at a time`);
-    }
-    byId.set(policy.policy_id, policy);
+    const versions = versionsById.get(policy.policy_id) ?? [];
+    versions.push(policy);
+    versionsById.set(policy.policy_id, versions);
+  }
+  for (const versions of versionsById.values()) {
+    versions.sort((a, b) => a.effective.localeCompare(b.effective));
+    checkVersionOrder(versions);
   }
 
   return {
     all: () => policies,
     policyFor(policyId, requestDate) {
-      const policy = byId.get(policyId);
-      if (policy === undefined) return null;
-      // The loaded version took effect after the request was made, so it may not be the criteria the request was
-      // made under. Evaluate it anyway, and say so: the warning blocks evidence_complete and the nurse reviews it.
-      const warnings = requestDate < policy.effective ? ['request_before_policy_effective'] : [];
-      return { policy, warnings };
+      const versions = versionsById.get(policyId);
+      if (versions === undefined) return null;
+
+      const inEffect = versions.filter((policy) => policy.effective <= requestDate);
+      const latestInEffect = inEffect[inEffect.length - 1];
+      if (latestInEffect !== undefined) {
+        return { policy: latestInEffect, warnings: [] };
+      }
+      // The request predates every version. Use the earliest, and say so: the warning blocks evidence_complete
+      // and the nurse reviews it.
+      return { policy: versions[0] as Policy, warnings: ['request_before_policy_effective'] };
     },
   };
+}
+
+// Versions sorted by effective date must also be in version order, with no two on the same day. Otherwise it is
+// ambiguous which rules applied when, so the service refuses to start.
+function checkVersionOrder(versions: Policy[]): void {
+  for (let index = 1; index < versions.length; index += 1) {
+    const earlier = versions[index - 1] as Policy;
+    const later = versions[index] as Policy;
+    const label = `${later.policy_id} ${earlier.version} (effective ${earlier.effective}) and ${later.version} (effective ${later.effective})`;
+    if (earlier.effective === later.effective) {
+      throw new Error(`Two versions take effect on the same day: ${label}`);
+    }
+    if (compareVersions(earlier.version, later.version) >= 0) {
+      throw new Error(`Version order contradicts effective-date order: ${label}`);
+    }
+  }
+}
+
+// Compares "2026.1" with "2026.10" part by part, numerically where both parts are numbers (so 2026.10 > 2026.9).
+export function compareVersions(a: string, b: string): number {
+  const aParts = a.split('.');
+  const bParts = b.split('.');
+  for (let index = 0; index < Math.max(aParts.length, bParts.length); index += 1) {
+    const aPart = aParts[index] ?? '';
+    const bPart = bParts[index] ?? '';
+    const bothNumeric = /^\d+$/.test(aPart) && /^\d+$/.test(bPart);
+    const difference = bothNumeric ? Number(aPart) - Number(bPart) : aPart.localeCompare(bPart);
+    if (difference !== 0) return difference;
+  }
+  return 0;
 }

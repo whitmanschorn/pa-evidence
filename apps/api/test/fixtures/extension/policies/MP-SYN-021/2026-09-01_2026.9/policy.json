@@ -2,8 +2,8 @@
   "policy_id": "MP-SYN-021",
   "title": "GLP-1 receptor agonists for type 2 diabetes mellitus (adult)",
   "payer": "Payer A (synthetic)",
-  "version": "2026.9-c6-fixture",
-  "effective": "2026-07-01",
+  "version": "2026.9",
+  "effective": "2026-09-01",
   "note": "TEST FIXTURE: the supplied policy plus a sixth criterion (BMI), to prove a new criterion of an existing kind needs no code change.",
   "status_semantics": {
     "met": "the record holds qualifying evidence and nothing attested contradicts it",

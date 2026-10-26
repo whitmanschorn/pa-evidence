@@ -3,7 +3,7 @@
   "request_date": "2026-10-01",
   "patient": "Patient/1805a90b-326d-5089-845f-185dae4679fd",
   "policy_id": "MP-SYN-021",
-  "policy_version": "2026.9-c6-fixture",
+  "policy_version": "2026.9",
   "criteria": [
     {
       "id": "C1",

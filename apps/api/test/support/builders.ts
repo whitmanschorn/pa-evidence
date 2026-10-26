@@ -6,7 +6,7 @@ import { BINDINGS } from '../../src/core/rules/bindings.js';
 import { buildEvaluator } from '../../src/core/rules/buildEvaluator.js';
 import type { EvaluationContext, Evaluator, KindResult } from '../../src/core/rules/types.js';
 import { loadTerminology } from '../../src/core/terminology.js';
-import { POLICY_FOLDER, TERMINOLOGY_DIR } from './suppliedWorld.js';
+import { POLICIES_DIR, TERMINOLOGY_DIR } from './suppliedWorld.js';
 
 // Tiny FHIR resources for evaluator unit tests. Everything belongs to Patient/p1 unless a test says otherwise.
 export const REQUEST_DATE = '2026-10-01';
@@ -16,7 +16,7 @@ const LOINC = 'http://loinc.org';
 const RXNORM = 'http://www.nlm.nih.gov/research/umls/rxnorm';
 
 // The supplied policy with its rules engine config applied, exactly as the service loads it.
-export const policy: Policy = loadPolicyStore([POLICY_FOLDER]).all()[0]!;
+export const policy: Policy = loadPolicyStore([POLICIES_DIR]).all()[0]!;
 export const terminology = loadTerminology(TERMINOLOGY_DIR);
 
 // The evaluator for a supplied-policy criterion, exactly as the service builds it.
