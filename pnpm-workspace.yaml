@@ -1,0 +1,11 @@
+packages:
+  - apps/*
+  - packages/*
+
+# pnpm blocks dependency install scripts unless listed here. esbuild (used by tsx)
+# only verifies its platform binary in postinstall.
+allowBuilds:
+  esbuild: true
+
+# Exact versions only: `pnpm add foo` writes "1.2.3", never "^1.2.3".
+savePrefix: ''

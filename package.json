@@ -1,0 +1,25 @@
+{
+  "name": "pa-evidence",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.12.1",
+  "engines": {
+    "node": ">=24.0.0 <25"
+  },
+  "scripts": {
+    "build:shared": "pnpm --filter @pa/shared build",
+    "typecheck": "pnpm build:shared && pnpm -r --if-present typecheck",
+    "lint": "eslint . && pnpm typecheck",
+    "test": "pnpm build:shared && pnpm -r --if-present test",
+    "test:ui": "pnpm build:shared && pnpm --filter @pa/web test:ui",
+    "test:e2e": "pnpm build:shared && pnpm --filter @pa/web test:e2e"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.19.2",
+    "eslint": "10.12.0",
+    "globals": "17.13.0",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.1"
+  }
+}
