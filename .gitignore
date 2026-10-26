@@ -35,3 +35,6 @@ EVAL.md
 EVAL.html
 eval/results/*
 !eval/results/.gitkeep
+
+# Local instructions for Claude Code (point to files outside the repo)
+CLAUDE.local.md

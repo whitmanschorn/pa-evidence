@@ -30,7 +30,7 @@
       "sources": [
         "Observation/007a32fb-33a3-6f75-a752-abde50e78d1d"
       ],
-      "reason": "Path C: the latest eGFR on or before the request is 24.793 mL/min/{1.73_m2} on 2026-10-16, under 30, consistent with the recorded diabetic kidney disease. No metformin orders. Earlier eGFRs include values over 30, so the generic other_in_window_result warning applies (the plan's warning rule is written for C2; path C has no window; see NOTES)."
+      "reason": "Path C: the latest eGFR on or before the request is 24.793 mL/min/{1.73_m2} on 2026-10-16, under 30, consistent with the recorded diabetic kidney disease. No metformin orders. Earlier eGFRs include values over 30, so the generic other_in_window_result warning applies (the warning rule is written for C2; path C has no window; see NOTES)."
     },
     {
       "id": "C4",

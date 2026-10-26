@@ -29,7 +29,6 @@ const EnvSchema = z
     MODELS_DIR: z.string().default('data/models'),
     TERMINOLOGY_DIR: z.string().default('data/terminology'),
     REQUESTS_DIRS: csv.default(['data/requests', 'eval/synthea-requests']),
-    EVAL_DIR: z.string().default('eval'),
     UI_DIR: z.string().default('apps/web/dist'),
   })
   .superRefine((env, context) => {

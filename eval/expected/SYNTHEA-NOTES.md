@@ -32,7 +32,7 @@ nobody has pancreatitis, medullary thyroid carcinoma or MEN2, so C4 is met throu
 - **SYN-008 C3 is missing, not conflicting.** 12 months attested; the record has 6 known days and 33 orders of unknown
   length. A record that cannot show how long therapy ran cannot contradict the form: the policy calls "nothing either
   way" missing. (The first eval run found the service saying conflicting; fixed, see findings F-001.)
-- **SYN-005 C1 is missing, not conflicting.** Prediabetes is not diabetes; the plan's conflicting rule needs a
+- **SYN-005 C1 is missing, not conflicting.** Prediabetes is not diabetes; the C1 conflicting rule needs a
   non-active or other-type diabetes record.
 - **SYN-005 and SYN-009 C3 are met through path C** (eGFR under 30). For SYN-005 the eGFR (12.364) is in `mL/min`, not
   `mL/min/{1.73_m2}`, and nothing else in the record suggests kidney failure: the key follows the policy, which names no
@@ -43,12 +43,12 @@ nobody has pancreatitis, medullary thyroid carcinoma or MEN2, so C4 is met throu
 The first run disagreed with the key in four ways that were the key's mistakes, not the service's:
 
 1. **Display-matched complications are cited.** For SYN-003, SYN-008 and SYN-009 the key cited only the Condition coded
-   44054006. The plan says to match "the listed code or any descendant, or display", and to flag every display match.
+   44054006. The service matches the listed code or any descendant, falls back to the display text (the policy's note allows it), and flags every display match.
    "Neuropathy due to type 2 diabetes" and the like are SNOMED descendants of 44054006 and match by display, so they are
    cited too, with `display_match:C1`.
-2. **Warnings from a kind carry the criterion id.** `implausible_deceased_before_request:C5`, as the plan's warning rule says.
-3. **`other_in_window_result` on C3 path C** (SYN-002, SYN-009). The plan writes this warning for C2's window; path C has
-   no window, so the service compares the latest eGFR with every earlier one. The plan does not decide this case; the
+2. **Warnings from a kind carry the criterion id.** `implausible_deceased_before_request:C5`, as the warning rule says.
+3. **`other_in_window_result` on C3 path C** (SYN-002, SYN-009). The warning was written for C2's window; path C has
+   no window, so the service compares the latest eGFR with every earlier one. Nothing decided this case beforehand; the
    key accepts the service's behaviour and finding F-003 asks whether to keep it.
 
 And two were the service's: SYN-008 C3 (above) and a `display_match` raised for a display-matched Condition that was

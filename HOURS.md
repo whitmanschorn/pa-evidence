@@ -1,6 +1,6 @@
 # HOURS.md
 
-Time box: 8 hours (brief). If the running total passes about 6 hours before Phase 8, the UI gets trimmed first.
+Time box: 8 hours (brief).
 Times are America/Chicago (CDT). "Items" are the brief's numbered deliverables (1–8).
 
 | Phase | Items | Start | End | Elapsed | Running total |

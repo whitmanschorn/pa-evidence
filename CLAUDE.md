@@ -1,7 +1,7 @@
 # CLAUDE.md — PA evidence packet service
 
 Interview take-home. The owner must explain every line and change it live. Optimize for plain, explicit code.
-Build plan: docs/BUILD-PLAN.md. Decisions: DECISIONS.md. Brief: ../fde-v2-data/ (not committed).
+Decisions: DECISIONS.md. Brief: ../fde-v2-data/ (not committed).
 
 ## Invariants (never break; ask if a change seems to need it)
 1. Code decides every criterion status and the route. The model only writes the two-sentence summary and
@@ -51,7 +51,7 @@ make ollama-cpu (CPU-only Ollama on :11435 for pnpm eval:models when the GPU fau
 pnpm test:ui (Playwright, mocked API, seconds) | pnpm test:e2e (Playwright, full stack) | pnpm fixtures
 
 ## Process
-Work in the phases of docs/BUILD-PLAN.md. End each phase with: what changed, how to verify,
+Work in phases. End each phase with: what changed, how to verify,
 files to read in order, decisions made. Then stop. One commit per phase.
 Update HOURS.md, DECISIONS.md and PROVENANCE.md every phase.
 UI changes: update the Playwright spec first, run pnpm test:ui, and look at the step screenshots (attachScreenshot, in the

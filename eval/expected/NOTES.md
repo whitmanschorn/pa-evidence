@@ -21,23 +21,23 @@ Metformin months = total record days across all orders (not clipped to the windo
 This matches the brief: "Only one of the seven requests meets policy. Others are missing a document, fail a criterion,
 or contain a conflict." Each non-passing request has exactly one designed issue, and the three kinds of issue are each covered.
 
-## PA-001 checked against the plan's golden case (§7)
+## PA-001 checked field by field
 
 Every field matches: C1 cites `Condition/b1aa0158…`. C2 cites only `Observation/17151fc0…`, 8.1 % on 2026-09-03,
 28 days before the request; the 8.6 % from 2026-03-11 is outside the window and not cited. Attested 8.1 % on 2026-09-03 agrees.
 C3: metformin active since 2025-07-15 covers 365 of 365 days; record total 443 days = 14.55 months, attested 14 agrees. C4 met with no
 sources. C5 age 54. The LDL Observation and the hypertension Condition are not cited. Route `evidence_complete`.
 
-## Two departures from the plan's §7 wording (accepted by the candidate 2026-10-26; see README)
+## Two readings of C3 (accepted by the candidate 2026-10-26; see README)
 
-**1. PA-004 C3: conflicting, not met.** The plan says "if C3 is met via path B or C, a mismatch in months is only a warning".
+**1. PA-004 C3: conflicting, not met.** A first reading made a mismatch in months only a warning when C3 is met via path B or C.
 Under that rule PA-004 has all five criteria met (path B: confirmed metformin intolerance) and routes `evidence_complete`.
 That would give two requests meeting policy, which contradicts the brief. The policy itself says "Where the prescriber
 attestation and the record disagree, mark the criterion conflicting and cite both", and conflicting "takes precedence over met".
 The key follows the policy: the attestation conflict applies whichever path meets C3, and C3 cites both the stopped order and the intolerance.
 
-**2. PA-005 C3: met, not conflicting.** The plan's default is a two-sided ±1 month tolerance. Attested 30 months against a record of 32.52
-months is 2.52 months apart, so the default says conflicting. The request to the provider would then be "send fill history supporting
+**2. PA-005 C3: met, not conflicting.** The first reading was a two-sided ±1 month tolerance. Attested 30 months against a record of 32.52
+months is 2.52 months apart, so that reading says conflicting. The request to the provider would then be "send fill history supporting
 the reported 30 months" while the chart already shows 32.5 months of active therapy. The key uses a one-sided rule:
 **C3 is conflicting when the attestation claims more than the record supports by more than 1 month** (attested − record > 1).
 A record showing more therapy than attested does not contradict the attestation. C2 stays two-sided (a lab value either matches or it doesn't, tolerance 0.1).
@@ -46,15 +46,15 @@ This also keeps PA-005 to its one designed issue (C4).
 Neither choice changes any other request: every other attested duration is within 1 month below the record, and PA-004's
 +5.31 months fails both the one-sided and the two-sided rule.
 
-## Ambiguities the plan's defaults already settle
+## Ambiguities the rules already settle
 
 - **PA-002 C2 is missing, not conflicting.** The form attests 8.0 % on 2026-09-10, but the record has no HbA1c in the window,
   and an absent record is never conflicting. The packet should show the attested value with `agrees: null` (nothing to compare).
 - **PA-006 C2 is conflicting, not not_met.** Record 6.4 % on the attested date would fail the threshold on its own; conflicting takes precedence.
 - **PA-007 C1 is conflicting, not not_met.** The record's only T2DM Condition is resolved, and the form's structured `diagnosis_claimed`
-  is T2DM. The plan's C1 rule picks conflicting; a reader who ignores the form would say not_met.
-- **PA-003 has no missing_documents.** It routes to `clinician_review` with an empty list: the record shows C3 failing, and the plan only
-  defines provider asks for missing and conflicting. (An alternative would ask for intolerance or contraindication documentation.)
+  is T2DM. The C1 rule picks conflicting; a reader who ignores the form would say not_met.
+- **PA-003 has no missing_documents.** It routes to `clinician_review` with an empty list: the record shows C3 failing, and the service only
+  writes provider asks for missing and conflicting. (An alternative would ask for intolerance or contraindication documentation.)
 - **PA-005 C4: resolved pancreatitis counts.** The policy says "a resolved or inactive Condition still counts as history".
 - **C4 met cites no sources.** The packet's `note` names the codes searched instead.
 - **Window edges don't matter here.** No supplied result is within weeks of a window boundary, so inclusive versus exclusive doesn't change any status.
