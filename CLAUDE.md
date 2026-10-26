@@ -51,4 +51,5 @@ pnpm test:ui (Playwright, mocked API, seconds) | pnpm test:e2e (Playwright, full
 Work in the phases of docs/BUILD-PLAN.md. End each phase with: what changed, how to verify,
 files to read in order, decisions made. Then stop. One commit per phase.
 Update HOURS.md, DECISIONS.md and PROVENANCE.md every phase.
-UI changes: update the Playwright spec first, run pnpm test:ui, and look at the screenshots before calling a screen done.
+UI changes: update the Playwright spec first, run pnpm test:ui, and look at the step screenshots (attachScreenshot, in the
+HTML report: pnpm test:ui:report) before calling a screen done. Desktop only (1440 px); no mobile layout.

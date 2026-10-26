@@ -8,7 +8,6 @@ export default defineConfig([
     '**/dist/**',
     '**/node_modules/**',
     'data/**',
-    'apps/web/e2e/screenshots/**',
     'apps/web/playwright-report/**',
     'apps/web/test-results/**',
   ]),

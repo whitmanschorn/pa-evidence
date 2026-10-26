@@ -15,7 +15,9 @@
     "test:e2e": "pnpm build:shared && pnpm --filter @pa/web test:e2e",
     "load": "pnpm --filter @pa/scripts load-fhir",
     "fixtures": "pnpm build:shared && pnpm --filter @pa/api fixtures",
-    "tokens": "pnpm --filter @pa/scripts tokens"
+    "tokens": "pnpm --filter @pa/scripts tokens",
+    "test:ui:report": "pnpm --filter @pa/web test:ui:report",
+    "test:e2e:report": "pnpm --filter @pa/web test:e2e:report"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

@@ -56,5 +56,6 @@ curl -H "Authorization: Bearer $NURSE" http://localhost:8080/audit              
 ```sh
 pnpm lint      # ESLint (with the import boundaries) + TypeScript
 pnpm test      # vitest: rules engine, API, audit, auth, loader, guard tests
-pnpm test:ui   # Playwright against Vite with a mocked API
+pnpm test:ui   # Playwright against Vite with a mocked API   (review: pnpm test:ui:report)
+pnpm test:e2e  # Playwright against the running stack (make up) (review: pnpm test:e2e:report)
 ```

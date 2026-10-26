@@ -98,11 +98,11 @@ violations and type errors.
 and under tsx. The web app uses `Bundler` resolution (Vite). `tsconfig.base.json` sets `types: []` and each package opts in
 (`node`, `vite/client`), so browser code never sees Node types by accident.
 
-**D-011 Playwright projects (Phase 0).** One config, two projects. `ui` starts Vite's dev server at `http://localhost:5173`; `e2e` targets
+**D-011 (partly superseded by D-058) Playwright projects (Phase 0).** One config, two projects. `ui` starts Vite's dev server at `http://localhost:5173`; `e2e` targets
 `http://localhost:8080` (`E2E_BASE_URL` overrides it). `pnpm test:e2e` sets `E2E=1` so Vite is not started for it, and passes
 `--pass-with-no-tests` until Phase 8 adds the e2e specs. Specs navigate to `/ui/...` explicitly rather than relying on baseURL path joining.
 
-**D-012 API paths in one list (Phase 0).** `apps/web/src/apiPaths.ts` lists the API's path prefixes. The Vite dev proxy and the Playwright mock
+**D-012 (mock mechanism superseded by D-058) API paths in one list (Phase 0).** `apps/web/src/apiPaths.ts` lists the API's path prefixes. The Vite dev proxy and the Playwright mock
 read the same list. In the `ui` project, an API call the spec did not mock is answered with 501 and recorded, and specs assert there were none.
 
 **D-013 Accessible "dimmed" text (Phase 0).** axe flagged Mantine's default dimmed colour (gray.6, about 3.3:1 on white). The theme's
@@ -314,6 +314,18 @@ Multi-stage: the build stage compiles shared, web and API; the runtime stage ins
 the audit database on a named volume. A new env var, `TERMINOLOGY_DIR`, joins `.env.example`.
 
 **D-057 ESLint allows unused `_`-prefixed parameters (Phase 4).** Express recognises an error handler only by its four parameters.
+
+**D-058 UI tests use standard Playwright conventions, desktop only (Phase 4 follow-up, at the candidate's request).**
+- Specs import `test` and `expect` from `apps/web/e2e/test.ts`, a `test.extend` fixture file. Its automatic `api` fixture mocks every API
+  call in the `ui` project (`api.mock('GET', '/requests', body)`); an unmocked call fails the test at teardown. In `e2e` nothing is mocked.
+- Screenshots: `attachScreenshot('step name')` attaches a full-page screenshot to the test inside `test.step`, so the HTML report shows
+  each step's picture in order. The config also records `trace: 'on'` and `screenshot: 'on'`. Review with `pnpm test:ui:report` or
+  `pnpm test:e2e:report`; each suite has its own report and output folder, so one run never erases the other. (Not named `screenshot`:
+  that is Playwright's own option and the names collide.)
+- Page checks are custom matchers: `await expect(page).toPassAxe()` and `await expect(page).toHaveNoForbiddenTerms()`.
+- Desktop only, 1440 x 900: nurses use approved desktop workstations, so there is no mobile layout and no mobile project. This supersedes
+  the plan's 390 px narrow screenshots (§11 Phase 8 step 4) and its `apps/web/e2e/screenshots/` folder.
+- The e2e project now has a smoke spec: the real API serves the app at `/ui`, including a client-side route.
 
 ## Defaults until the panel answers (plan §7; the candidate is emailing the panel)
 

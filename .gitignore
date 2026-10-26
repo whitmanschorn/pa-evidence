@@ -19,8 +19,7 @@ var/
 *.db-wal
 *.db-shm
 
-# Playwright output (screenshots are reviewed by eye, never committed)
-apps/web/e2e/screenshots/
+# Playwright output: the HTML report (pnpm test:ui:report) and per-test screenshots and traces
 apps/web/test-results/
 apps/web/playwright-report/
 

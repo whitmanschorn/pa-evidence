@@ -7,8 +7,10 @@
     "dev": "vite",
     "build": "tsc -p tsconfig.json --noEmit && vite build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test:ui": "playwright test --project=ui",
-    "test:e2e": "E2E=1 playwright test --project=e2e --pass-with-no-tests"
+    "test:ui": "PLAYWRIGHT_HTML_OUTPUT_DIR=playwright-report/ui playwright test --project=ui --output=test-results/ui",
+    "test:e2e": "E2E=1 PLAYWRIGHT_HTML_OUTPUT_DIR=playwright-report/e2e playwright test --project=e2e --output=test-results/e2e",
+    "test:ui:report": "playwright show-report playwright-report/ui",
+    "test:e2e:report": "playwright show-report playwright-report/e2e"
   },
   "dependencies": {
     "@mantine/charts": "9.7.2",

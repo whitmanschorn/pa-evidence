@@ -1,16 +1,14 @@
-import { expect, test } from '@playwright/test';
-import { expectNoAxeViolations, expectNoForbiddenTerms } from '../support/checks';
-import { mockApi } from '../support/mockApi';
-import { takeScreenshots } from '../support/screenshots';
+import { expect, test } from '../test';
 
-test('the app shell loads with the product name', async ({ page }) => {
-  const api = await mockApi(page);
+test('the app shell loads with the product name', async ({ page, attachScreenshot }) => {
+  await test.step('open the app', async () => {
+    await page.goto('/ui/');
+    await expect(page.getByRole('heading', { level: 1, name: 'Utilization review · Evidence packets' })).toBeVisible();
+    await attachScreenshot('app shell');
+  });
 
-  await page.goto('/ui/');
-
-  await expect(page.getByRole('heading', { level: 1, name: 'Utilization review · Evidence packets' })).toBeVisible();
-  await expectNoForbiddenTerms(page);
-  await expectNoAxeViolations(page);
-  await takeScreenshots(page, 'smoke-shell');
-  expect(api.unmockedCalls).toEqual([]);
+  await test.step('the page is accessible and uses no banned words', async () => {
+    await expect(page).toPassAxe();
+    await expect(page).toHaveNoForbiddenTerms();
+  });
 });

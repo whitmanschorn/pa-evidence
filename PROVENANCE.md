@@ -27,7 +27,7 @@ Third-party packages are not vendored; they come from npm at the exact versions 
 | `packages/shared/**` | AI (Claude Code) | 0 | status/route enums, `findForbiddenTerms` + tests |
 | `apps/api/package.json`, `apps/api/tsconfig.json` | AI (Claude Code) | 0 | |
 | `apps/api/test/guards/*.test.ts`, `apps/api/test/support/repoRoot.ts` | AI (Claude Code) | 0 | data checksum and criterion-id guards |
-| `apps/web/**` (config, `src/`, `e2e/`) | AI (Claude Code) | 0 | Vite + Mantine shell, Playwright config, helpers, smoke spec |
+| `apps/web/**` (config, `src/`, `e2e/`) | AI (Claude Code) | 0, 4 | Vite + Mantine shell; Playwright config, `e2e/test.ts` fixtures and matchers, ui and e2e smoke specs (reworked in Phase 4, D-058) |
 | `compose.yaml` | AI (Claude Code) | 1 | HAPI FHIR + Postgres, pinned by digest |
 | `scripts/package.json`, `scripts/tsconfig.json` | AI (Claude Code) | 1 | |
 | `scripts/load-fhir.ts`, `scripts/fhirBundles.ts`, `scripts/test/fhirBundles.test.ts` | AI (Claude Code) | 1 | idempotent loader (POST→PUT rewrite) + unit tests |
