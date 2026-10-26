@@ -113,8 +113,7 @@ supplied files. The brief itself is one level up (`../FDE_Assignment_v2_Prior_Au
 
 **D-015 Tentative choices to confirm in later phases (Phase 0).**
 - `AUTH_TOKENS` format `role:subject:sha256hex`, comma-separated (Phase 4).
-- The UI header needs the caller's identity and role. Tentatively `GET /me` with `allow('health:read')`, which every role holds (Phase 4).
-  `/me` is already in the API path list.
+- The UI header needs the caller's identity and role. Settled in Phase 4 as `GET /userinfo` (D-047).
 - API on port 8080. HAPI is `hapi:8080` inside compose and gets a different host port in Phase 1.
 
 **D-016 Git identity (Phase 0).** No global git identity was configured. The repo-local identity is Whitman Schorn <me@wschorn.com>.
@@ -266,6 +265,55 @@ Dotfiles (`.DS_Store`, partial-upload markers) are ignored. A request dated befo
 `request_before_policy_effective` warning (D-036). The C6 extension fixture is now a second version folder (`2026-09-01_2026.9`) dropped in
 next to the supplied one from `apps/api/test/fixtures/extension/policies/`, and a test shows a request dated 2026-08-15 still gets 2026.1
 with five criteria (the plan's drill 8). Drill 1 is "drop in a 2026.2 folder with a 120-day window".
+
+**D-046 node:sqlite needs no fallback (Phase 4).** On Node 24.22.1 `node:sqlite` loads without an experimental warning (plan §15), so
+there is no better-sqlite3 and no `--disable-warning` flag.
+
+**D-047 `GET /userinfo` (Phase 4, renamed at the candidate's request).** The UI header needs the caller's identity and role. The endpoint is
+named after the OpenID Connect UserInfo endpoint and shares its `sub` claim, so it stays conventional when OIDC replaces the static tokens.
+It needs `health:read`, which every role holds. (First built as `/me`.)
+
+**D-048 Tokens (Phase 4).** `AUTH_TOKENS` is `role:subject:sha256(token)`, comma-separated (confirms D-015). `make tokens` also writes
+`PROBE_TOKEN` in plaintext to `.env` (gitignored, mode 600) so the API container's healthcheck can call `/health`; the probe role can read
+health and nothing else. Tokens are compared as sha256 digests with `timingSafeEqual`, checking every entry without stopping early.
+
+**D-049 No banned word in the status line either (Phase 4).** Express's default reason phrase for 401 is "Unauthorized", which `curl -i`
+shows. The refusal sets it to "Unauthenticated", so invariant 5 holds for everything on the wire, not only bodies.
+
+**D-050 Audit details (Phase 4).**
+- Each event has every field, `null` when it does not apply, so the hashed JSON always has the same shape.
+- Two fields beyond the plan: `rules_fingerprint` (sha256 of the canonical JSON of the policy version with its rules engine config merged
+  in, D-042) and `loaded_versions` (for the new `policies.reload` action).
+- A request's event is written when its response closes, with the final status code. So a packet request gets exactly one event whether
+  it succeeds, is not found, fails later, or has its body replaced by the output guard. Refusals are written at refusal time.
+- The table stores the canonical JSON body plus indexed `request_id` and `action` columns; triggers reject UPDATE and DELETE.
+
+**D-051 Readiness (Phase 4).** FHIR, the audit store and the policies are required; the model is not, because summaries fall back to the code
+template (Phase 5). Not ready answers 503. Only `health:detail` sees the per-dependency detail; everyone else sees the status.
+
+**D-052 Source view is minimum necessary (Phase 4).** `GET /requests/:id/sources/:type/:fhirId` serves only references the packet cites
+or considered, so it cannot browse the chart. It strips `text`, `note` and attachment contents from every resource (PA-006's Condition
+note carries an injected instruction containing a banned word), and shows a Patient with only birth date, deceased and gender (no name, MRN or
+address). It rebuilds the packet to know what may be shown: simple, and it costs one more set of FHIR searches.
+
+**D-053 Policy reload (Phase 4, at the candidate's request).** `POST /admin/policies/reload` (new permission `policies:reload`, admin only)
+re-reads `POLICIES_DIR` and runs the binding check. If anything is wrong, nothing changes, the previous versions keep serving, and the problems
+come back in the response (`invalid_request` with `problems`) and in `/ready`. Every reload is audited with the versions loaded. Compose mounts
+`./data/policies` read-only into the container, so a dropped-in folder needs no rebuild; `make reload-policies` calls the endpoint with
+the admin token.
+
+**D-054 Logging (Phase 4).** The URL is never logged (a source URL holds FHIR resource ids); the route pattern is. The error handler logs an
+error's class name only. pino-http calls `customProps` twice (at the start and at the finish), so the fields are added only once headers
+are sent; a test checks each key appears once.
+
+**D-055 HTTP hardening (Phase 4).** `Cache-Control: no-store`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer` on every
+API response; `x-powered-by` off; JSON bodies parsed only after authentication, capped at 100 kB.
+
+**D-056 API image (Phase 4).** `node:24.22.1-bookworm-slim` pinned by digest (Debian rather than Alpine: pnpm 12 ships a native binary).
+Multi-stage: the build stage compiles shared, web and API; the runtime stage installs production dependencies only, runs as `node`, and keeps
+the audit database on a named volume. A new env var, `TERMINOLOGY_DIR`, joins `.env.example`.
+
+**D-057 ESLint allows unused `_`-prefixed parameters (Phase 4).** Express recognises an error handler only by its four parameters.
 
 ## Defaults until the panel answers (plan §7; the candidate is emailing the panel)
 

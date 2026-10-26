@@ -4,9 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
-    "fixtures": "tsx scripts/fixtures.ts"
+    "fixtures": "tsx scripts/fixtures.ts",
+    "dev": "tsx watch --env-file=../../.env src/main.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.1",

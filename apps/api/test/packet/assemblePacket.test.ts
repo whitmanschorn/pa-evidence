@@ -22,7 +22,7 @@ describe('assemblePacket', () => {
   });
 
   it('flags and blocks when a cited source cannot be found on the FHIR server', async () => {
-    const forgetful: FhirClient = { search: deps.fhir.search, existing: async () => new Set() };
+    const forgetful: FhirClient = { ...deps.fhir, existing: async () => new Set() };
     const { packet } = await assemblePacket({ ...deps, fhir: forgetful }, 'PA-001');
     expect(packet.warnings).toEqual(['source_unverified']);
     expect(packet.route).toBe('clinician_review');
@@ -32,8 +32,8 @@ describe('assemblePacket', () => {
   it('drops chart resources that belong to someone else, and warns', async () => {
     const stranger = { resourceType: 'Condition', id: 'x', subject: { reference: 'Patient/other' } } as fhir4.Condition;
     const leaky: FhirClient = {
+      ...deps.fhir,
       search: async (type, params) => [...(await deps.fhir.search(type, params)), ...(type === 'Condition' ? [stranger] : [])],
-      existing: deps.fhir.existing,
     };
     const { packet } = await assemblePacket({ ...deps, fhir: leaky }, 'PA-001');
     expect(packet.warnings).toEqual(['member_reference_mismatch']);
@@ -43,7 +43,7 @@ describe('assemblePacket', () => {
   it('verifies every considered reference, not only cited sources', async () => {
     const asked: string[] = [];
     const recording: FhirClient = {
-      search: deps.fhir.search,
+      ...deps.fhir,
       existing: async (refs) => {
         asked.push(...refs);
         return deps.fhir.existing(refs);

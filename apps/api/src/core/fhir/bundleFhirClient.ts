@@ -23,6 +23,9 @@ export function createBundleFhirClient(bundles: fhir4.Bundle[]): FhirClient {
     async existing(refs) {
       return new Set(refs.filter((ref) => knownRefs.has(ref)));
     },
+    async read(ref) {
+      return resources.find((resource) => refOf(resource) === ref) ?? null;
+    },
   };
 }
 

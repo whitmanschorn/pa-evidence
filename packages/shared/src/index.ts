@@ -15,3 +15,16 @@ export {
   WindowSchema,
 } from './packet.js';
 export type { Attested, ConsideredItem, CriterionResult, ExpectedPacket, Packet, PathResult } from './packet.js';
+export { AuditActionSchema, AuditEventSchema, AuditVerifySchema } from './audit.js';
+export type { AuditAction, AuditEvent, AuditVerify } from './audit.js';
+export {
+  DependencyCheckSchema,
+  ErrorBodySchema,
+  LoadedVersionSchema,
+  ReadySchema,
+  ReloadResultSchema,
+  RequestSummarySchema,
+  SourceViewSchema,
+  UserInfoSchema,
+} from './api.js';
+export type { ErrorBody, Ready, ReloadResult, RequestSummary, SourceViewResponse, UserInfo } from './api.js';

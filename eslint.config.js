@@ -18,6 +18,10 @@ export default defineConfig([
 
   {
     languageOptions: { globals: globals.node },
+    rules: {
+      // An unused parameter is allowed when its name starts with "_" (Express error handlers need all four).
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    },
   },
   {
     files: ['apps/web/src/**/*.{ts,tsx}'],

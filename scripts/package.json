@@ -6,7 +6,8 @@
   "scripts": {
     "load-fhir": "tsx load-fhir.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "tokens": "tsx tokens.ts"
   },
   "devDependencies": {
     "@types/fhir": "0.0.44",

@@ -11,6 +11,7 @@ Times are America/Chicago (CDT). "Items" are the brief's numbered deliverables (
 | 3 Rules engine and packet | 2 | 2026-10-26 11:08 | 2026-10-26 11:36 | 0:28 | 1:09 |
 | 3 follow-up: numbers to data, policy folder, one version | 2 | 2026-10-26 11:48 | 2026-10-26 12:02 | 0:14 | 1:23 |
 | 3 follow-up: policy version folders | 2 | 2026-10-26 12:10 | 2026-10-26 12:13 | 0:03 | 1:26 |
+| 4 API and enterprise minimum | 2, 8 | 2026-10-26 12:16 | 2026-10-26 12:29 | 0:13 | 1:39 |
 
 ## Hours per brief item (filled in as phases close)
 
@@ -24,4 +25,4 @@ Times are America/Chicago (CDT). "Items" are the brief's numbered deliverables (
 | 5 | evaluation | 0:03 (answer key) |
 | 6 | plan for Payer A | |
 | 7 | security notes | |
-| 8 | enterprise readiness | |
+| 8 | enterprise readiness | 0:13 (API, auth, audit, health, FHIR auth, Docker) |

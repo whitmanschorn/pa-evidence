@@ -6,6 +6,7 @@ import type { RequestStore } from '../requests/requestStore.js';
 import { buildEvaluator } from '../rules/buildEvaluator.js';
 import { evaluateCriterion } from '../rules/evaluateCriterion.js';
 import { unique } from '../rules/matching.js';
+import { rulesFingerprint } from '../policy/policyRegistry.js';
 import { decideRoute } from '../rules/route.js';
 import type { Binding } from '../rules/types.js';
 import type { Terminology } from '../terminology.js';
@@ -23,7 +24,8 @@ export type PacketDeps = {
 // Thrown for a request id or policy we do not have; the HTTP layer turns it into 404 not_found.
 export class NotFoundError extends Error {}
 
-export type PacketMetrics = { fhirMs: number; sourceCount: number };
+// For the log line and the audit event: timings, counts and which exact rules were used. Never clinical values.
+export type PacketMetrics = { fhirMs: number; sourceCount: number; rulesFingerprint: string };
 
 // Door 1: builds the evidence packet for one request with the rules engine alone. Every status, source and the
 // route are decided here, in code. The summary is the code template (Phase 5 adds the model, with a fallback).
@@ -94,5 +96,5 @@ export async function assemblePacket(
     warnings: uniqueWarnings,
   });
   const sourceCount = unique(criteria.flatMap((criterion) => criterion.sources)).length;
-  return { packet, metrics: { fhirMs, sourceCount } };
+  return { packet, metrics: { fhirMs, sourceCount, rulesFingerprint: rulesFingerprint(policy) } };
 }

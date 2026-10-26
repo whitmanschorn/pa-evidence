@@ -9,6 +9,8 @@ export type FhirClient = {
   search(resourceType: string, params: SearchParams): Promise<fhir4.Resource[]>;
   // Which of these "Type/id" references exist on the server.
   existing(refs: string[]): Promise<Set<string>>;
+  // One resource by "Type/id", or null if the server does not have it.
+  read(ref: string): Promise<fhir4.Resource | null>;
 };
 
 // Returns the Authorization header value, or undefined for an unauthenticated server (local HAPI).
@@ -62,6 +64,15 @@ export function createHttpFhirClient(options: { baseUrl: string; authHeader: Aut
         }
       }
       return resources;
+    },
+
+    async read(ref) {
+      const response = await fetch(`${baseUrl}/${ref}`, { headers: await headers() });
+      if (response.status === 404 || response.status === 410) return null;
+      if (!response.ok) {
+        throw new Error(`FHIR read failed: HTTP ${response.status}`);
+      }
+      return (await response.json()) as fhir4.Resource;
     },
 
     async existing(refs) {

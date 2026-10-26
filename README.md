@@ -35,15 +35,26 @@ Needs Docker Desktop, Node 24 and pnpm 12.
 
 ```sh
 pnpm install
-make up        # HAPI FHIR + Postgres, then loads the Synthea sample and the 7 supplied bundles (about 3 minutes from clean)
-make load      # reload; safe to repeat, counts do not change
+make tokens    # nurse/admin/probe tokens: hashes to .env, plaintext to .tokens.local (both gitignored)
+make up        # HAPI + Postgres + the API, then loads the Synthea sample and the 7 supplied bundles
+make reload-policies   # pick up a dropped-in data/policies/<id>/<effective>_<version>/ folder without a restart
 make down      # stop (data kept)   |   make reset   # stop and delete the data
 ```
 
-HAPI FHIR listens on `http://localhost:8090/fhir` (this machine only).
+| Port (this machine only) | What |
+|---|---|
+| `http://localhost:8080` | the API; the UI at `/ui` |
+| `http://localhost:8090/fhir` | HAPI FHIR |
+
+```sh
+NURSE=$(grep '^nurse=' .tokens.local | cut -d= -f2)
+curl -i http://localhost:8080/requests/PA-001/evidence                            # 401 Unauthenticated
+curl -H "Authorization: Bearer $NURSE" http://localhost:8080/requests/PA-001/evidence
+curl -H "Authorization: Bearer $NURSE" http://localhost:8080/audit                 # 403 forbidden (admin only)
+```
 
 ```sh
 pnpm lint      # ESLint (with the import boundaries) + TypeScript
-pnpm test      # vitest: shared package, loader, repo guard tests
+pnpm test      # vitest: rules engine, API, audit, auth, loader, guard tests
 pnpm test:ui   # Playwright against Vite with a mocked API
 ```

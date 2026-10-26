@@ -1,0 +1,10 @@
+**/node_modules
+**/dist
+.git
+.env
+.tokens.local
+var
+data/synthea/cache
+apps/web/e2e
+apps/web/test-results
+apps/web/playwright-report
