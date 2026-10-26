@@ -226,7 +226,7 @@ tests. `fixturesCurrent.test.ts` fails if a committed fixture differs from today
 
 **D-042 No clinical numbers in code: the rules engine config (Phase 3 follow-up, at the candidate's request).** The age limit (18), the HbA1c
 conflict tolerance (0.1) and the metformin months tolerance (1, one-sided) live in
-`data/rules-engine-config/MP-SYN-021-rules-engine-config.json`, so they change without a code change, like the criteria. The config mirrors
+`data/policies/MP-SYN-021/rules-engine-config.json` (see D-043), so they change without a code change, like the criteria. The config mirrors
 the policy's `fhir` blocks and is merged into each criterion's params when the policy loads (every version of that policy), so each kind reads
 all its numbers from one params object and the startup check validates them like any other param (a missing value stops the service). The
 config may only add values: one that would change a value the payer's policy sets fails at load. Bindings now hold no numbers, only the kind,
@@ -234,6 +234,14 @@ the comparison direction, the attested form-field paths and the provider-request
 file stays verbatim). What remains in code are calendar and unit constants (ms per day, 365.25 / 12 days per month) and float-comparison
 precision. The config has a `version`; Phase 4 records it in the audit event next to the policy version, since it changes outcomes.
 (First named "policy supplement"; renamed to "rules engine config" at the candidate's request so the file name says what it is.)
+
+**D-043 One folder per policy (Phase 3 follow-up, at the candidate's request).** `data/policies/MP-SYN-021/` holds the supplied policy
+(`policy_MP-SYN-021.json`, moved from `data/` byte-identical; `CHECKSUMS.sha256` now lists the new path and still guards it), its
+`rules-engine-config.json`, and any later versions (`policy_MP-SYN-021@2026.2.json`). This supersedes the plan's "the supplied file stays where it is".
+The loader takes policy folders: `policy_*.json` files are versions, `rules-engine-config.json` is the config, and any other file is an error.
+One env var, `POLICIES_DIR`, replaces `POLICY_PATHS` and the config path; a new policy is a new folder. The supplied `data/README.md` still
+says the policy is `policy_MP-SYN-021.json`; it is a supplied file and stays unchanged. The C6 extension fixture is its own policy folder under
+`apps/api/test/fixtures/extension/policy/`, so the real `data/policies/` holds only real policies.
 
 ## Defaults until the panel answers (plan §7; the candidate is emailing the panel)
 

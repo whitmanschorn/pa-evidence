@@ -3,15 +3,15 @@ import { join } from 'node:path';
 import { ExpectedPacketSchema, type ExpectedPacket } from '@pa/shared';
 import { createBundleFhirClient } from '../../src/core/fhir/bundleFhirClient.js';
 import type { PacketDeps } from '../../src/core/packet/assemblePacket.js';
-import { loadPolicyStore } from '../../src/core/policy/policyStore.js';
+import { loadPolicyStore, policyFoldersIn } from '../../src/core/policy/policyStore.js';
 import { loadRequestStore } from '../../src/core/requests/requestStore.js';
 import { BINDINGS } from '../../src/core/rules/bindings.js';
 import { loadTerminology } from '../../src/core/terminology.js';
 import { REPO_ROOT } from './repoRoot.js';
 
-export const SUPPLIED_POLICY = join(REPO_ROOT, 'data/policy_MP-SYN-021.json');
+// The supplied policy and its rules engine config, in one folder.
+export const POLICY_FOLDER = join(REPO_ROOT, 'data/policies/MP-SYN-021');
 export const TERMINOLOGY_DIR = join(REPO_ROOT, 'data/terminology');
-export const RULES_ENGINE_CONFIG_DIR = join(REPO_ROOT, 'data/rules-engine-config');
 
 export function readBundles(dir: string): fhir4.Bundle[] {
   return readdirSync(dir)
@@ -23,7 +23,7 @@ export function readBundles(dir: string): fhir4.Bundle[] {
 export function suppliedDeps(overrides: Partial<PacketDeps> = {}): PacketDeps {
   return {
     fhir: createBundleFhirClient(readBundles(join(REPO_ROOT, 'data/bundles'))),
-    policies: loadPolicyStore([SUPPLIED_POLICY, join(REPO_ROOT, 'data/policies')], [RULES_ENGINE_CONFIG_DIR]),
+    policies: loadPolicyStore(policyFoldersIn(join(REPO_ROOT, 'data/policies'))),
     requests: loadRequestStore([join(REPO_ROOT, 'data/requests')]),
     terminology: loadTerminology(TERMINOLOGY_DIR),
     bindings: BINDINGS,

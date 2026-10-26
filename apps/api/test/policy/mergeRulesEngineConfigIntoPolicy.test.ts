@@ -7,7 +7,7 @@ import { checkBindings } from '../../src/core/rules/checkBindings.js';
 import { contextWith, evaluatorFor, hba1c, patient, policy, terminology } from '../support/builders.js';
 
 // No clinical number lives in code: the age limit and the conflict tolerances come from
-// data/rules-engine-config/MP-SYN-021-rules-engine-config.json, merged into the policy when it loads.
+// data/policies/MP-SYN-021/rules-engine-config.json, merged into the policy when it loads.
 const config = (criteria: RulesEngineConfig['criteria']): RulesEngineConfig => ({
   policy_id: 'MP-SYN-021',
   version: 'test',
