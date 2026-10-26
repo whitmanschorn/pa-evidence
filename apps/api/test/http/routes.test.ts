@@ -2,10 +2,23 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'nod
 import { DatabaseSync } from 'node:sqlite';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
-import { AuditVerifySchema, PacketSchema, ReadySchema, ReloadResultSchema, RequestSummarySchema, SourceViewSchema, UserInfoSchema } from '@pa/shared';
+import {
+  AuditVerifySchema,
+  ModelReloadResultSchema,
+  PacketSchema,
+  ReadySchema,
+  ReloadResultSchema,
+  RequestSummarySchema,
+  SourceViewSchema,
+  UserInfoSchema,
+} from '@pa/shared';
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
-import { POLICIES_DIR } from '../support/suppliedWorld.js';
+import type { LocalModel } from '../../src/core/llm/localModel.js';
+import { createModelRegistry } from '../../src/core/llm/modelRegistry.js';
+import { loadModelVersions } from '../../src/core/llm/modelVersions.js';
+import { TODAY } from '../support/mockModel.js';
+import { MODELS_DIR, POLICIES_DIR } from '../support/suppliedWorld.js';
 import { bearer, settle, testApp } from '../support/testApp.js';
 
 describe('requests and packets', () => {
@@ -178,6 +191,40 @@ describe('POST /admin/policies/reload', () => {
     expect(reload.versions.map((version) => version.version)).toEqual(['2026.1', '2026.2']);
     const packet = await request(app).get('/requests/PA-001/evidence').set(bearer('nurse'));
     expect(packet.body.policy_version).toBe('2026.2');
+  });
+});
+
+describe('POST /admin/models/reload', () => {
+  it('is admin only', async () => {
+    const response = await request(testApp().app).post('/admin/models/reload').set(bearer('nurse'));
+    expect(response.status).toBe(403);
+    expect(response.body.required_permission).toBe('models:reload');
+  });
+
+  it('picks up a dropped-in model version folder, audits the reload, and shows it in /ready', async () => {
+    const modelsDir = mkdtempSync(join(tmpdir(), 'models-'));
+    cpSync(MODELS_DIR, modelsDir, { recursive: true });
+    const models = createModelRegistry({
+      load: () => loadModelVersions(modelsDir),
+      connect: (version) => ({ ...version, languageModel: 'not-called' }) as LocalModel,
+      clock: () => TODAY,
+    });
+    const { app, audit } = testApp({ models });
+
+    const folder = join(modelsDir, '2026-10-20_0');
+    cpSync(join(MODELS_DIR, '2026-10-26_1'), folder, { recursive: true });
+    const config = JSON.parse(readFileSync(join(folder, 'model.json'), 'utf8'));
+    writeFileSync(join(folder, 'model.json'), JSON.stringify({ ...config, version: '0', effective: '2026-10-20' }));
+
+    const reload = ModelReloadResultSchema.parse((await request(app).post('/admin/models/reload').set(bearer('admin'))).body);
+    expect(reload.versions.map((version) => [version.folder, version.in_effect])).toEqual([
+      ['2026-10-20_0', false],
+      ['2026-10-26_1', true],
+    ]);
+    await settle();
+    expect(audit.list({ limit: 1 })[0]).toMatchObject({ action: 'models.reload', outcome: 'success', loaded_versions: ['2026-10-20_0', '2026-10-26_1'] });
+    const ready = ReadySchema.parse((await request(app).get('/ready').set(bearer('admin'))).body);
+    expect(ready.checks?.model_versions?.detail.last_reload_ok).toBe(true);
   });
 });
 

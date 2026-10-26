@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-// One audit event per packet request, refusal, source view, agent run, audit read and policy reload.
-// Never clinical values, names, birth dates or identifiers other than the member reference (invariant 10).
+// One audit event per packet request, refusal, source view, agent run, audit read, and policy or model reload.
+// Never clinical values, names, birth dates or identifiers other than the member reference.
 // Every field is always present (null when it does not apply), so the hashed JSON has a stable shape.
 export const AuditActionSchema = z.enum([
   'packet.read',
@@ -10,6 +10,8 @@ export const AuditActionSchema = z.enum([
   'audit.read',
   'refusal',
   'policies.reload',
+  'models.reload',
+  'mcp.call', // one MCP tool call, by the agent or any other MCP client
 ]);
 
 export const AuditEventSchema = z.object({
@@ -40,8 +42,10 @@ export const AuditEventSchema = z.object({
   // refusals only
   refusal_reason: z.enum(['missing_token', 'invalid_token', 'insufficient_permission']).nullable(),
   required_permission: z.string().nullable(),
-  // policy reloads only: "<policy id>@<version>" of every version loaded
+  // reloads only: "<policy id>@<version>" of every policy version loaded, or every model version folder
   loaded_versions: z.array(z.string()),
+  // MCP tool calls only: which tool
+  tool_name: z.string().nullable(),
   prev_hash: z.string(),
   hash: z.string(),
 });

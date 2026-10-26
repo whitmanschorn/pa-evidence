@@ -18,7 +18,8 @@
     "tokens": "pnpm --filter @pa/scripts tokens",
     "test:ui:report": "pnpm --filter @pa/web test:ui:report",
     "test:e2e:report": "pnpm --filter @pa/web test:e2e:report",
-    "model": "pnpm --filter @pa/scripts model"
+    "model": "pnpm --filter @pa/scripts model",
+    "agent": "pnpm build:shared && pnpm --filter @pa/scripts agent"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

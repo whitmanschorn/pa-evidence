@@ -1,4 +1,4 @@
-// All clinical date math lives here (invariant 7). Every calculation is anchored to the request date passed in;
+// All clinical date math lives here. Every calculation is anchored to the request date passed in;
 // nothing reads the current date. Dates are calendar days, "YYYY-MM-DD", compared as UTC midnights so that
 // daylight saving and the server's time zone never shift a day.
 

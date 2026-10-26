@@ -3,7 +3,7 @@ import { unique } from '../matching.js';
 import type { AnyOfBinding, EvaluationContext, Evaluator, KindResult, PathBinding } from '../types.js';
 
 // "Path A, or path B, or path C." Example: 90 days of metformin, or a metformin intolerance, or eGFR < 30.
-//   conflicting: any path is conflicting (an attestation conflict counts whichever path is met; D-028)
+//   conflicting: any path is conflicting (an attestation conflict counts whichever path is met)
 //   met:         any path is met
 //   otherwise:   the primary path's status (not_met or missing). A failed alternative, such as a normal
 //                eGFR, never makes the criterion not_met on its own.

@@ -4,7 +4,7 @@ import { requestStoreFrom } from '../../src/core/requests/requestStore.js';
 import { checkBindings } from '../../src/core/rules/checkBindings.js';
 import { EXTENSION_BINDINGS, extensionDeps } from '../support/extensionWorld.js';
 
-// Build plan §7.1: a new criterion of an existing kind is a data change. This test adds C6 (BMI >= 27,
+// A new criterion of an existing kind is a data change. This test adds C6 (BMI >= 27,
 // LOINC 39156-5) through a new policy version folder, a fixture BMI result and one binding line, and nothing else.
 describe('extension: a sixth criterion of an existing kind', () => {
   const deps = extensionDeps();

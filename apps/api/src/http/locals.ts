@@ -19,7 +19,7 @@ export function identityOf(res: Response): Identity | undefined {
   return res.locals.identity as Identity | undefined;
 }
 
-// Extra fields for this request's log line. Only ids, timings and counts (invariant 11).
+// Extra fields for this request's log line: ids, timings and counts only.
 export type LogFields = {
   request_id?: string;
   fhir_ms?: number;

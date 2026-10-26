@@ -34,6 +34,8 @@ Build plan: docs/BUILD-PLAN.md. Decisions: DECISIONS.md. Brief: ../fde-v2-data/ 
 13. Supplied data under data/ is read-only. Policies live in data/policies/<policy id>/<effective date>_<version>/
     (policy.json + rules-engine-config.json); the supplied policy is 2026-07-01_2026.1/policy.json, byte-identical,
     moved 2026-10-26 at the owner's request. A policy update is a new version folder, never an edit of an old one.
+    Model versions likewise: data/models/<effective date>_<version>/model.json (model, digest, call settings, caps,
+    timeouts). Prompts stay in code. (Added 2026-10-26 at the owner's request.)
 14. Criteria are data. Criterion ids (C1, C2, …) may appear in code only in core/rules/bindings.ts, tests and fixtures.
     Everything else (packet, summary, route, MCP, agent, audit, eval, UI) loops over the policy's criteria list,
     so adding a criterion never touches those layers.
@@ -43,7 +45,7 @@ Small functions, explicit names. No decorators, no clever generics, no metaprogr
 Comments explain why, not what. Prefer three clear lines over one clever line.
 
 ## Commands
-make up | make down | make reset | make load | make tokens
+make up | make down | make reset | make load | make tokens | make reload-policies | make reload-models
 pnpm test | pnpm lint | pnpm eval | pnpm agent <request_id>
 pnpm test:ui (Playwright, mocked API, seconds) | pnpm test:e2e (Playwright, full stack) | pnpm fixtures
 

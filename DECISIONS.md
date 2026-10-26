@@ -27,7 +27,7 @@ cooldown), unless compatibility forces an older one. Versions are exact in every
 | api | pino | 10.4.0 | |
 | api | pino-http | 11.0.0 | |
 | api | jose | 6.2.12 | SMART client assertion (Phase 4) |
-| api | ollama | 0.6.4 | |
+| api | ollama | 0.6.4 | replaced in Phase 6 by the Vercel AI SDK (D-067) |
 | api | @modelcontextprotocol/sdk | 1.32.1 | peer `zod ^3.25 \|\| ^4.0`, so it works with Zod 4 (plan §15) |
 | api | built-ins | — | `node:sqlite`, `node:crypto`, global `fetch` |
 | web | react, react-dom | 19.3.0 | |
@@ -57,6 +57,8 @@ cooldown), unless compatibility forces an older one. Versions are exact in every
 |---|---|---|
 | @eslint/js | 10.0.1 | ESLint's own `recommended` rule set; flat config needs it as a separate package. Published by the ESLint project. |
 | globals | 17.13.0 | Node and browser global names for the flat config. Standard companion to ESLint flat config. |
+| ai, @ai-sdk/openai-compatible, @ai-sdk/mcp, @ai-sdk/provider (dev) | 7.0.137, 3.0.67, 2.0.73, 4.0.26 | The Vercel AI SDK for every model call and the agent loop; replace `ollama` from the list above. See D-067. |
+| eventsource-parser (in `@pa/shared`) | 3.1.1 | Parses the agent run's server-sent events in the UI and the CLI. The parser the AI SDK itself uses (already in the lockfile). See D-074. |
 
 Not added: `postcss-preset-mantine` / `postcss-simple-vars`. They are only needed for Mantine's mixins inside our own
 CSS modules; the UI is styled through component props. Add them if a CSS module ever needs `rem()` or mixins.
@@ -372,6 +374,76 @@ and digest if it lacks them. For a machine without native Ollama there is an opt
 
 **D-066 A real-model test that skips itself (Phase 5).** `test/llm/ollama.integration.test.ts` runs the seven requests through the local
 model when it is available and is skipped otherwise, so `pnpm test` never needs Ollama. `OLLAMA_TEST_MODEL` points it at another model.
+
+**D-067 The Vercel AI SDK for every model call, including the agent loop (Phase 6, the candidate's decision).** Overrides the
+plan's locked decision "ReAct loop written by hand (no LangChain, Vercel AI SDK or Mastra)" and D-059's direct client. Packages:
+`ai` 7.0.137 (`ToolLoopAgent`, `generateText`, `Output.object`, `isStepCount`, `MockLanguageModelV4` for tests),
+`@ai-sdk/openai-compatible` 3.0.67 (Ollama's OpenAI-compatible `/v1`, `supportsStructuredOutputs`), `@ai-sdk/mcp` 2.0.73
+(`createMCPClient` with an `http` transport and the caller's `Authorization` header), and `@ai-sdk/provider` 4.0.26 (dev, for the mock's
+result type). They replace the `ollama` package (Phase 5) and the `openai` package (briefly, Phase 6). The rule (the candidate's words):
+custom code has to justify itself by being simpler or more secure than what the SDK offers. What stays custom and why is in the README,
+"Why the agent loop is the AI SDK's". Model calls follow OpenAI patterns (the candidate's request): `response_format` json_schema for
+structured output, OpenAI-style tools, `temperature` 0 and a fixed `seed`.
+
+**D-068 Model text is accepted or rejected, never edited (Phase 6, at the candidate's request).** Phase 5 briefly added a missing final
+period in code. Removed: a summary marked `model` must be exactly what the model wrote. A missing period is a failed check and costs the
+one retry. Constraining the period through a JSON Schema `pattern` was considered; Ollama's documentation does not cover `pattern`, so
+the check stays the guard.
+
+**D-069 The agent's packet is built from the tool results, not restated by the model (Phase 6).** The first version asked the model
+for a final answer restating every status and source, then checked it. Measured on the default model: slow (PA-001 76 s, PA-004 about
+120 s) and unreliable (PA-001 reported C4 as "unsupported"; PA-004's answer failed the schema). Now the code builds the agent's packet from
+the `evaluate_criterion` results the agent actually received, marks any criterion it never evaluated as `not_evaluated`, and compares each
+with the rules engine (`agrees_with_rules`). The model's only written output is the draft's asks. Measured after: PA-001 12 s, PA-004
+14 to 19 s, both 8 tool calls, packets matching the rules engine.
+
+**D-070 Model versions are data folders, like policies (Phase 6, the candidate's request).** `data/models/<effective date>_<version>/model.json`:
+model name and pinned digest, call settings (temperature, seed), output caps (summary, tool step, draft), timeouts (one call; a whole agent
+run) and the agent's step limit. Validated like policy folders (Zod, strict, so a misspelt setting is an error; the folder name must agree
+with the file; anything else in the folder is an error; dotfiles ignored; version order must agree with date order). The version in use
+is the latest dated on or before today (the server's UTC date). That is deployment, not clinical logic, so invariant 7 does not apply,
+and a later-dated folder is staged. `POST /admin/models/reload` (new permission `models:reload`, admin; audit action `models.reload`) and
+`make reload-models` pick up a new folder without a restart, keeping the old versions if the new folder fails. `make model` pulls the
+model of the current and any staged version and checks each digest. `/ready` shows the folders and the last reload. Removed from `.env`:
+`OLLAMA_MODEL`, `OLLAMA_MODEL_DIGEST`, `OLLAMA_TIMEOUT_MS` (supersedes those parts of D-063 and D-065); added `MODELS_DIR`. The service
+always has a model now; it falls back to templates when the model is unreachable, as before.
+
+**D-071 Prompts stay in code (Phase 6, the candidate's call).** They briefly moved into the model folders. The candidate pointed out that
+`<clinical_data>` is something the code and the prompt must agree on, a shibboleth a prompt writer would have to know. More of the
+same: the reply shapes are Zod schemas in code, the summary rules are enforced by the checker, and the agent loop stops on
+`verify_sources`, which only works if the prompt makes it the last step. The data-not-instructions rule is also a security control. So
+a prompt change is a code change, reviewed and tested. Guards: `test/llm/prompts.test.ts` (every prompt names the tags and the rule) and
+the `/mcp` test (the agent prompt names every tool, and `verify_sources` is introduced last). The audit's `prompt_version` stays the file
+name (`summary.v2`, `agent.v1`).
+
+**D-072 How an agent run stops (Phase 6).** The loop stops at the `verify_sources` call (`hasToolCall`) or after `agent.max_steps`.
+Output caps per call (`max_output_tokens`) stop a looping model before its timeout: an uncapped final step once ran about 120 s. One
+deadline per run (`timeouts_ms.agent_run`, 180 s, the candidate's limit) is shared by the loop and the draft; each call also has its own
+timeout. When the deadline passes, the run still ends cleanly: criteria it never reached show `not_evaluated`, the warning is
+`agent_time_limit`, and the draft is the template. The test uses a model that never answers.
+
+**D-073 The draft's number check ignores the digits in FHIR ids (Phase 6, a bug the tests found).** The broken-draft test with an
+invented "9 months" passed the check, because the allowed numbers were taken from the criterion's evidence text, FHIR ids included
+(`…9d69…`). References are now removed before the numbers are collected.
+
+**D-074 SSE is read with eventsource-parser, in `@pa/shared` (Phase 6).** The browser's `EventSource` cannot send a bearer token, so the
+UI reads the stream with `fetch`. Rather than hand-parse SSE frames, `readAgentEvents` pipes the body through `TextDecoderStream` and
+eventsource-parser's `EventSourceParserStream` (the parser the AI SDK uses) and validates each event with the shared schema. The UI, the
+CLI (`pnpm agent`) and the API tests use it. `@pa/shared` now compiles with the DOM lib for the stream types (Node 24 has them too).
+
+**D-075 A first UI in Phase 6 (the candidate's request).** The candidate wanted Phase 6 to end with a Playwright test of the whole
+flow, agent included. So the sign-in, queue, packet view and "Draft provider request" panel exist now, written to the §12 spec where it
+was cheap; Phase 8 polishes them (source drawer, timelines, audit and eval pages). Not yet: the queue's per-status count chips (they need
+a packet, so a model call, per row). Contrast, found by axe: indigo shade 8 as the primary colour (shade 6 with white text is about
+4:1), and status badges with dark labels, the colour carried by the tint and the icon (green 9 text on its own tint is about 4.2:1).
+`pnpm fixtures` also writes the queue and two agent runs (a checked draft and a template fallback), recorded through the real app with a
+scripted model, for the mocked UI tests.
+
+**D-076 No planning shorthand in code (Phase 6, the candidate's request).** Comments never say "door 1" or "door 2", or rely on any other
+term from our planning; they say what the code does and why.
+
+**D-077 Lint: `ignoreRestSiblings` (Phase 6).** `const { notes, ...attested } = form` is how the code leaves a field out (free-text notes
+never reach a model). ESLint's `no-unused-vars` now allows it instead of requiring `_notes`.
 
 ## Defaults until the panel answers (plan §7; the candidate is emailing the panel)
 

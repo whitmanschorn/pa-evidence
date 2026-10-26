@@ -21,14 +21,12 @@ const EnvSchema = z
     SMART_ALG: z.enum(['RS384', 'ES384']).default('RS384'),
     SMART_SCOPES: optional,
     OLLAMA_BASE_URL: z.url().default('http://127.0.0.1:11434'),
-    OLLAMA_MODEL: optional,
-    OLLAMA_MODEL_DIGEST: optional,
     OLLAMA_EXPECTED_VERSION: optional,
-    // How long one model call may take before the summary falls back to the template (CPU-only inference is slower).
-    OLLAMA_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
     AUTH_TOKENS: z.string().min(1, 'run `make tokens`'),
     AUDIT_DB_PATH: z.string().default('var/audit.db'),
     POLICIES_DIR: z.string().default('data/policies'),
+    // Which model, its prompts, and its call settings and timeouts: one version folder each (see modelVersions.ts).
+    MODELS_DIR: z.string().default('data/models'),
     TERMINOLOGY_DIR: z.string().default('data/terminology'),
     REQUESTS_DIRS: csv.default(['data/requests', 'eval/synthea-requests']),
     EVAL_DIR: z.string().default('eval'),

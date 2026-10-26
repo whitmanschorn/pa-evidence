@@ -30,13 +30,13 @@ export function requestRoutes(deps: AppDeps): Router {
     res.json(queue);
   });
 
-  // Door 1: the evidence packet, built by the rules engine. One audit event per request.
+  // The evidence packet, built by the rules engine. One audit event per request.
   router.get('/requests/:id/evidence', allow('evidence:read', deps.audit), async (req, res) => {
     const requestId = RequestIdParam.parse(req.params.id);
     const audited = { action: 'packet.read' as const, request_id: requestId, assembler: 'rules' as const };
     auditWhenDone(res, deps.audit, audited);
 
-    const { packet, metrics } = await assemblePacket(deps, requestId);
+    const { packet, metrics } = await assemblePacket({ ...deps, summaryModel: deps.models?.current() }, requestId);
     Object.assign(audited, {
       member_ref: packet.patient,
       policy_id: packet.policy_id,
@@ -68,7 +68,8 @@ export function requestRoutes(deps: AppDeps): Router {
     const audited = { action: 'source.read' as const, request_id: params.id, cited_sources: [ref] };
     auditWhenDone(res, deps.audit, audited);
 
-    const { packet, metrics } = await assemblePacket(deps, params.id);
+    // No summary: only the cited references matter here.
+    const { packet, metrics } = await assemblePacket({ ...deps, summaryModel: undefined }, params.id);
     Object.assign(audited, {
       member_ref: packet.patient,
       policy_id: packet.policy_id,

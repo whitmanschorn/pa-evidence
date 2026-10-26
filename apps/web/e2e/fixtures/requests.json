@@ -1,0 +1,51 @@
+[
+  {
+    "request_id": "PA-001",
+    "request_date": "2026-10-01",
+    "urgency": "standard",
+    "drug": "Semaglutide 0.25 MG/0.5 MG Injection, weekly",
+    "policy_id": "MP-SYN-021"
+  },
+  {
+    "request_id": "PA-002",
+    "request_date": "2026-10-01",
+    "urgency": "standard",
+    "drug": "Semaglutide 0.25 MG/0.5 MG Injection, weekly",
+    "policy_id": "MP-SYN-021"
+  },
+  {
+    "request_id": "PA-003",
+    "request_date": "2026-10-01",
+    "urgency": "standard",
+    "drug": "Semaglutide 0.25 MG/0.5 MG Injection, weekly",
+    "policy_id": "MP-SYN-021"
+  },
+  {
+    "request_id": "PA-004",
+    "request_date": "2026-10-01",
+    "urgency": "standard",
+    "drug": "Semaglutide 0.25 MG/0.5 MG Injection, weekly",
+    "policy_id": "MP-SYN-021"
+  },
+  {
+    "request_id": "PA-005",
+    "request_date": "2026-10-01",
+    "urgency": "standard",
+    "drug": "Semaglutide 0.25 MG/0.5 MG Injection, weekly",
+    "policy_id": "MP-SYN-021"
+  },
+  {
+    "request_id": "PA-006",
+    "request_date": "2026-10-01",
+    "urgency": "standard",
+    "drug": "Semaglutide 0.25 MG/0.5 MG Injection, weekly",
+    "policy_id": "MP-SYN-021"
+  },
+  {
+    "request_id": "PA-007",
+    "request_date": "2026-10-01",
+    "urgency": "standard",
+    "drug": "Semaglutide 0.25 MG/0.5 MG Injection, weekly",
+    "policy_id": "MP-SYN-021"
+  }
+]

@@ -1,6 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    // DOM for the web streams (ReadableStream, TextDecoderStream) the agent stream reader uses; Node 24 has them too.
+    "lib": ["ES2024", "DOM"],
     "rootDir": ".",
     "noEmit": true
   },

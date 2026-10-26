@@ -2,7 +2,8 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { compareVersions, loadPolicyStore } from '../../src/core/policy/policyStore.js';
+import { loadPolicyStore } from '../../src/core/policy/policyStore.js';
+import { compareVersions } from '../../src/core/versionFolders.js';
 import { POLICIES_DIR } from '../support/suppliedWorld.js';
 
 // data/policies/<policy id>/<effective date>_<version>/{policy.json, rules-engine-config.json}

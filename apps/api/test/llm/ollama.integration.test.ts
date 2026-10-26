@@ -1,13 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { findForbiddenTerms } from '@pa/shared';
-import { createOllamaChatModel } from '../../src/core/llm/chatModel.js';
+import { connectLocalModel } from '../../src/core/llm/localModel.js';
+import { loadModelVersions } from '../../src/core/llm/modelVersions.js';
 import { assemblePacket } from '../../src/core/packet/assemblePacket.js';
-import { suppliedDeps } from '../support/suppliedWorld.js';
+import { latestInEffect } from '../../src/core/versionFolders.js';
+import { TODAY } from '../support/mockModel.js';
+import { MODELS_DIR, suppliedDeps } from '../support/suppliedWorld.js';
 
 // Runs against the real local model when Ollama is up and the model is pulled; skipped otherwise, so `pnpm test`
-// never needs a model. OLLAMA_TEST_MODEL picks another model (the eval compares several).
+// never needs a model. Uses the model version in effect (data/models); OLLAMA_TEST_MODEL tries another model with
+// that version's prompts and settings.
 const BASE_URL = process.env.OLLAMA_BASE_URL_FOR_TESTS ?? 'http://127.0.0.1:11434';
-const MODEL = process.env.OLLAMA_TEST_MODEL ?? 'qwen3:4b-instruct-2507-q4_K_M';
+const VERSION = latestInEffect(loadModelVersions(MODELS_DIR), TODAY.toISOString().slice(0, 10))!;
+const MODEL = process.env.OLLAMA_TEST_MODEL ?? VERSION.name;
 
 async function modelAvailable(): Promise<boolean> {
   try {
@@ -19,7 +24,7 @@ async function modelAvailable(): Promise<boolean> {
 }
 
 describe.skipIf(!(await modelAvailable()))(`summaries from the local model (${MODEL})`, () => {
-  const summaryModel = createOllamaChatModel({ baseUrl: BASE_URL, model: MODEL, digest: null, timeoutMs: 60_000 });
+  const summaryModel = connectLocalModel(BASE_URL, { ...VERSION, name: MODEL });
 
   it.each(['PA-001', 'PA-002', 'PA-003', 'PA-004', 'PA-005', 'PA-006', 'PA-007'])(
     '%s: a faithful model summary, or the template with summary_fallback',

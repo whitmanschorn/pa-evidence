@@ -5,7 +5,7 @@ import { pinoHttp } from 'pino-http';
 import { logFieldsOf, requestIdOf } from './locals.js';
 
 // Logs carry request ids, the route pattern, status, timings and counts. Never names, birth dates, identifiers,
-// clinical values, headers, bodies, URLs, prompts or model output (invariant 11). The URL is left out because a
+// clinical values, headers, bodies, URLs, prompts or model output. The URL is left out because a
 // source URL contains FHIR resource ids; the route pattern ("/requests/:id/evidence") says the same without them.
 export function createLogger(level: string, destination?: NodeJS.WritableStream): Logger {
   const options = {

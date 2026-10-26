@@ -1,12 +1,18 @@
+import { once } from 'node:events';
+import { createServer } from 'node:http';
+import type { AddressInfo } from 'node:net';
 import { Writable } from 'node:stream';
+import { readAgentEvents, type AgentEvent } from '@pa/shared';
 import { buildApp, type AppDeps } from '../../src/app.js';
 import { openAuditStore, type AuditStore } from '../../src/core/audit/auditStore.js';
 import { createStaticTokenVerifier, parseAuthTokens, sha256OfToken } from '../../src/core/auth/identityVerifier.js';
+import type { LocalModel } from '../../src/core/llm/localModel.js';
 import { createPolicyRegistry } from '../../src/core/policy/policyRegistry.js';
 import { loadPolicyStore } from '../../src/core/policy/policyStore.js';
 import { BINDINGS } from '../../src/core/rules/bindings.js';
 import { checkBindings } from '../../src/core/rules/checkBindings.js';
 import { createLogger } from '../../src/http/httpLogger.js';
+import { modelRegistryFor } from './mockModel.js';
 import { POLICIES_DIR, suppliedDeps } from './suppliedWorld.js';
 
 export const TOKENS = {
@@ -55,4 +61,26 @@ export function testApp(overrides: Partial<AppDeps> & { policiesDir?: string; au
 // Audit events are written when the response closes, a moment after the client has the body.
 export function settle(): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, 20));
+}
+
+// The app on a real port, for anything that calls /mcp over HTTP: the agent reaches the tools through the service's
+// own /mcp with the caller's token, exactly as in production. The port is known first, so the app is built with its
+// own /mcp address.
+export async function startTestServer(overrides: Parameters<typeof testApp>[0] & { model?: LocalModel } = {}) {
+  const server = createServer();
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  const baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  const models = overrides.model === undefined ? undefined : modelRegistryFor(overrides.model);
+  const { app, audit, logs } = testApp({ ...overrides, models, mcpUrl: `${baseUrl}/mcp` });
+  server.on('request', app);
+  return { baseUrl, audit, logs, close: () => new Promise<void>((resolve) => server.close(() => resolve())) };
+}
+
+// Reads a whole agent run (server-sent events) with the shared reader the UI and the CLI use.
+export async function readAgentRun(baseUrl: string, requestId: string, role: keyof typeof TOKENS = 'nurse'): Promise<AgentEvent[]> {
+  const response = await fetch(`${baseUrl}/requests/${requestId}/agent-runs`, { method: 'POST', headers: bearer(role) });
+  const events: AgentEvent[] = [];
+  if (response.body !== null) await readAgentEvents(response.body, (event) => events.push(event));
+  return events;
 }

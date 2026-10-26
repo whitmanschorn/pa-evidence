@@ -8,7 +8,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "tokens": "tsx tokens.ts",
-    "model": "tsx model.ts"
+    "model": "tsx model.ts",
+    "agent": "tsx agent.ts"
   },
   "devDependencies": {
     "@types/fhir": "0.0.44",
@@ -16,5 +17,8 @@
     "tsx": "4.23.15",
     "typescript": "6.0.3",
     "vitest": "5.0.3"
+  },
+  "dependencies": {
+    "@pa/shared": "workspace:*"
   }
 }

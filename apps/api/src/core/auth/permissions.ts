@@ -1,7 +1,7 @@
 // Roles map to permissions; routes check permissions, never roles (so a new role is one line here).
 export const PERMISSIONS = {
   nurse: ['evidence:read', 'health:read'],
-  admin: ['evidence:read', 'audit:read', 'eval:read', 'health:read', 'health:detail', 'policies:reload'],
+  admin: ['evidence:read', 'audit:read', 'eval:read', 'health:read', 'health:detail', 'policies:reload', 'models:reload'],
   probe: ['health:read'],
 } as const;
 

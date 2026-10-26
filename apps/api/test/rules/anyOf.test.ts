@@ -44,7 +44,7 @@ describe('any_of (C3)', () => {
     expect(result.status).toBe('missing');
   });
 
-  it('is conflicting on an attestation conflict even when path B is met, citing both (D-028)', () => {
+  it('is conflicting on an attestation conflict even when path B is met, citing both', () => {
     const result = run(
       'C3',
       {

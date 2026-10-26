@@ -15,7 +15,7 @@ const ParamsSchema = z.object({
   ingredient_rxnorm: z.string(),
   min_days_in_window: z.number().int().positive(),
   window_days: z.number().int().positive(),
-  // How many months the form may claim beyond the record before it is a conflict (rules engine config; one-sided, D-029).
+  // How many months the form may claim beyond the record before it is a conflict (from the rules engine config).
   attested_tolerance_months: z.number().nonnegative().optional(),
 });
 
@@ -90,7 +90,7 @@ export function buildMedicationDuration(
       order.item.reason = order.item.used ? null : 'outside_window';
     }
 
-    // One-sided check (D-029): conflicting only when the form claims more months than the record supports.
+    // One-sided: conflicting only when the form claims more months than the record supports.
     const claimed = binding.attested === undefined ? undefined : readFormField(context.form, binding.attested.months);
     let attested: Attested | undefined;
     if (binding.attested !== undefined && toleranceMonths !== undefined && typeof claimed === 'number') {

@@ -75,7 +75,7 @@ describe('medication_duration (C3 path A)', () => {
     expect(result.considered).toEqual([]);
   });
 
-  it('checks the attested months one way: the form may claim less than the record, not more (D-029)', () => {
+  it('checks the attested months one way: the form may claim less than the record, not more', () => {
     const order = metforminOrder('m', 'active', '2024-01-15'); // 990 days = 32.5 months by the request date
     expect(runPathA([order], { metformin_trial_months: 30 }).attested?.agrees).toBe(true);
     expect(runPathA([order], { metformin_trial_months: 33 }).attested?.agrees).toBe(true); // within 1 month

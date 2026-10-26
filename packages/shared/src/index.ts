@@ -23,8 +23,21 @@ export {
   LoadedVersionSchema,
   ReadySchema,
   ReloadResultSchema,
+  ModelReloadResultSchema,
   RequestSummarySchema,
   SourceViewSchema,
   UserInfoSchema,
 } from './api.js';
-export type { ErrorBody, Ready, ReloadResult, RequestSummary, SourceViewResponse, UserInfo } from './api.js';
+export type { ErrorBody, ModelReloadResult, Ready, ReloadResult, RequestSummary, SourceViewResponse, UserInfo } from './api.js';
+export {
+  AgentCriterionSchema,
+  AgentEventSchema,
+  AgentPacketEventSchema,
+  AgentStepEventSchema,
+  DoneEventSchema,
+  DraftEventSchema,
+  DraftItemSchema,
+  ErrorEventSchema,
+} from './agent.js';
+export type { AgentCriterion, AgentEvent, DraftEvent, DraftItem } from './agent.js';
+export { readAgentEvents } from './agentStream.js';

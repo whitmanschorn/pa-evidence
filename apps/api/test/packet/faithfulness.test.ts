@@ -24,7 +24,7 @@ describe('checkSummary', () => {
     expect(checkSummary(['Evidence found for 4 of 5 criteria. C3 conflicting.', FAITHFUL_2], evidence)).toContain(
       'sentence_1 has 2 sentences; make it one sentence by joining the parts with a semicolon.',
     );
-    expect(checkSummary([FAITHFUL_1, 'Nothing more'], evidence)).toContain('sentence_2 must end with a period.');
+    expect(checkSummary([FAITHFUL_1, 'Nothing more'], evidence)).toContain('sentence_2 must end with a period: add "." at the very end.');
   });
 
   it('rejects a number or date that is not in the evidence', () => {

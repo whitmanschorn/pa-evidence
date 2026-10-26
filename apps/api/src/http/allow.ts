@@ -4,7 +4,7 @@ import { hasPermission, type Permission } from '../core/auth/permissions.js';
 import { auditEventFor } from './auditEvents.js';
 import { identityOf } from './locals.js';
 
-// Every route carries allow(<permission>) (invariant 4). A caller without the permission gets 403, the body names
+// Every route carries allow(<permission>). A caller without the permission gets 403, the body names
 // the permission that was needed, and the refusal is audited.
 export function allow(permission: Permission, audit: AuditStore): RequestHandler {
   return (req, res, next) => {

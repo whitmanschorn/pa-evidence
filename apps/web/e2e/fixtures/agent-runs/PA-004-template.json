@@ -1,0 +1,210 @@
+[
+  {
+    "type": "step",
+    "step": 1,
+    "tool": "get_request",
+    "arguments": {
+      "request_id": "PA-004"
+    },
+    "result": {
+      "policy_id": "MP-SYN-021",
+      "request_date": "2026-10-01"
+    },
+    "ms": 2
+  },
+  {
+    "type": "step",
+    "step": 2,
+    "tool": "get_policy",
+    "arguments": {
+      "policy_id": "MP-SYN-021",
+      "request_date": "2026-10-01"
+    },
+    "result": {
+      "version": "2026.1",
+      "criteria": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5"
+      ]
+    },
+    "ms": 2
+  },
+  {
+    "type": "step",
+    "step": 3,
+    "tool": "evaluate_criterion",
+    "arguments": {
+      "request_id": "PA-004",
+      "criterion_id": "C1"
+    },
+    "result": {
+      "criterion_id": "C1",
+      "status": "met",
+      "sources": [
+        "Condition/fd8ad258-26c5-5bff-9f88-24f381482e58"
+      ]
+    },
+    "ms": 6
+  },
+  {
+    "type": "step",
+    "step": 4,
+    "tool": "evaluate_criterion",
+    "arguments": {
+      "request_id": "PA-004",
+      "criterion_id": "C2"
+    },
+    "result": {
+      "criterion_id": "C2",
+      "status": "met",
+      "sources": [
+        "Observation/3217388e-ed5c-574d-a3b2-fc8fdc9bbda0"
+      ]
+    },
+    "ms": 6
+  },
+  {
+    "type": "step",
+    "step": 5,
+    "tool": "evaluate_criterion",
+    "arguments": {
+      "request_id": "PA-004",
+      "criterion_id": "C3"
+    },
+    "result": {
+      "criterion_id": "C3",
+      "status": "conflicting",
+      "sources": [
+        "MedicationRequest/061087a3-cb71-5a24-9142-ff5c46ddfc92",
+        "AllergyIntolerance/5343aadb-9d69-59eb-9aac-e96f129206b1"
+      ]
+    },
+    "ms": 6
+  },
+  {
+    "type": "step",
+    "step": 6,
+    "tool": "evaluate_criterion",
+    "arguments": {
+      "request_id": "PA-004",
+      "criterion_id": "C4"
+    },
+    "result": {
+      "criterion_id": "C4",
+      "status": "met",
+      "sources": []
+    },
+    "ms": 6
+  },
+  {
+    "type": "step",
+    "step": 7,
+    "tool": "evaluate_criterion",
+    "arguments": {
+      "request_id": "PA-004",
+      "criterion_id": "C5"
+    },
+    "result": {
+      "criterion_id": "C5",
+      "status": "met",
+      "sources": [
+        "Patient/cbe7cb0a-bbe9-5590-b325-609a9467084b"
+      ]
+    },
+    "ms": 6
+  },
+  {
+    "type": "step",
+    "step": 8,
+    "tool": "verify_sources",
+    "arguments": {
+      "refs": [
+        "MedicationRequest/061087a3-cb71-5a24-9142-ff5c46ddfc92",
+        "AllergyIntolerance/5343aadb-9d69-59eb-9aac-e96f129206b1"
+      ]
+    },
+    "result": {
+      "verified": 2,
+      "not_found": []
+    },
+    "ms": 1
+  },
+  {
+    "type": "packet",
+    "criteria": [
+      {
+        "id": "C1",
+        "status": "met",
+        "sources": [
+          "Condition/fd8ad258-26c5-5bff-9f88-24f381482e58"
+        ],
+        "check": "evaluated",
+        "rules_status": "met",
+        "agrees_with_rules": true
+      },
+      {
+        "id": "C2",
+        "status": "met",
+        "sources": [
+          "Observation/3217388e-ed5c-574d-a3b2-fc8fdc9bbda0"
+        ],
+        "check": "evaluated",
+        "rules_status": "met",
+        "agrees_with_rules": true
+      },
+      {
+        "id": "C3",
+        "status": "conflicting",
+        "sources": [
+          "MedicationRequest/061087a3-cb71-5a24-9142-ff5c46ddfc92",
+          "AllergyIntolerance/5343aadb-9d69-59eb-9aac-e96f129206b1"
+        ],
+        "check": "evaluated",
+        "rules_status": "conflicting",
+        "agrees_with_rules": true
+      },
+      {
+        "id": "C4",
+        "status": "met",
+        "sources": [],
+        "check": "evaluated",
+        "rules_status": "met",
+        "agrees_with_rules": true
+      },
+      {
+        "id": "C5",
+        "status": "met",
+        "sources": [
+          "Patient/cbe7cb0a-bbe9-5590-b325-609a9467084b"
+        ],
+        "check": "evaluated",
+        "rules_status": "met",
+        "agrees_with_rules": true
+      }
+    ],
+    "route": "clinician_review",
+    "warnings": []
+  },
+  {
+    "type": "draft",
+    "source": "template",
+    "text": "Re: request PA-004 (semaglutide). To complete our review, please send:\n1. Metformin prescription or pharmacy fill history supporting the reported 6 months\nThank you.",
+    "items": [
+      {
+        "criterion_id": "C3",
+        "ask": "Metformin prescription or pharmacy fill history supporting the reported 6 months"
+      }
+    ],
+    "check_failures": [
+      "unsupported_number"
+    ]
+  },
+  {
+    "type": "done",
+    "steps": 8,
+    "ms": 20
+  }
+]

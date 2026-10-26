@@ -4,7 +4,7 @@ import { ZodError } from 'zod';
 import { NotFoundError } from '../core/packet/assemblePacket.js';
 import { OutputPolicyError } from '../core/safety/forbiddenTerms.js';
 
-// Error bodies use only the fixed codes (invariant 5); details go to the log as a type, never as data.
+// Error bodies use only the fixed codes; details go to the log as a type, never as data.
 export function notFound(): RequestHandler {
   return (_req, res) => {
     res.status(404).json({ error: 'not_found' });

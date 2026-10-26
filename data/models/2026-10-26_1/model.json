@@ -1,0 +1,11 @@
+{
+  "version": "1",
+  "effective": "2026-10-26",
+  "note": "Qwen3 4B instruct (the non-thinking build), Q4_K_M, on the host's Ollama. The prompts in apps/api/src/core/llm/prompts/ are tuned for it.",
+  "name": "qwen3:4b-instruct-2507-q4_K_M",
+  "digest": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+  "call_settings": { "temperature": 0, "seed": 42 },
+  "max_output_tokens": { "summary": 400, "tool_step": 1024, "draft": 2048 },
+  "timeouts_ms": { "call": 30000, "agent_run": 180000 },
+  "agent": { "max_steps": 12 }
+}

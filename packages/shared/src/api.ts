@@ -57,7 +57,22 @@ export const ReloadResultSchema = z.object({
 });
 export type ReloadResult = z.infer<typeof ReloadResultSchema>;
 
-// Every error body. The codes are fixed (invariant 5): nothing else, and never a free-form message.
+// POST /admin/models/reload
+export const LoadedModelVersionSchema = z.object({
+  folder: z.string(),
+  name: z.string(),
+  digest: z.string(),
+  effective: IsoDateSchema,
+  in_effect: z.boolean(),
+});
+export const ModelReloadResultSchema = z.object({
+  ok: z.boolean(),
+  problems: z.array(z.string()),
+  versions: z.array(LoadedModelVersionSchema),
+});
+export type ModelReloadResult = z.infer<typeof ModelReloadResultSchema>;
+
+// Every error body. The codes are fixed: nothing else, and never a free-form message.
 export const ErrorBodySchema = z.object({
   error: z.enum(['unauthenticated', 'forbidden', 'not_found', 'invalid_request', 'internal_error', 'output_policy_violation']),
   required_permission: z.string().optional(),

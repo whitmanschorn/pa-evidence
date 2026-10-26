@@ -38,7 +38,7 @@ function checkTwoSentences(sentences: [string, string], errors: string[]): void 
     if (ends.length > 1) {
       errors.push(`sentence_${index + 1} has ${ends.length} sentences; make it one sentence by joining the parts with a semicolon.`);
     } else if (!/[.!?]$/.test(sentence.trim())) {
-      errors.push(`sentence_${index + 1} must end with a period.`);
+      errors.push(`sentence_${index + 1} must end with a period: add "." at the very end.`);
     }
   });
 }

@@ -1,7 +1,7 @@
 import { PacketSchema, type Packet } from '@pa/shared';
 import { fetchChart } from '../fhir/chart.js';
 import type { FhirClient } from '../fhir/fhirClient.js';
-import type { ChatModel } from '../llm/chatModel.js';
+import type { LocalModel } from '../llm/localModel.js';
 import type { PolicyStore } from '../policy/policyStore.js';
 import type { RequestStore } from '../requests/requestStore.js';
 import { buildEvaluator } from '../rules/buildEvaluator.js';
@@ -21,19 +21,20 @@ export type PacketDeps = {
   terminology: Terminology;
   bindings: Record<string, Binding>;
   // The local model that writes the two-sentence summary. Without it, the code template is the summary.
-  summaryModel?: ChatModel;
+  summaryModel?: LocalModel;
 };
 
 // Thrown for a request id or policy we do not have; the HTTP layer turns it into 404 not_found.
-export class NotFoundError extends Error {}
+export class NotFoundError extends Error {
+  override name = 'NotFoundError';
+}
 
 // For the log line and the audit event: timings, counts, which exact rules and which model and prompt were used.
 // Never clinical values.
 export type PacketMetrics = { fhirMs: number; sourceCount: number; rulesFingerprint: string; summary: SummaryResult };
 
-// Door 1: builds the evidence packet for one request with the rules engine alone. Every status, source and the
-// route are decided here, in code. The model only writes the two-sentence summary, which is checked, and replaced
-// by the code template if it fails (writeSummary.ts).
+// Builds the evidence packet for one request. Every status, source and the route are decided here, in code.
+// The model only writes the two-sentence summary, which is checked and replaced by a template if it fails.
 export async function assemblePacket(
   deps: PacketDeps,
   requestId: string,

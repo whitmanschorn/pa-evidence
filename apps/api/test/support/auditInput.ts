@@ -25,6 +25,7 @@ export function auditInput(overrides: Partial<AuditEventInput> = {}): AuditEvent
     refusal_reason: null,
     required_permission: null,
     loaded_versions: [],
+    tool_name: null,
     ...overrides,
   };
 }

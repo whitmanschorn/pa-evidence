@@ -2,7 +2,7 @@ import type { RequestHandler } from 'express';
 import { OutputPolicyError, assertNoForbiddenTerms } from '../core/safety/forbiddenTerms.js';
 import { addLogFields } from './locals.js';
 
-// Every JSON response is scanned before it leaves (invariant 5). A response with any form of approve, deny or
+// Every JSON response is scanned before it leaves. A response with any form of approve, deny or
 // authorize is replaced by a 500 with the fixed error code; the log line records only how many terms were found.
 export function outputGuard(): RequestHandler {
   return (_req, res, next) => {

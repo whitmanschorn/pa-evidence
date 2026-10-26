@@ -5,7 +5,7 @@ import type { Logger } from 'pino';
 import type { AuditStore } from './core/audit/auditStore.js';
 import type { IdentityVerifier } from './core/auth/identityVerifier.js';
 import type { FhirClient } from './core/fhir/fhirClient.js';
-import type { ChatModel } from './core/llm/chatModel.js';
+import type { ModelRegistry } from './core/llm/modelRegistry.js';
 import type { DependencyCheck } from './core/health.js';
 import type { PolicyRegistry } from './core/policy/policyRegistry.js';
 import type { RequestStore } from './core/requests/requestStore.js';
@@ -17,8 +17,10 @@ import { httpLogger } from './http/httpLogger.js';
 import { outputGuard } from './http/outputGuard.js';
 import { requestId } from './http/requestId.js';
 import { adminRoutes } from './http/routes/adminRoutes.js';
+import { agentRoutes } from './http/routes/agentRoutes.js';
 import { auditRoutes } from './http/routes/auditRoutes.js';
 import { healthRoutes } from './http/routes/healthRoutes.js';
+import { mcpRoutes } from './http/routes/mcpRoutes.js';
 import { requestRoutes } from './http/routes/requestRoutes.js';
 import { securityHeaders } from './http/securityHeaders.js';
 
@@ -29,7 +31,10 @@ export type AppDeps = {
   requests: RequestStore;
   terminology: Terminology;
   bindings: Record<string, Binding>;
-  summaryModel?: ChatModel;
+  // The model versions in data/models. Without them every summary is the code template and agent runs are unavailable.
+  models?: ModelRegistry;
+  // This service's own /mcp: the agent reaches its tools through it, with the caller's token.
+  mcpUrl?: string;
   verifier: IdentityVerifier;
   audit: AuditStore;
   logger: Logger;
@@ -56,6 +61,8 @@ export function buildApp(deps: AppDeps): Express {
   app.use(requestRoutes(deps));
   app.use(auditRoutes(deps));
   app.use(adminRoutes(deps));
+  app.use(mcpRoutes(deps));
+  app.use(agentRoutes(deps));
 
   app.use(notFound());
   app.use(errorHandler(deps.logger));

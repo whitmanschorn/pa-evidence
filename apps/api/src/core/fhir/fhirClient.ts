@@ -14,7 +14,7 @@ export type FhirClient = {
 };
 
 // Returns the Authorization header value, or undefined for an unauthenticated server (local HAPI).
-// Phase 4 adds bearer and SMART Backend Services providers behind this same function type.
+// fhirAuth.ts builds one for each mode (none, bearer, SMART Backend Services).
 export type AuthHeaderProvider = () => Promise<string | undefined>;
 
 const PAGE_SIZE = '200';

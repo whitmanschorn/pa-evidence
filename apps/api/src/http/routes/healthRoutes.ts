@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import type { DependencyCheck } from '../../core/health.js';
+import type { ModelRegistry } from '../../core/llm/modelRegistry.js';
 import { hasPermission, permissionsOf } from '../../core/auth/permissions.js';
 import { allow } from '../allow.js';
 import { identityOf } from '../locals.js';
@@ -13,10 +14,11 @@ export function healthRoutes(deps: AppDeps): Router {
     res.json({ status: 'ok' });
   });
 
-  // Readiness: FHIR server, model, audit store and policies. Detail only with health:detail.
+  // Readiness: FHIR server, model, audit store, policies and model versions. Detail only with health:detail.
   router.get('/ready', allow('health:read', deps.audit), async (_req, res) => {
     const [fhir, model] = await Promise.all([deps.readiness.fhir(), deps.readiness.model()]);
     const checks: Record<string, DependencyCheck> = { fhir, model, audit: auditCheck(deps), policies: policiesCheck(deps) };
+    if (deps.models !== undefined) checks.model_versions = modelVersionsCheck(deps.models);
     const ready = Object.values(checks).every((check) => check.ok || !check.required);
     res.status(ready ? 200 : 503);
 
@@ -53,6 +55,21 @@ function policiesCheck(deps: AppDeps): DependencyCheck {
     required: true,
     detail: {
       versions: deps.policies.versions().map((version) => `${version.policy_id}@${version.version} effective ${version.effective}`),
+      last_reload_at: last?.at ?? null,
+      last_reload_ok: last?.ok ?? null,
+      last_reload_problems: last?.problems ?? [],
+    },
+  };
+}
+
+// The model version folders, which one is in effect, and whether the last reload worked (same rules as policies).
+function modelVersionsCheck(models: ModelRegistry): DependencyCheck {
+  const last = models.lastReload();
+  return {
+    ok: true,
+    required: false,
+    detail: {
+      versions: models.versions().map((version) => `${version.folder} ${version.name}${version.in_effect ? ' (in effect)' : ''}`),
       last_reload_at: last?.at ?? null,
       last_reload_ok: last?.ok ?? null,
       last_reload_problems: last?.problems ?? [],

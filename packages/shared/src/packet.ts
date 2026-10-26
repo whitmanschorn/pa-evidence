@@ -4,7 +4,7 @@ import { CriterionStatusSchema, RouteSchema } from './status.js';
 // Calendar dates are "YYYY-MM-DD" strings everywhere in the contract (no times, no time zones).
 export const IsoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'expected YYYY-MM-DD');
 
-// A FHIR reference, "Type/id". `sources` holds nothing else (invariant 8).
+// A FHIR reference, "Type/id". `sources` holds nothing else.
 export const FhirRefSchema = z.string().regex(/^[A-Z][A-Za-z]+\/[A-Za-z0-9\-.]{1,64}$/, 'expected Type/id');
 
 // A request-form value checked against the record. `agrees` is null when the record has nothing to compare with.

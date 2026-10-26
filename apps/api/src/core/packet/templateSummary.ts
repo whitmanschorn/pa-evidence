@@ -7,8 +7,8 @@ const STATUS_WORDS: Record<CriterionStatus, string> = {
   conflicting: 'conflicting',
 };
 
-// The two-sentence summary written by code. Used until the model writes one (Phase 5), and whenever the
-// model's summary fails the faithfulness check. Built only from the packet, so it cannot state anything else.
+// The two-sentence summary written by code: used when no model is configured, and whenever the model's summary
+// fails the faithfulness check. Built only from the packet, so it cannot state anything else.
 export function templateSummary(criteria: CriterionResult[], missingDocuments: string[]): string {
   const total = criteria.length;
   const metCount = criteria.filter((criterion) => criterion.status === 'met').length;

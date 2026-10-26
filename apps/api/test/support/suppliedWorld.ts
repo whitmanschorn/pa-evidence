@@ -12,6 +12,7 @@ import { REPO_ROOT } from './repoRoot.js';
 // data/policies/<policy id>/<effective date>_<version>/{policy.json, rules-engine-config.json}
 export const POLICIES_DIR = join(REPO_ROOT, 'data/policies');
 export const TERMINOLOGY_DIR = join(REPO_ROOT, 'data/terminology');
+export const MODELS_DIR = join(REPO_ROOT, 'data/models');
 
 export function readBundles(dir: string): fhir4.Bundle[] {
   return readdirSync(dir)

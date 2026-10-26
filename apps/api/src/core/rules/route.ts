@@ -4,7 +4,7 @@ import type { CriterionResult, Route } from '@pa/shared';
 // Codes may carry a criterion suffix ("display_match:<criterion id>"); only the part before ":" is compared.
 const BLOCKING_WARNINGS = [
   'source_unverified', // a cited resource could not be found on the FHIR server
-  'medication_not_in_policy_list', // the requested drug is not on covered_medications (panel default 4)
+  'medication_not_in_policy_list', // the requested drug is not on covered_medications
   'member_reference_mismatch', // the chart had resources for someone else
   'request_before_policy_effective', // no policy version was in effect on the request date
   'implausible_deceased_before_request', // the record says the member died before the request

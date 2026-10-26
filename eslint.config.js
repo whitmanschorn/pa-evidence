@@ -18,8 +18,9 @@ export default defineConfig([
   {
     languageOptions: { globals: globals.node },
     rules: {
-      // An unused parameter is allowed when its name starts with "_" (Express error handlers need all four).
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      // An unused parameter is allowed when its name starts with "_" (Express error handlers need all four), and so is
+      // a field taken out with `const { notes, ...rest } = form` to leave it out of `rest`.
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', ignoreRestSiblings: true }],
     },
   },
   {

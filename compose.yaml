@@ -67,6 +67,8 @@ services:
       - audit:/app/var
       # Policy versions are dropped in on the host and picked up by POST /admin/policies/reload (make reload-policies).
       - ./data/policies:/app/data/policies:ro
+      # Model versions likewise, picked up by POST /admin/models/reload (make reload-models).
+      - ./data/models:/app/data/models:ro
     healthcheck:
       # The probe role exists for this: it can read /health and nothing else.
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/health',{headers:{authorization:'Bearer '+process.env.PROBE_TOKEN}}).then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]

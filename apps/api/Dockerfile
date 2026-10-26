@@ -31,10 +31,12 @@ RUN pnpm install --frozen-lockfile --prod --filter @pa/api...
 COPY --from=build /app/packages/shared/dist packages/shared/dist
 COPY --from=build /app/apps/api/dist apps/api/dist
 COPY --from=build /app/apps/web/dist apps/web/dist
-# Data the service reads. data/policies is also mounted by compose, so a dropped-in version folder needs no rebuild.
+# Data the service reads. data/policies and data/models are also mounted by compose, so a dropped-in version folder
+# needs no rebuild.
 COPY data/terminology data/terminology
 COPY data/requests data/requests
 COPY data/policies data/policies
+COPY data/models data/models
 COPY eval eval
 RUN mkdir -p var && chown node:node var
 USER node

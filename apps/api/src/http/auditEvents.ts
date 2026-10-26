@@ -28,6 +28,7 @@ export function auditEventFor(res: Response, fields: Partial<AuditEventInput> & 
     refusal_reason: null,
     required_permission: null,
     loaded_versions: [],
+    tool_name: null,
     ...fields,
   };
 }

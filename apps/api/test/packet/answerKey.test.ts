@@ -42,7 +42,7 @@ describe('the seven supplied requests match the answer key', () => {
   });
 });
 
-describe('PA-001 golden case (build plan §7)', () => {
+describe('PA-001, checked field by field', () => {
   it('matches every field of the hand analysis', async () => {
     const { packet } = await assemblePacket(suppliedDeps(), 'PA-001');
     const byId = Object.fromEntries(packet.criteria.map((criterion) => [criterion.id, criterion]));

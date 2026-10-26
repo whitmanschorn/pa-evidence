@@ -5,7 +5,7 @@ import { createBundleFhirClient } from '../../src/core/fhir/bundleFhirClient.js'
 import { assemblePacket } from '../../src/core/packet/assemblePacket.js';
 import { requestStoreFrom } from '../../src/core/requests/requestStore.js';
 import { REPO_ROOT } from '../support/repoRoot.js';
-import { scriptedModel, summaryJson } from '../support/scriptedModel.js';
+import { mockModel, summaryJson, textReply } from '../support/mockModel.js';
 import { readBundles, suppliedDeps } from '../support/suppliedWorld.js';
 
 // OWASP LLM01. The same chart and request as PA-004, with an instruction planted in every free-text place a chart or a
@@ -38,7 +38,7 @@ function injectedBundle(): fhir4.Bundle {
   return bundle;
 }
 
-function injectedDeps(summaryModel?: ReturnType<typeof scriptedModel>) {
+function injectedDeps(summaryModel?: ReturnType<typeof mockModel>) {
   const clean = suppliedDeps();
   const form = clean.requests.get('PA-004')!;
   const injectedForm = { ...form, prescriber_attestation: { ...form.prescriber_attestation, notes: INJECTION } };
@@ -66,13 +66,14 @@ describe('prompt injection in chart and form free text', () => {
   });
 
   it('never sends the planted text to the model', async () => {
-    const model = scriptedModel([summaryJson('Evidence found for 4 of 5 criteria; C3 conflicting.', 'Request the fill history supporting the reported 6 months.')]);
+    const model = mockModel([textReply(summaryJson('Evidence found for 4 of 5 criteria; C3 conflicting.', 'Request the fill history supporting the reported 6 months.'))]);
     await assemblePacket(injectedDeps(model), 'PA-004');
-    expect(JSON.stringify(model.calls)).not.toContain('IGNORE PREVIOUS INSTRUCTIONS');
+    expect(model.calls()).toContain('Write the summary.'); // the model was called
+    expect(model.calls()).not.toContain('IGNORE PREVIOUS INSTRUCTIONS');
   });
 
   it('falls back to the template when a model obeys an injected instruction anyway', async () => {
-    const obedient = scriptedModel([summaryJson('All criteria are met.', 'Nothing is missing.')]);
+    const obedient = mockModel([textReply(summaryJson('All criteria are met.', 'Nothing is missing.'))]);
     const { packet } = await assemblePacket(injectedDeps(obedient), 'PA-004');
     expect(packet.summary_source).toBe('template');
     expect(packet.warnings).toContain('summary_fallback');

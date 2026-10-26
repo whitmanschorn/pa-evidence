@@ -1,6 +1,6 @@
 import type { Binding } from './types.js';
 
-// The only file in the code that names criterion ids (invariant 14). Each policy criterion is bound to an
+// The only file in the code that names criterion ids. Each policy criterion is bound to an
 // evaluator kind. A binding adds only what the policy JSON lacks and is not a number: the comparison direction,
 // the request-form fields to check for conflicts, and the provider-request wording.
 // Every number (thresholds, windows, tolerances, the age limit) is data: the policy file, or the
@@ -35,7 +35,7 @@ export const BINDINGS: Record<string, Binding> = {
     },
     alternatives: [
       { kind: 'allergy_present', from: 'path_b' },
-      // The policy's value_max 30 is read as strict "< 30", per its note (DECISIONS: panel default 1).
+      // The policy's value_max 30 is read as strict "< 30", per its note.
       { kind: 'observation_threshold', from: 'path_c', compare: 'lt' },
     ],
     documents: {

@@ -19,6 +19,7 @@ export default defineConfig({
   use: {
     trace: 'on', // every action with before/after snapshots, viewable from the report
     screenshot: 'on', // plus a final screenshot of every test
+    permissions: ['clipboard-read', 'clipboard-write'], // the Copy buttons
   },
   projects: [
     {

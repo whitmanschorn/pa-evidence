@@ -5,7 +5,9 @@ import { fhirAuthConfig, loadConfig } from './config.js';
 import { openAuditStore } from './core/audit/auditStore.js';
 import { createStaticTokenVerifier, parseAuthTokens } from './core/auth/identityVerifier.js';
 import { createFhirAuth } from './core/fhir/fhirAuth.js';
-import { createOllamaChatModel } from './core/llm/chatModel.js';
+import { connectLocalModel } from './core/llm/localModel.js';
+import { createModelRegistry } from './core/llm/modelRegistry.js';
+import { loadModelVersions } from './core/llm/modelVersions.js';
 import { createHttpFhirClient } from './core/fhir/fhirClient.js';
 import { checkFhir, checkModel } from './core/health.js';
 import { createPolicyRegistry } from './core/policy/policyRegistry.js';
@@ -32,16 +34,11 @@ try {
   const fhir = createHttpFhirClient({ baseUrl: config.FHIR_BASE_URL, authHeader: fhirAuth });
   mkdirSync(dirname(config.AUDIT_DB_PATH), { recursive: true });
   const audit = openAuditStore(config.AUDIT_DB_PATH);
-  // Without OLLAMA_MODEL the service runs on the template summary alone (no model is called).
-  const summaryModel =
-    config.OLLAMA_MODEL === undefined
-      ? undefined
-      : createOllamaChatModel({
-          baseUrl: config.OLLAMA_BASE_URL,
-          model: config.OLLAMA_MODEL,
-          digest: config.OLLAMA_MODEL_DIGEST ?? null,
-          timeoutMs: config.OLLAMA_TIMEOUT_MS,
-        });
+  // Which model, its prompts and how it is called: the version folder in effect under MODELS_DIR (see modelVersions.ts).
+  const models = createModelRegistry({
+    load: () => loadModelVersions(config.MODELS_DIR),
+    connect: (version) => connectLocalModel(config.OLLAMA_BASE_URL, version),
+  });
 
   const app = buildApp({
     fhir,
@@ -49,7 +46,8 @@ try {
     requests,
     terminology,
     bindings: BINDINGS,
-    summaryModel,
+    models,
+    mcpUrl: `http://127.0.0.1:${config.PORT}/mcp`,
     verifier: createStaticTokenVerifier(parseAuthTokens(config.AUTH_TOKENS)),
     audit,
     logger,
@@ -58,8 +56,8 @@ try {
       model: () =>
         checkModel({
           baseUrl: config.OLLAMA_BASE_URL,
-          model: config.OLLAMA_MODEL,
-          expectedDigest: config.OLLAMA_MODEL_DIGEST,
+          model: models.current().name,
+          expectedDigest: models.current().digest,
           expectedVersion: config.OLLAMA_EXPECTED_VERSION,
         }),
     },
@@ -71,7 +69,7 @@ try {
       {
         port: config.PORT,
         fhir_auth: config.FHIR_AUTH,
-        summary_model: summaryModel?.name ?? 'none (template summaries)',
+        model_version: models.current().folder,
         requests: requests.list().length,
         policies: policies.versions().map((version) => `${version.policy_id}@${version.version}`),
       },

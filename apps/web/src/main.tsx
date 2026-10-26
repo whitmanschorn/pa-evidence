@@ -4,6 +4,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import { App } from './App';
+import { SessionProvider } from './session';
 import { cssVariablesResolver, theme } from './theme';
 
 const rootElement = document.getElementById('root');
@@ -14,9 +15,11 @@ if (!rootElement) {
 createRoot(rootElement).render(
   <StrictMode>
     <MantineProvider theme={theme} cssVariablesResolver={cssVariablesResolver}>
-      <BrowserRouter basename="/ui">
-        <App />
-      </BrowserRouter>
+      <SessionProvider>
+        <BrowserRouter basename="/ui">
+          <App />
+        </BrowserRouter>
+      </SessionProvider>
     </MantineProvider>
   </StrictMode>,
 );

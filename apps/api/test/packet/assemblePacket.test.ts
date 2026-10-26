@@ -13,7 +13,7 @@ describe('assemblePacket', () => {
     await expect(assemblePacket(deps, 'PA-999')).rejects.toBeInstanceOf(NotFoundError);
   });
 
-  it('keeps a requested drug outside covered_medications in review, with a warning (panel default 4)', async () => {
+  it('keeps a requested drug outside covered_medications in review, with a warning', async () => {
     const form = { ...pa001, requested_medication: { rxnorm: '2601723', display: 'tirzepatide' } };
     const { packet } = await assemblePacket({ ...deps, requests: requestStoreFrom([form]) }, 'PA-001');
     expect(packet.criteria.every((criterion) => criterion.status === 'met')).toBe(true);
