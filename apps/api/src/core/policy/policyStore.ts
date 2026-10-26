@@ -1,6 +1,10 @@
 import { readJsonFiles } from '../files.js';
 import { PolicySchema, type Policy } from './policySchema.js';
-import { RulesEngineConfigSchema, applyRulesEngineConfig, type RulesEngineConfig } from './rulesEngineConfig.js';
+import {
+  RulesEngineConfigSchema,
+  mergeRulesEngineConfigIntoPolicy,
+  type RulesEngineConfig,
+} from './mergeRulesEngineConfigIntoPolicy.js';
 
 export type PolicyChoice = { policy: Policy; warnings: string[] };
 
@@ -24,7 +28,7 @@ export function loadPolicyStore(policyPaths: string[], rulesEngineConfigPaths: s
     if (!parsed.success) {
       throw new Error(`Invalid policy file ${path}: ${parsed.error.message}`);
     }
-    return applyRulesEngineConfig(parsed.data, configs);
+    return mergeRulesEngineConfigIntoPolicy(parsed.data, configs);
   });
   return policyStoreFrom(policies);
 }

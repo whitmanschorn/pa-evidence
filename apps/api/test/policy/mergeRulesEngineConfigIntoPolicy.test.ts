@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PolicyCriterion } from '../../src/core/policy/policySchema.js';
-import { applyRulesEngineConfig, type RulesEngineConfig } from '../../src/core/policy/rulesEngineConfig.js';
+import { mergeRulesEngineConfigIntoPolicy, type RulesEngineConfig } from '../../src/core/policy/mergeRulesEngineConfigIntoPolicy.js';
 import { BINDINGS } from '../../src/core/rules/bindings.js';
 import { buildEvaluator } from '../../src/core/rules/buildEvaluator.js';
 import { checkBindings } from '../../src/core/rules/checkBindings.js';
@@ -24,7 +24,7 @@ describe('rules engine config', () => {
   });
 
   it('may only add: changing a value the payer\'s policy sets fails loudly', () => {
-    expect(() => applyRulesEngineConfig(policy, [config({ C2: { value_min: 6.5 } })])).toThrow(
+    expect(() => mergeRulesEngineConfigIntoPolicy(policy, [config({ C2: { value_min: 6.5 } })])).toThrow(
       'Rules engine config would change MP-SYN-021@2026.1 C2.value_min, which the policy already sets',
     );
   });

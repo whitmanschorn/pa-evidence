@@ -1,10 +1,11 @@
 import { z } from 'zod';
 import type { Policy } from './policySchema.js';
 
-// Rules engine config: values the payer's policy file has no structured field for (the age limit, the conflict
-// tolerances), kept as data in data/rules-engine-config/ so they change without a code change.
-// Its `criteria`, keyed by criterion id, mirror the policy's own `fhir` blocks: { "<id>": { "min_years": 18 } }
-// adds fhir.min_years to that criterion when the policy loads.
+// Why this file exists: some values the rules need (the age limit, the conflict tolerances) have no field in the
+// payer's policy file. They live as data in data/rules-engine-config/ (the values are there, not here), and this
+// file checks that config's shape and merges its values into the policy's criteria when the policy loads.
+// The config's `criteria`, keyed by criterion id, mirror the policy's own `fhir` blocks:
+// { "<id>": { "min_years": 18 } } adds fhir.min_years to that criterion.
 export const RulesEngineConfigSchema = z.object({
   policy_id: z.string(),
   version: z.string(),
@@ -15,7 +16,7 @@ export type RulesEngineConfig = z.infer<typeof RulesEngineConfigSchema>;
 
 // Adds every matching config's values to the policy's criteria. A config may only add: if the policy already
 // sets a value at the same key, this throws, so the config can never quietly change the payer's policy.
-export function applyRulesEngineConfig(policy: Policy, configs: RulesEngineConfig[]): Policy {
+export function mergeRulesEngineConfigIntoPolicy(policy: Policy, configs: RulesEngineConfig[]): Policy {
   const matching = configs.filter((config) => config.policy_id === policy.policy_id);
   if (matching.length === 0) return policy;
 
