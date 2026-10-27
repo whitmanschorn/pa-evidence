@@ -1,7 +1,8 @@
-import { Alert, Badge, Button, CopyButton, Group, List, Paper, Stack, Table, Text, Textarea, Title } from '@mantine/core';
+import { Alert, Badge, Button, CopyButton, Group, Paper, Stack, Table, Text, Textarea, Title } from '@mantine/core';
 import { readAgentEvents, type AgentEvent, type DraftEvent } from '@pa/shared';
 import { useState } from 'react';
 import { useSession } from '../session';
+import { AgentStepList } from './AgentStepList';
 import { StatusBadge } from './statusBadges';
 
 type StepEvent = Extract<AgentEvent, { type: 'step' }>;
@@ -69,18 +70,7 @@ export function AgentPanel({ requestId }: { requestId: string }) {
           </Button>
         </Group>
 
-        {steps.length > 0 && (
-          <List type="ordered" aria-label="Agent steps" size="sm" spacing={4}>
-            {steps.map((step) => (
-              <List.Item key={step.step}>
-                <Text span ff="monospace" size="sm">
-                  {step.tool}
-                </Text>{' '}
-                {JSON.stringify(step.arguments)} → {JSON.stringify(step.result)} ({step.ms} ms)
-              </List.Item>
-            ))}
-          </List>
-        )}
+        {steps.length > 0 && <AgentStepList steps={steps} />}
 
         {failed && (
           <Alert color="red" role="alert">

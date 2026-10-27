@@ -79,7 +79,7 @@ make reload-models     # pick up a new data/models/<effective>_<version>/ folder
 The UI: the packet page shows the criteria at once and the summary when the model has written it. It asks for the packet twice,
 `?summary=template` (no model call, about 50 ms) and the full packet, each with its own spinner (D-095). A packet that needs
 clinician review has a "Draft provider request" panel. The agent runs only when it is clicked, streams
-its tool calls, and shows an editable draft (never sent automatically) beside its packet and the rules engine's.
+its tool calls as plain sentences ("Evaluated criterion C3" with its status badge, never the tools' JSON; D-096), and shows an editable draft (never sent automatically) beside its packet and the rules engine's.
 
 ## The demo
 

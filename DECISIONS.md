@@ -608,6 +608,16 @@ no model or prompt version, and the FHIR reads run twice (about 20 ms each). Spi
 what is loading (`CenteredLoader`, role `status`); the queue's spinner matches. The mocked-API fixture now matches query strings and
 can hold a reply back, so the spec screenshots each loading state. `/eval`, left in the UI's API path list, is removed.
 
+**D-096 The agent's steps read as sentences, not JSON (Phase 12, the candidate's request).** The panel printed each tool call as
+`get_request {"request_id":"PA-002"} → {...} (7951 ms)`. `AgentStepList` turns each step into a title from the call ("Evaluated
+criterion C3"), the status as the same badge the packet uses, and a line from the result ("Sources: MedicationRequest,
+AllergyIntolerance", "5 of 5 cited sources are on the FHIR server"). Sources show their resource types only: the ids mean nothing
+to a reader there, and the packet's table lists them; a source the FHIR server lacks keeps its full reference, so it can be found.
+A call the MCP server refused (an `error`, or an empty result) says so in red. The tool's name and time stay underneath, small, so
+each line still maps to an MCP call. Only the UI changes: the SSE events, the terminal's `pnpm agent` and the eval trace keep the
+JSON, which is what a developer reading them wants. The UI spec checks the sentences, that the list has no JSON characters, and a
+run with a refused call, an empty result and a missing source.
+
 ## Defaults until the panel answers (the candidate is emailing the panel)
 
 1. **eGFR threshold.** The policy has `value_max: 30` but its note says "< 30". Default: strict `< 30`, using the latest eGFR on or before

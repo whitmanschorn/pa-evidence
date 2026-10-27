@@ -35,7 +35,7 @@ test('a nurse reviews PA-001 and PA-004, and drafts the provider request with th
   const panel = page.getByRole('region', { name: 'Draft provider request' });
   await test.step('the agent runs: its tool calls stream in', async () => {
     await panel.getByRole('button', { name: 'Draft provider request' }).click();
-    await expect(panel.getByRole('list', { name: 'Agent steps' }).getByRole('listitem').first()).toContainText('get_request', { timeout: 60_000 });
+    await expect(panel.getByRole('list', { name: 'Agent steps' }).getByRole('listitem').first()).toContainText('Read request PA-004', { timeout: 60_000 });
     await attachScreenshot('agent running');
   });
 
