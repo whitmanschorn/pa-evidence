@@ -4,6 +4,7 @@ import { expect, test } from '../test';
 // calling the MCP tools and drafting the provider request. Slow: the model runs on this machine.
 test('a nurse reviews PA-001 and PA-004, and drafts the provider request with the agent @slow', async ({ page, signIn, attachScreenshot }) => {
   test.setTimeout(240_000); // the agent's own limit is 180 s (data/models), plus the page loads
+  const summaryBadge = page.getByRole('region', { name: 'Summary' }).getByText(/^(Written by AI, checked against the evidence|Template)$/);
 
   await test.step('sign in with the real nurse token', async () => {
     await signIn('nurse');
@@ -14,9 +15,10 @@ test('a nurse reviews PA-001 and PA-004, and drafts the provider request with th
 
   await test.step('PA-001: five Met criteria and Evidence complete, so nothing to draft', async () => {
     await page.getByRole('link', { name: 'PA-001' }).click();
-    await expect(page.getByText('Met', { exact: true })).toHaveCount(5, { timeout: 60_000 }); // the summary is a model call
+    await expect(page.getByText('Met', { exact: true })).toHaveCount(5); // the criteria come back before the summary
     await expect(page.getByText('Evidence complete')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Draft provider request' })).toHaveCount(0);
+    await expect(summaryBadge).toBeVisible({ timeout: 60_000 }); // the model writes the summary
     await attachScreenshot('PA-001 packet');
     await expect(page).toHaveNoForbiddenTerms();
   });
@@ -24,8 +26,9 @@ test('a nurse reviews PA-001 and PA-004, and drafts the provider request with th
   await test.step('PA-004: the conflicting criterion and what to ask the provider for', async () => {
     await page.getByRole('link', { name: 'All requests' }).click();
     await page.getByRole('link', { name: 'PA-004' }).click();
-    await expect(page.getByText('Conflicting', { exact: true })).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByText('Conflicting', { exact: true })).toBeVisible();
     await expect(page.getByRole('region', { name: 'What to ask the provider for' })).toContainText('Metformin');
+    await expect(summaryBadge).toBeVisible({ timeout: 60_000 }); // before the agent, so the two model calls do not overlap
     await attachScreenshot('PA-004 packet');
   });
 

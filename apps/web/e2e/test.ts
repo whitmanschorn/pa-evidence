@@ -8,8 +8,9 @@ import { isApiPath } from '../src/apiPaths';
 //
 // Fixtures:
 //   api         In the ui project, every API call is answered from mocks the test registers with
-//               api.mock(...), or api.mockEvents(...) for a server-sent-event stream (an agent run). A call the test
-//               did not mock gets a 501 and fails the test when it ends.
+//               api.mock(...), or api.mockEvents(...) for a server-sent-event stream (an agent run). A mock's path
+//               includes its query string, if any. `after` holds a response until a promise resolves, so a test can
+//               see a loading state. A call the test did not mock gets a 501 and fails the test when it ends.
 //               In the e2e project nothing is mocked: the real API answers. (Automatic: no need to ask for it.)
 //   signIn      signIn('nurse') pastes a token on the sign-in screen and waits for the identity in the header. In the
 //               ui project the token is made up and /userinfo is mocked; in e2e it is the real one from .tokens.local.
@@ -22,7 +23,7 @@ import { isApiPath } from '../src/apiPaths';
 //   await expect(page).toHaveNoForbiddenTerms()  no form of approve, deny or authorize on screen
 
 export type MockApi = {
-  mock(method: 'GET' | 'POST', path: string, body: unknown, status?: number): void;
+  mock(method: 'GET' | 'POST', path: string, body: unknown, options?: { status?: number; after?: Promise<void> }): void;
   mockEvents(path: string, events: AgentEvent[]): void;
 };
 
@@ -43,7 +44,7 @@ export const test = base.extend<{
 }>({
   api: [
     async ({ page }, use, testInfo) => {
-      const mocks = new Map<string, { status: number; body: unknown; events?: AgentEvent[] }>();
+      const mocks = new Map<string, { status: number; body: unknown; events?: AgentEvent[]; after?: Promise<void> }>();
       const unmocked: string[] = [];
       const mockingEnabled = testInfo.project.name === 'ui';
 
@@ -52,7 +53,8 @@ export const test = base.extend<{
           (url) => isApiPath(url.pathname),
           async (route) => {
             const request = route.request();
-            const key = `${request.method()} ${new URL(request.url()).pathname}`;
+            const url = new URL(request.url());
+            const key = `${request.method()} ${url.pathname}${url.search}`;
             const mock = mocks.get(key);
             if (mock === undefined) {
               unmocked.push(key);
@@ -64,14 +66,15 @@ export const test = base.extend<{
               await route.fulfill({ status: 200, contentType: 'text/event-stream', body });
               return;
             }
+            await mock.after;
             await route.fulfill({ status: mock.status, json: mock.body });
           },
         );
       }
 
       await use({
-        mock(method, path, body, status = 200) {
-          mocks.set(`${method} ${path}`, { status, body });
+        mock(method, path, body, options = {}) {
+          mocks.set(`${method} ${path}`, { status: options.status ?? 200, body, after: options.after });
         },
         mockEvents(path, events) {
           // Parsed with the shared schema, so a fixture that drifts from the contract fails here.

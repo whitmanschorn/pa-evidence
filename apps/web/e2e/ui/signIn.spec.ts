@@ -27,7 +27,7 @@ test('sign in with a token, see who you are, sign out', async ({ page, api, sign
 });
 
 test('a token the API does not recognise is refused with a plain message', async ({ page, api, attachScreenshot }) => {
-  api.mock('GET', '/userinfo', { error: 'unauthenticated' }, 401);
+  api.mock('GET', '/userinfo', { error: 'unauthenticated' }, { status: 401 });
   await page.goto('/ui/');
   await page.getByLabel('Access token').fill('not-a-real-token');
   await page.getByRole('button', { name: 'Sign in' }).click();

@@ -9,6 +9,8 @@ import { auditWhenDone } from '../auditEvents.js';
 import { addLogFields } from '../locals.js';
 import type { AppDeps } from '../../app.js';
 
+const EvidenceQuery = z.object({ summary: z.enum(['model', 'template']).default('model') });
+
 const SourceParams = z.object({
   id: RequestIdSchema,
   type: z.string().regex(/^[A-Z][A-Za-z]{1,40}$/),
@@ -31,12 +33,16 @@ export function requestRoutes(deps: AppDeps): Router {
   });
 
   // The evidence packet, built by the rules engine. One audit event per request.
+  // ?summary=template skips the model and returns the template summary at once, so the UI can show the criteria while
+  // a second request waits for the model's summary. Without it, the summary is the model's, as the brief asks.
   router.get('/requests/:id/evidence', allow('evidence:read', deps.audit), async (req, res) => {
     const requestId = RequestIdSchema.parse(req.params.id);
+    const query = EvidenceQuery.parse(req.query);
     const audited = { action: 'packet.read' as const, request_id: requestId, assembler: 'rules' as const };
     auditWhenDone(res, deps.audit, audited);
 
-    const { packet, metrics } = await assemblePacket({ ...deps, summaryModel: deps.models?.current() }, requestId);
+    const summaryModel = query.summary === 'template' ? undefined : deps.models?.current();
+    const { packet, metrics } = await assemblePacket({ ...deps, summaryModel }, requestId);
     Object.assign(audited, {
       member_ref: packet.patient,
       policy_id: packet.policy_id,

@@ -1,9 +1,9 @@
-import { agentRun, packet, queue } from '../fixtures';
+import { agentRun, mockPacket, queue } from '../fixtures';
 import { expect, test } from '../test';
 
 test.beforeEach(async ({ page, api, signIn }) => {
   api.mock('GET', '/requests', queue());
-  api.mock('GET', '/requests/PA-004/evidence', packet('PA-004'));
+  mockPacket(api, 'PA-004');
   await signIn('nurse');
   await page.getByRole('link', { name: 'PA-004' }).click();
 });

@@ -598,6 +598,16 @@ EVAL.html and `eval/results/` stay generated and uncommitted, as D-091 says; the
 - Left as is: the faithfulness checker's id pattern is case-insensitive because the status words need the flag; a lowercase id
   matches no criterion, so nothing changes. F-015 stays open and listed in the README.
 
+**D-095 The packet page shows the criteria before the summary (Phase 11, the candidate's request).** The page waited for the
+whole packet, and the model's summary takes about 8 to 15 s on CPU, so the criteria the rules engine has in milliseconds waited too.
+`GET /requests/{id}/evidence?summary=template` returns the packet with the template summary and never calls the model; without it
+the endpoint is unchanged (the model's summary, as item 2 asks), and any other value is `invalid_request`. The page sends both requests
+at once: the quick one fills the criteria, citations and asks, and the summary box keeps its own spinner until the full packet
+arrives and takes over (same rules, same criteria). Cost: opening a packet writes two `packet.read` audit events, the quick one with
+no model or prompt version, and the FHIR reads run twice (about 20 ms each). Spinners are centred, with padding and a line saying
+what is loading (`CenteredLoader`, role `status`); the queue's spinner matches. The mocked-API fixture now matches query strings and
+can hold a reply back, so the spec screenshots each loading state. `/eval`, left in the UI's API path list, is removed.
+
 ## Defaults until the panel answers (the candidate is emailing the panel)
 
 1. **eGFR threshold.** The policy has `value_max: 30` but its note says "< 30". Default: strict `< 30`, using the latest eGFR on or before

@@ -1,15 +1,16 @@
-import { Anchor, Loader, Stack, Table, Title } from '@mantine/core';
+import { Anchor, Stack, Table, Title } from '@mantine/core';
 import { RequestSummarySchema } from '@pa/shared';
 import { Link } from 'react-router';
 import { useApi } from '../api';
 import { ApiErrorAlert } from '../components/ApiErrorAlert';
+import { CenteredLoader } from '../components/CenteredLoader';
 
 const QueueSchema = RequestSummarySchema.array();
 
 export function QueuePage() {
   const { data, error } = useApi('/requests', QueueSchema);
   if (error !== undefined) return <ApiErrorAlert error={error} />;
-  if (data === undefined) return <Loader aria-label="Loading requests" />;
+  if (data === undefined) return <CenteredLoader label="Loading requests" />;
 
   return (
     <Stack>

@@ -18,6 +18,7 @@ import type { LocalModel } from '../../src/core/llm/localModel.js';
 import { createModelRegistry } from '../../src/core/llm/modelRegistry.js';
 import { loadModelVersions } from '../../src/core/llm/modelVersions.js';
 import { TODAY } from '../support/modelVersion.js';
+import { mockModel, modelRegistryFor } from '../support/mockModel.js';
 import { MODELS_DIR, POLICIES_DIR } from '../support/suppliedWorld.js';
 import { bearer, settle, testApp } from '../support/testApp.js';
 
@@ -43,6 +44,21 @@ describe('requests and packets', () => {
 
   it('rejects a malformed request id with invalid_request', async () => {
     const response = await request(testApp().app).get('/requests/bad%20id/evidence').set(bearer('nurse'));
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({ error: 'invalid_request' });
+  });
+
+  it('?summary=template returns the template summary without calling the model', async () => {
+    const model = mockModel([new Error('the model must not be called')]);
+    const response = await request(testApp({ models: modelRegistryFor(model) }).app)
+      .get('/requests/PA-001/evidence?summary=template')
+      .set(bearer('nurse'));
+    expect(PacketSchema.parse(response.body).summary_source).toBe('template');
+    expect(model.languageModel.doGenerateCalls).toHaveLength(0);
+  });
+
+  it('rejects an unknown summary option with invalid_request', async () => {
+    const response = await request(testApp().app).get('/requests/PA-001/evidence?summary=fast').set(bearer('nurse'));
     expect(response.status).toBe(400);
     expect(response.body).toEqual({ error: 'invalid_request' });
   });
