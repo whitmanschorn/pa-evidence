@@ -365,7 +365,7 @@ that the planted text never reaches the model, and that a model obeying an injec
 about: a criterion `value` can carry a matched record's display text (for example a pancreatitis diagnosis name); the tags, the rule and the
 checker cover that path.
 
-**D-065 `make model` and the containerized option (Phase 5).** `make up` now runs `make model`: Ollama must already be running natively (it
+**D-065 `make model` and the containerized option (Phase 5; superseded in part by D-099).** `make up` now runs `make model`: Ollama must already be running natively (it
 is never started by make), the pinned model is pulled (no-op if present), its digest is checked against the pin, and `.env` gets the model
 and digest if it lacks them. For a machine without native Ollama there is an opt-in compose profile, `ollama-in-docker`
 (`ollama/ollama:0.40.11` pinned by digest, no published port).
@@ -655,6 +655,15 @@ have, and each of its reads is audited and logged like any other. Its requests c
 is how it leaves its own log lines out. It reads the newest 50 events unfiltered and matches on its side: an audit read records
 the request id it asked for, so filtering by request id would put its reads among that request's events. For the same reason
 `make demo` and the README pick the refusals out of the newest ten events instead of taking the newest three.
+
+**D-099 `make up` starts Ollama when none is running (Phase 15, the candidate's request).** Supersedes D-065's "never started by
+make". The brief's item 8 asks for one command that starts the whole stack; since D-090 this Mac also needed `make ollama-cpu` in
+a terminal of its own first. `make up` now begins with `make ollama-start`: if something answers on `127.0.0.1:11434` it is used
+as it is (the Homebrew service, `make ollama-cpu`, or any other); otherwise `ollama serve` starts there in the background with
+the `make ollama-cpu` settings (no GPU layers, no GPU device, the same context, flash attention and KV cache), its log in
+`var/ollama.log` and its process id in `var/ollama.pid`, and `make up` waits up to 30 s for it to answer. `make down` and
+`make reset` stop that process, and only that one: the id must still belong to an `ollama serve`, and an Ollama that was
+already running is never stopped. It stays native, not in Docker, for the reasons in D-004 and D-065; it binds to localhost only.
 
 ## Defaults until the panel answers (the candidate is emailing the panel)
 

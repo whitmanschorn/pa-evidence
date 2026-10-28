@@ -53,7 +53,7 @@ Every numbered item in the brief is delivered. What we left out to stay inside e
 
 ## Hours per part
 
-6:01 of the eight hours, from [HOURS.md](HOURS.md), which also lists the time lost to this laptop's GPU and not counted.
+6:09 of the eight hours, from [HOURS.md](HOURS.md), which also lists the time lost to this laptop's GPU and not counted.
 
 | Item | Hours |
 |---|---|
@@ -64,6 +64,6 @@ Every numbered item in the brief is delivered. What we left out to stay inside e
 | 5. Evaluation | 1:58 |
 | 6. This plan | 0:19 |
 | 7. Security notes | 0:10 |
-| 8. Enterprise readiness | 0:30 |
+| 8. Enterprise readiness | 0:38 |
 | Overhead (environment, guardrails, process, README, UI) | 0:45 |
-| **Total** | **6:01** |
+| **Total** | **6:09** |

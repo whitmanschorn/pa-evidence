@@ -51,6 +51,7 @@ make up | make down | make reset | make load | make tokens | make reload-policie
 make tail-log | make tail-log-and-audit (a second terminal during the demo: log lines; log lines with their audit events)
 pnpm test | pnpm lint | pnpm eval | pnpm eval:models | pnpm eval:models:html <json> | pnpm agent <request_id>
 make ollama-cpu (CPU-only Ollama on :11435 for pnpm eval:models when the GPU faults; D-085)
+make ollama-start | make ollama-stop (CPU-only Ollama on :11434 unless one runs; make up and make down run them; D-099)
 pnpm test:ui (Playwright, mocked API, seconds) | pnpm test:e2e (Playwright, full stack) | pnpm fixtures
 
 ## Process

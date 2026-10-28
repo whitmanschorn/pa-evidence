@@ -1,5 +1,6 @@
 // make model (run by make up): makes sure the models named in data/models are ready on the host's Ollama.
-//   1. Ollama must already be running natively (Metal). This never starts it, and it is never put in Docker here.
+//   1. Ollama must already be running natively: make up starts a CPU-only one first when none is (make ollama-start,
+//      D-099). This script never starts it, and it is never put in Docker here.
 //   2. For the version in effect today and any staged for a later date: pull its model (a no-op when it is there)
 //      and check the pulled digest against the one pinned in that version's model.json.
 // Older versions are skipped: they stay on disk as a record, not to be run. The API validates the folders fully.
@@ -53,7 +54,7 @@ async function main(): Promise<void> {
     .then((response) => response.json() as Promise<{ version: string }>)
     .catch(() => null);
   if (version === null) {
-    throw new Error(`Ollama is not running at ${OLLAMA_URL}. Start it natively: brew services start ollama`);
+    throw new Error(`Ollama is not running at ${OLLAMA_URL}. Start it with make ollama-start (CPU-only, in the background) or make up`);
   }
   console.log(`Ollama ${version.version} at ${OLLAMA_URL}`);
 

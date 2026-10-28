@@ -1,5 +1,5 @@
 # One entry point for the stack. Targets not built yet say which phase fills them in.
-.PHONY: help up down reset load load-supplied synthea model tokens reload-policies reload-models demo tail-log tail-log-and-audit ollama-cpu
+.PHONY: help up down reset load load-supplied synthea model tokens reload-policies reload-models demo tail-log tail-log-and-audit ollama-start ollama-stop ollama-cpu
 
 # Official Synthea sample, pinned to a commit so the bytes never change (see data/synthea/SOURCE.md).
 SYNTHEA_URL := https://raw.githubusercontent.com/synthetichealth/synthea-sample-data/84f59805d481b9f01f3141ef39e68bdbbeb80132/downloads/latest/synthea_sample_data_fhir_latest.zip
@@ -8,9 +8,9 @@ SYNTHEA_ZIP := $(SYNTHEA_CACHE)/synthea_sample_data_fhir_latest.zip
 SYNTHEA_FHIR := $(SYNTHEA_CACHE)/fhir
 
 help:
-	@echo "make up       start HAPI (Postgres-backed) and the API (UI at /ui), then load the Synthea sample and the supplied bundles"
-	@echo "make down     stop the stack (data is kept)"
-	@echo "make reset    stop the stack and delete its data volume"
+	@echo "make up       start Ollama if none is running (CPU-only), HAPI (Postgres-backed) and the API (UI at /ui), then load the Synthea sample and the supplied bundles"
+	@echo "make down     stop the stack and the Ollama make up started (data is kept)"
+	@echo "make reset    stop the stack and the Ollama make up started, and delete the data volume"
 	@echo "make load     (re)load all bundles into a running HAPI; safe to repeat"
 	@echo "make load-supplied  reload only the 7 supplied bundles (about a second)"
 	@echo "make synthea  download and verify the pinned Synthea sample (done by make up)"
@@ -21,9 +21,11 @@ help:
 	@echo "make demo             the panel demo against the running stack (REQUEST=PA-002 for another request)"
 	@echo "make tail-log          the API's log lines as they are written, one JSON line per request (a second terminal)"
 	@echo "make tail-log-and-audit  the same log lines, each followed by the audit event its request wrote"
+	@echo "make ollama-start      Ollama on :11434, CPU-only in the background, unless one is running (done by make up)"
+	@echo "make ollama-stop       stop the Ollama that ollama-start started, and no other (done by make down)"
 	@echo "make ollama-cpu       a second Ollama on :11435 with no GPU layers, for pnpm eval:models when the GPU faults (D-085)"
 
-up: synthea
+up: synthea ollama-start
 	@test -f .env || $(MAKE) tokens
 	pnpm model
 	docker compose up -d --build --wait
@@ -31,9 +33,11 @@ up: synthea
 
 down:
 	docker compose down
+	@$(MAKE) --no-print-directory ollama-stop
 
 reset:
 	docker compose down --volumes
+	@$(MAKE) --no-print-directory ollama-stop
 
 load:
 	pnpm load
@@ -101,9 +105,34 @@ tail-log-and-audit:
 # Runs in the foreground; leave it in its own terminal, then: OLLAMA_HOST_URL=http://127.0.0.1:11435 pnpm eval:models
 # Ollama's runner is llama.cpp's llama-server, which reads LLAMA_ARG_* from the environment: no layers and no device on the
 # GPU. Context, flash attention and KV cache match the Homebrew service on :11434. Same models folder; localhost only.
-# With the Homebrew service stopped, `make ollama-cpu OLLAMA_CPU_PORT=11434` takes its place, so the API, the tests and
-# make up need no change: how this Mac runs since its GPU hung (D-090).
+# make up starts the same thing on :11434 when nothing answers there (ollama-start below): how this Mac runs since its GPU
+# hung (D-090, D-099).
+OLLAMA_CPU_ENV := OLLAMA_CONTEXT_LENGTH=32768 OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 LLAMA_ARG_N_GPU_LAYERS=0 LLAMA_ARG_DEVICE=none
 OLLAMA_CPU_PORT ?= 11435
 ollama-cpu:
-	OLLAMA_HOST=127.0.0.1:$(OLLAMA_CPU_PORT) OLLAMA_CONTEXT_LENGTH=32768 OLLAMA_FLASH_ATTENTION=1 OLLAMA_KV_CACHE_TYPE=q8_0 \
-	LLAMA_ARG_N_GPU_LAYERS=0 LLAMA_ARG_DEVICE=none ollama serve
+	OLLAMA_HOST=127.0.0.1:$(OLLAMA_CPU_PORT) $(OLLAMA_CPU_ENV) ollama serve
+
+# make up's first step: Ollama on 127.0.0.1:11434. One already answering there (the Homebrew service, make ollama-cpu, or
+# any other) is used as it is. Otherwise this starts a CPU-only one in the background with the settings above, and keeps
+# its process id so that make down stops it, and only it (D-099).
+OLLAMA_LOG := var/ollama.log
+OLLAMA_PID := var/ollama.pid
+ollama-start:
+	@if curl -sf http://127.0.0.1:11434/api/version > /dev/null; then \
+	  echo "Ollama is already running on 127.0.0.1:11434"; \
+	else \
+	  mkdir -p var; \
+	  echo "Starting a CPU-only Ollama on 127.0.0.1:11434 (log: $(OLLAMA_LOG); make down stops it)"; \
+	  OLLAMA_HOST=127.0.0.1:11434 $(OLLAMA_CPU_ENV) nohup ollama serve > $(OLLAMA_LOG) 2>&1 & \
+	  echo $$! > $(OLLAMA_PID); \
+	  for attempt in $$(seq 30); do curl -sf http://127.0.0.1:11434/api/version > /dev/null && break; sleep 1; done; \
+	  curl -sf http://127.0.0.1:11434/api/version > /dev/null || { echo "Ollama did not start: see $(OLLAMA_LOG)"; exit 1; }; \
+	fi
+
+# Stops the Ollama that ollama-start started, if that process is still `ollama serve`; any other Ollama is left alone.
+ollama-stop:
+	@if [ -f $(OLLAMA_PID) ]; then \
+	  pid=$$(cat $(OLLAMA_PID)); \
+	  if ps -p $$pid -o command= | grep -q 'ollama serve'; then kill $$pid && echo "Stopped the Ollama that make up started"; fi; \
+	  rm -f $(OLLAMA_PID); \
+	fi

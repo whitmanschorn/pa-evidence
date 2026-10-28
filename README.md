@@ -51,8 +51,9 @@ Needs Docker, Node 24, pnpm 12, jq and Ollama (Homebrew on a Mac). Without a nat
 ```sh
 pnpm install
 make tokens    # nurse, admin and probe tokens: hashes to .env, plaintext to .tokens.local (both gitignored)
-make up        # checks Ollama and pulls the pinned model, starts HAPI, Postgres and the API, loads the Synthea sample and the 7 bundles
-make down      # stop (data kept)   |   make reset   # stop and delete the data
+make up        # starts Ollama (CPU-only) if none is running and pulls the pinned model, starts HAPI, Postgres and the API,
+               # loads the Synthea sample and the 7 bundles
+make down      # stop, with the Ollama make up started (data kept)   |   make reset   # the same, and delete the data
 ```
 
 | Port (this machine only) | What |
@@ -60,9 +61,10 @@ make down      # stop (data kept)   |   make reset   # stop and delete the data
 | `http://localhost:8080` | the API; the UI at `/ui` (paste a token from `.tokens.local`) |
 | `http://localhost:8090/fhir` | HAPI FHIR |
 
-Inference runs CPU-only, as the brief sizes it ("no GPU"); on this Mac the GPU also faults and then hangs under Ollama. Run
-`brew services stop ollama`, then `make ollama-cpu OLLAMA_CPU_PORT=11434` in its own terminal. The API, the tests and `make up` then
-need no change (D-085, D-090).
+Inference runs CPU-only, as the brief sizes it ("no GPU"); on this Mac the GPU also faults and then hangs under Ollama. When
+nothing answers on `127.0.0.1:11434`, `make up` starts `ollama serve` there in the background with no GPU layers (its log in
+`var/ollama.log`), and `make down` stops it. An Ollama already running there is used as it is, so stop a Homebrew service that
+uses the GPU first: `brew services stop ollama` (D-085, D-090, D-099).
 
 ```sh
 pnpm lint      # ESLint (with the import boundaries) and TypeScript
