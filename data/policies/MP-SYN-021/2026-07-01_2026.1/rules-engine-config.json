@@ -57,6 +57,12 @@
     "C5": {
       "kind": "patient_age",
       "documents": { "missing": "Proof of member date of birth" }
+    },
+    "C6": {
+      "kind": "condition_present",
+      "documents": {
+        "missing": "Documentation of the diabetic condition, SNOMED 8455003 (problem list or visit note)"
+      }
     }
   }
 }

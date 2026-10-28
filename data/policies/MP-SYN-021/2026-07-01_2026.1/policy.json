@@ -116,10 +116,26 @@
         "resource": "Patient",
         "element": "birthDate"
       }
+    },
+    {
+      "id": "C6",
+      "requirement": "Diabetic snomed 8455003 is present",
+      "fhir": {
+        "resource": "Condition",
+        "code": {
+          "system": "http://snomed.info/sct",
+          "code": "8455003"
+        },
+        "clinicalStatus_in": [
+          "active",
+          "recurrence",
+          "relapse"
+        ]
+      }
     }
   ],
   "decision_rule": {
-    "evidence_complete": "C1, C2, C3, C4 and C5 all met",
+    "evidence_complete": "C1, C2, C3, C4, C5 and C6 all met",
     "otherwise": "clinician_review, with missing_documents naming exactly what the provider should send",
     "forbidden": "The service assembles evidence only. It never recommends or makes a determination of any kind; licensed clinicians do."
   },
