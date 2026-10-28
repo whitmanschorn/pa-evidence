@@ -9,7 +9,8 @@
     "test": "vitest run",
     "tokens": "tsx tokens.ts",
     "model": "tsx model.ts",
-    "agent": "tsx agent.ts"
+    "agent": "tsx agent.ts",
+    "tail-log-and-audit": "tsx tail-log-and-audit.ts"
   },
   "devDependencies": {
     "@types/fhir": "0.0.44",

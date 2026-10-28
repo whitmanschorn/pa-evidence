@@ -54,6 +54,7 @@ Third-party packages are not vendored; they come from npm at the exact versions 
 | `apps/api/src/core/packet/faithfulness.ts`, `writeSummary.ts` | AI (Claude Code) | 5 | checker, retry, template fallback |
 | `apps/api/test/packet/{faithfulness,writeSummary,promptInjection}.test.ts`, `test/llm/ollama.integration.test.ts`, `test/support/scriptedModel.ts` (replaced in Phase 6 by `mockModel.ts`) | AI (Claude Code) | 5 | |
 | `scripts/model.ts` | AI (Claude Code) | 5 | `make model` |
+| `scripts/{logAudit,tail-log-and-audit}.ts`, `scripts/test/logAudit.test.ts`, Makefile `tail-log` and `tail-log-and-audit` | AI (Claude Code), at the candidate's request | 14 | the demo's second terminal: log lines, and log lines with their audit events (D-098) |
 | Ollama model `qwen3:4b-instruct-2507-q4_K_M` (not vendored) | Open source: Qwen3 by Alibaba Cloud, Apache-2.0; via the Ollama library | 5 | pinned by digest |
 | `eval/synthea-requests/SYN-*.json`, `eval/expected/SYN-*.json`, `eval/expected/SYNTHEA-NOTES.md` | AI (Claude Code), derived by hand from Synthea bundles | 7 | the candidate audits them (eval/hand-audit.json) |
 | `apps/api/scripts/{eval,evalReport,evalStats,compareModels}.ts`, `packages/shared/src/eval.ts` | AI (Claude Code) | 7 | `pnpm eval`, `pnpm eval:report`, `pnpm eval:models` |

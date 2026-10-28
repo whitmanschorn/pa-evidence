@@ -23,7 +23,8 @@
     "test:ui:report": "pnpm --filter @pa/web test:ui:report",
     "test:e2e:report": "pnpm --filter @pa/web test:e2e:report",
     "model": "pnpm --filter @pa/scripts model",
-    "agent": "pnpm build:shared && pnpm --filter @pa/scripts agent"
+    "agent": "pnpm build:shared && pnpm --filter @pa/scripts agent",
+    "tail-log-and-audit": "pnpm --silent --filter @pa/scripts tail-log-and-audit"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

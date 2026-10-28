@@ -86,15 +86,22 @@ its tool calls as plain sentences ("Evaluated criterion C3" with its status badg
 ## The demo
 
 A packet, a refused call, the audit event for the packet, and the log line it produced. `make demo` runs the same lines
-(`make demo REQUEST=PA-002` for another request) and ends with `GET /audit/verify`, which recomputes the audit hash chain:
+(`make demo REQUEST=PA-002` for another request) and ends with `GET /audit/verify`, which recomputes the audit hash chain.
+
+To show them live while the UI is used, start one of these in a second terminal before opening the UI:
+
+- `make tail-log`: the API's log lines as they are written, one JSON line per request, unchanged (without the health probe
+  and the UI's static files).
+- `make tail-log-and-audit`: the same log lines, each followed by the audit event its request wrote: the packet's, a
+  refusal's. It reads the audit trail through `GET /audit` as admin, so its own reads are audited too (D-098).
 
 ```sh
 NURSE=$(grep '^nurse=' .tokens.local | cut -d= -f2); ADMIN=$(grep '^admin=' .tokens.local | cut -d= -f2)
 curl -s -H "Authorization: Bearer $NURSE" localhost:8080/requests/PA-004/evidence | jq    # the packet
 curl -i localhost:8080/requests/PA-004/evidence                                          # 401 unauthenticated
 curl -i -H "Authorization: Bearer $NURSE" localhost:8080/audit                           # 403 forbidden: nurses cannot read the audit trail
-curl -s -H "Authorization: Bearer $ADMIN" 'localhost:8080/audit?request_id=PA-004' | jq '.[0]'   # the packet's audit event
-curl -s -H "Authorization: Bearer $ADMIN" 'localhost:8080/audit?limit=3' | jq                    # the two refusals, audited
+curl -s -H "Authorization: Bearer $ADMIN" 'localhost:8080/audit?request_id=PA-004' | jq 'map(select(.action == "packet.read")) | .[0]'   # the packet's audit event
+curl -s -H "Authorization: Bearer $ADMIN" 'localhost:8080/audit?limit=10' | jq 'map(select(.action == "refusal")) | .[0:2]'              # the two refusals, audited
 docker compose logs api --no-log-prefix | grep '"request_id":"PA-004"' | tail -1                # its log line
 ```
 

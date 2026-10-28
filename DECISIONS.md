@@ -639,6 +639,23 @@ events before and after this change show different fingerprints for the same rul
 - before: `a3a3abbc1204ec593b9970fa259b6e51b16e46edd6417b895cc528e9ce1f2e4f`
 - after: `28a4144e09d76b8bab29e623332442e6c6d2a908a3c9f256bb5638dd511fd35b`
 
+**D-098 The demo's second terminal: a log tail, and a log tail with audit events (Phase 14, the candidate's request).** The demo
+shows a packet, a refused call, the packet's audit event and the log line it produced. `make demo` prints them after the fact;
+these two show them as they happen, in a second terminal started before the UI is opened:
+- `make tail-log`: the API's log lines as written (`docker compose logs -f` through jq), unchanged, without the health probe
+  (every 10 s) and the UI's static files (2xx and 3xx with no route pattern). Refusals before routing (401, `unmatched`) stay in.
+- `make tail-log-and-audit` (`scripts/tail-log-and-audit.ts`): the same lines, each followed by the audit event its request wrote.
+  A log line carries no audit event id and an event no X-Request-Id, so `scripts/logAudit.ts` pairs them by action (from the
+  route and status), request id and time. Both are written as the response ends, within a few milliseconds in every run so far;
+  the pairing takes the closest within a second. `/mcp` is not paired: its requests include the protocol's handshake as well as
+  tool calls, and the agent run's own line and event cover the run.
+
+The tail reads the audit trail through `GET /audit` as admin, not from the SQLite file, so it has no access a person would not
+have, and each of its reads is audited and logged like any other. Its requests carry an X-Request-Id starting with `tail-`, which
+is how it leaves its own log lines out. It reads the newest 50 events unfiltered and matches on its side: an audit read records
+the request id it asked for, so filtering by request id would put its reads among that request's events. For the same reason
+`make demo` and the README pick the refusals out of the newest ten events instead of taking the newest three.
+
 ## Defaults until the panel answers (the candidate is emailing the panel)
 
 1. **eGFR threshold.** The policy has `value_max: 30` but its note says "< 30". Default: strict `< 30`, using the latest eGFR on or before

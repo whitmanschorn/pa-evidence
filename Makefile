@@ -1,5 +1,5 @@
 # One entry point for the stack. Targets not built yet say which phase fills them in.
-.PHONY: help up down reset load load-supplied synthea model tokens reload-policies reload-models demo ollama-cpu
+.PHONY: help up down reset load load-supplied synthea model tokens reload-policies reload-models demo tail-log tail-log-and-audit ollama-cpu
 
 # Official Synthea sample, pinned to a commit so the bytes never change (see data/synthea/SOURCE.md).
 SYNTHEA_URL := https://raw.githubusercontent.com/synthetichealth/synthea-sample-data/84f59805d481b9f01f3141ef39e68bdbbeb80132/downloads/latest/synthea_sample_data_fhir_latest.zip
@@ -19,6 +19,8 @@ help:
 	@echo "make reload-policies  pick up a dropped-in policy version folder without a restart (admin token)"
 	@echo "make reload-models    pick up a dropped-in model version folder without a restart (run make model first)"
 	@echo "make demo             the panel demo against the running stack (REQUEST=PA-002 for another request)"
+	@echo "make tail-log          the API's log lines as they are written, one JSON line per request (a second terminal)"
+	@echo "make tail-log-and-audit  the same log lines, each followed by the audit event its request wrote"
 	@echo "make ollama-cpu       a second Ollama on :11435 with no GPU layers, for pnpm eval:models when the GPU faults (D-085)"
 
 up: synthea
@@ -77,11 +79,24 @@ demo:
 	echo "== The packet's audit event, as an admin"; \
 	curl -s -H "Authorization: Bearer $$ADMIN" 'localhost:8080/audit?request_id=$(REQUEST)' | jq 'map(select(.action == "packet.read")) | .[0]'; \
 	echo "== The two refusals, audited"; \
-	curl -s -H "Authorization: Bearer $$ADMIN" 'localhost:8080/audit?limit=3' | jq 'map(select(.outcome == "refused") | {action, outcome, http_status, refusal_reason, required_permission})'; \
+	curl -s -H "Authorization: Bearer $$ADMIN" 'localhost:8080/audit?limit=10' | jq 'map(select(.action == "refusal") | {action, outcome, http_status, refusal_reason, required_permission}) | .[0:2]'; \
 	echo "== The packet's log line"; \
 	docker compose logs api --no-log-prefix | grep '"request_id":"$(REQUEST)"' | grep '/requests/:id/evidence' | tail -1; \
 	echo "== The audit hash chain, recomputed"; \
 	curl -s -H "Authorization: Bearer $$ADMIN" localhost:8080/audit/verify | jq
+
+# The API's log lines as they are written, from now on: leave it running in a second terminal and use the UI or curl in
+# the first. Each request's line is shown as logged. Left out: the health probe (every 10 s) and the UI's static files
+# (2xx/3xx with no route pattern); refusals before routing (401, route_pattern "unmatched") stay in. Everything:
+# docker compose logs -f api --no-log-prefix
+tail-log:
+	@docker compose logs -f --tail 0 --no-log-prefix api 2>&1 | \
+	jq --unbuffered -cR 'fromjson? // . | select(type != "object" or (.route_pattern != "/health" and (.route_pattern != "unmatched" or .res.statusCode >= 400)))'
+
+# The same log lines, each followed by the audit event its request wrote (scripts/tail-log-and-audit.ts). The events are
+# read through the API as admin, so each read is audited too; its own requests' log lines are left out.
+tail-log-and-audit:
+	@pnpm --silent tail-log-and-audit
 
 # Runs in the foreground; leave it in its own terminal, then: OLLAMA_HOST_URL=http://127.0.0.1:11435 pnpm eval:models
 # Ollama's runner is llama.cpp's llama-server, which reads LLAMA_ARG_* from the environment: no layers and no device on the

@@ -21,6 +21,7 @@ Times are America/Chicago (CDT). "Items" are the brief's numbered deliverables (
 | 11 Playwright reports; the packet page shows the criteria before the summary | 2, overhead | 2026-10-26 18:56 | 2026-10-26 19:15 | 0:19 | 5:39 |
 | 12 the agent's tool calls read as sentences, not JSON | 3 | 2026-10-26 20:21 | 2026-10-26 20:28 | 0:07 | 5:46 |
 | 13 criterion bindings move from code to each policy version's rules-engine-config.json | 2 | 2026-10-28 09:49 | 2026-10-28 09:54 | 0:05 | 5:51 |
+| 14 the demo's second terminal: `make tail-log` and `make tail-log-and-audit` | 8 | 2026-10-28 11:48 | 2026-10-28 11:58 | 0:10 | 6:01 |
 
 ## Not counted: Apple Silicon GPU and Ollama faults (the candidate's rule)
 
@@ -50,5 +51,5 @@ tables 0:06; in Phase 10, the agent's route took 0:02, the audit, compose and `m
 | 5 | evaluation | 1:58 (answer key 0:03; Phase 7 1:41; Phase 9 0:06; Phase 10 0:08) |
 | 6 | plan for Payer A | 0:19 |
 | 7 | security notes | 0:10 (with the README's item 3 and 8 sections) |
-| 8 | enterprise readiness | 0:20 (API, auth, audit, health, FHIR auth, Docker, `make demo`) |
-| **Total** | | **5:51** |
+| 8 | enterprise readiness | 0:30 (API, auth, audit, health, FHIR auth, Docker, `make demo`, the demo's log and audit tails) |
+| **Total** | | **6:01** |
