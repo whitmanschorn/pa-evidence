@@ -1,22 +1,27 @@
 import { z } from 'zod';
-import type { Policy } from './policySchema.js';
+import { BindingSchema } from '../rules/bindingSchema.js';
+import type { Policy, PolicyFile } from './policySchema.js';
 
-// Why this file exists: some values the rules need (the age limit, the conflict tolerances) have no field in the
-// payer's policy file. They live as data, in rules-engine-config.json next to policy.json in each version folder
-// (data/policies/<policy id>/<effective date>_<version>/; the values are there, not here). This file checks that
-// config's shape and merges its values into the policy's criteria when the policy loads.
-// The config's `criteria`, keyed by criterion id, mirror the policy's own `fhir` blocks:
-// { "<id>": { "min_years": 18 } } adds fhir.min_years to that criterion.
+// Why this file exists: the rules engine needs things the payer's policy file has no field for. They live as data, in
+// rules-engine-config.json next to policy.json in each version folder (data/policies/<policy id>/<effective date>_<version>/;
+// the values are there, not here). This file checks that config's shape and applies it when the policy loads.
+// The config has two parts:
+//   criteria: numbers (the age limit, the conflict tolerances), keyed by criterion id, mirroring the policy's own
+//             `fhir` blocks: { "<id>": { "min_years": 18 } } adds fhir.min_years to that criterion.
+//   bindings: how each criterion is evaluated (kind, comparison direction, form fields, wording), keyed by criterion
+//             id. The shape is in core/rules/bindingSchema.ts.
 export const RulesEngineConfigSchema = z.object({
   policy_id: z.string(),
   note: z.string(),
   criteria: z.record(z.string(), z.record(z.string(), z.unknown())),
+  bindings: z.record(z.string(), BindingSchema),
 });
 export type RulesEngineConfig = z.infer<typeof RulesEngineConfigSchema>;
 
-// Adds the config's values to the policy's criteria. The config may only add: if the policy already sets a value
-// at the same key, this throws, so the config can never quietly change the payer's policy.
-export function mergeRulesEngineConfigIntoPolicy(policy: Policy, config: RulesEngineConfig): Policy {
+// Adds the config's values to the policy's criteria and attaches its bindings. The config may only add: if the policy
+// already sets a value at the same key, this throws, so the config can never quietly change the payer's policy.
+// Whether every criterion has a binding is checked later, by checkBindings, with every other startup problem.
+export function mergeRulesEngineConfigIntoPolicy(policy: PolicyFile, config: RulesEngineConfig): Policy {
   if (config.policy_id !== policy.policy_id) {
     throw new Error(`Rules engine config is for ${config.policy_id}, but the policy next to it is ${policy.policy_id}`);
   }
@@ -25,7 +30,7 @@ export function mergeRulesEngineConfigIntoPolicy(policy: Policy, config: RulesEn
     if (extra === undefined) return criterion;
     return { ...criterion, fhir: addOnly(criterion.fhir, extra, `${policy.policy_id}@${policy.version} ${criterion.id}`) };
   });
-  return { ...policy, criteria };
+  return { ...policy, criteria, bindings: config.bindings };
 }
 
 function addOnly(target: Record<string, unknown>, extra: Record<string, unknown>, where: string): Record<string, unknown> {

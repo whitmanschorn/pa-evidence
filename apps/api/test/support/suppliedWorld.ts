@@ -5,7 +5,6 @@ import { createBundleFhirClient } from '../../src/core/fhir/bundleFhirClient.js'
 import type { PacketDeps } from '../../src/core/packet/assemblePacket.js';
 import { loadPolicyStore } from '../../src/core/policy/policyStore.js';
 import { loadRequestStore } from '../../src/core/requests/requestStore.js';
-import { BINDINGS } from '../../src/core/rules/bindings.js';
 import { loadTerminology } from '../../src/core/terminology.js';
 import { REPO_ROOT } from './repoRoot.js';
 
@@ -27,7 +26,6 @@ export function suppliedDeps(overrides: Partial<PacketDeps> = {}): PacketDeps {
     policies: loadPolicyStore([POLICIES_DIR]),
     requests: loadRequestStore([join(REPO_ROOT, 'data/requests')]),
     terminology: loadTerminology(TERMINOLOGY_DIR),
-    bindings: BINDINGS,
     ...overrides,
   };
 }

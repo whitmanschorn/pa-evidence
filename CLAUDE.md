@@ -32,13 +32,15 @@ Decisions: DECISIONS.md. Brief: ../fde-v2-data/ (not committed).
 12. Dependencies: prefer the allowlist in DECISIONS.md, with exact versions. Anything added beyond it gets a line in
     DECISIONS.md (what and why) and a mention in the phase summary.
 13. Supplied data under data/ is read-only. Policies live in data/policies/<policy id>/<effective date>_<version>/
-    (policy.json + rules-engine-config.json); the supplied policy is 2026-07-01_2026.1/policy.json, byte-identical,
+    (policy.json + rules-engine-config.json, which holds the numbers the policy has no field for and each criterion's
+    binding); the supplied policy is 2026-07-01_2026.1/policy.json, byte-identical,
     moved 2026-10-26 at the owner's request. A policy update is a new version folder, never an edit of an old one.
     Model versions likewise: data/models/<effective date>_<version>/model.json (model, digest, call settings, caps,
     timeouts). Prompts stay in code. (Added 2026-10-26 at the owner's request.)
-14. Criteria are data. Criterion ids (C1, C2, …) may appear in code only in core/rules/bindings.ts, tests and fixtures.
-    Everything else (packet, summary, route, MCP, agent, audit, eval, UI) loops over the policy's criteria list,
-    so adding a criterion never touches those layers.
+14. Criteria are data. Criterion ids (C1, C2, …) never appear in source code, only in data/, tests and fixtures: each
+    policy version's rules-engine-config.json binds its criteria to evaluator kinds. Everything else (packet, summary,
+    route, MCP, agent, audit, eval, UI) loops over the policy's criteria list, so adding a criterion is a new version
+    folder and no code. (Amended 2026-10-28 at the owner's request; was: ids allowed in core/rules/bindings.ts.)
 
 ## Style
 Small functions, explicit names. No decorators, no clever generics, no metaprogramming.

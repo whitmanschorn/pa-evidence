@@ -1,7 +1,8 @@
 import { IsoDateSchema } from '@pa/shared';
 import { z } from 'zod';
+import type { Binding } from '../rules/types.js';
 
-// The shape of a policy file. Each criterion's `fhir` block is left loose here: the evaluator kind bound to
+// The shape of the payer's policy file. Each criterion's `fhir` block is left loose here: the evaluator kind bound to
 // the criterion parses the part it needs with its own schema (see core/rules/kinds/).
 export const PolicyCriterionSchema = z.object({
   id: z.string(),
@@ -18,4 +19,9 @@ export const PolicySchema = z.object({
   covered_medications: z.array(z.object({ rxnorm: z.string(), display: z.string() })),
   criteria: z.array(PolicyCriterionSchema).min(1),
 });
-export type Policy = z.infer<typeof PolicySchema>;
+export type PolicyFile = z.infer<typeof PolicySchema>;
+
+// A policy version as the service uses it: the payer's file with its rules engine config merged into the criteria,
+// plus the config's bindings (criterion id -> how to evaluate it). Built only by the loader, never read from the
+// payer's file, so a policy.json cannot bring its own bindings.
+export type Policy = PolicyFile & { bindings: Record<string, Binding> };

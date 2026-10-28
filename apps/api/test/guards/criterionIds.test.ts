@@ -3,10 +3,9 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { REPO_ROOT } from '../support/repoRoot.js';
 
-// Invariant 14: criteria are data. A criterion id (C1 … C9) may appear in source code only in
-// the bindings file. Everything else must loop over the policy's criteria list.
+// Invariant 14: criteria are data. A criterion id (C1 … C9) may not appear in source code at all: each policy
+// version's rules-engine-config.json binds its criteria, and everything else loops over the policy's criteria list.
 const SOURCE_DIRS = ['apps/api/src', 'apps/web/src', 'packages/shared/src', 'scripts'];
-const ALLOWED_FILE = 'apps/api/src/core/rules/bindings.ts';
 const CRITERION_ID = /\bC[1-9]\b/;
 const SKIPPED_DIRS = ['node_modules', 'dist'];
 
@@ -32,14 +31,13 @@ function listSourceFiles(dir: string): string[] {
 }
 
 function isExempt(relativePath: string): boolean {
-  if (relativePath === ALLOWED_FILE) return true;
   if (/\.(test|spec)\.tsx?$/.test(relativePath)) return true;
   if (relativePath.includes('/fixtures/')) return true;
   return false;
 }
 
 describe('criterion ids in code', () => {
-  it('appear only in core/rules/bindings.ts, tests and fixtures', () => {
+  it('appear only in tests and fixtures, never in source code', () => {
     const offenders: string[] = [];
     for (const dir of SOURCE_DIRS) {
       for (const file of listSourceFiles(dir)) {

@@ -13,7 +13,6 @@ import { checkFhir, checkModel } from './core/health.js';
 import { createPolicyRegistry } from './core/policy/policyRegistry.js';
 import { loadPolicyStore } from './core/policy/policyStore.js';
 import { loadRequestStore } from './core/requests/requestStore.js';
-import { BINDINGS } from './core/rules/bindings.js';
 import { checkBindings } from './core/rules/checkBindings.js';
 import { loadTerminology } from './core/terminology.js';
 import { createLogger } from './http/httpLogger.js';
@@ -24,10 +23,11 @@ const logger = createLogger(config.LOG_LEVEL);
 
 try {
   const terminology = loadTerminology(config.TERMINOLOGY_DIR);
-  // Every criterion in every policy version must have a binding whose params parse, or the service does not start.
+  // Every criterion in every policy version must have a binding (in that version's rules-engine-config.json) whose
+  // params parse, or the service does not start.
   const policies = createPolicyRegistry({
     load: () => loadPolicyStore([config.POLICIES_DIR]),
-    check: (store) => checkBindings(store.all(), BINDINGS, terminology),
+    check: (store) => checkBindings(store.all(), terminology),
   });
   const requests = loadRequestStore(config.REQUESTS_DIRS);
   const fhirAuth = createFhirAuth(fhirAuthConfig(config));
@@ -45,7 +45,6 @@ try {
     policies,
     requests,
     terminology,
-    bindings: BINDINGS,
     models,
     mcpUrl: `http://127.0.0.1:${config.PORT}/mcp`,
     verifier: createStaticTokenVerifier(parseAuthTokens(config.AUTH_TOKENS)),

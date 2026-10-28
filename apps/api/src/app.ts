@@ -9,7 +9,6 @@ import type { ModelRegistry } from './core/llm/modelRegistry.js';
 import type { DependencyCheck } from './core/health.js';
 import type { PolicyRegistry } from './core/policy/policyRegistry.js';
 import type { RequestStore } from './core/requests/requestStore.js';
-import type { Binding } from './core/rules/types.js';
 import type { Terminology } from './core/terminology.js';
 import { authenticate } from './http/authenticate.js';
 import { errorHandler, notFound } from './http/errors.js';
@@ -30,7 +29,6 @@ export type AppDeps = {
   policies: PolicyRegistry;
   requests: RequestStore;
   terminology: Terminology;
-  bindings: Record<string, Binding>;
   // The model versions in data/models. Without them every summary is the code template and agent runs are unavailable.
   models?: ModelRegistry;
   // This service's own /mcp: the agent reaches its tools through it, with the caller's token.

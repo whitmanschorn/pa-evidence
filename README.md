@@ -11,7 +11,7 @@ every decision. All data is synthetic.
 | # | The brief asks for | Where it is |
 |---|---|---|
 | 1 | A FHIR R4 server with the supplied bundles and a Synthea sample; scripted, repeatable loading | HAPI FHIR in Docker ([compose.yaml](compose.yaml)); `make up` runs [scripts/load-fhir.ts](scripts/load-fhir.ts), which loads with PUT, so a second run leaves every count unchanged. The Synthea sample is pinned by URL and checksum ([data/synthea/SOURCE.md](data/synthea/SOURCE.md)). |
-| 2 | `GET /requests/{request_id}/evidence` | [requestRoutes.ts](apps/api/src/http/routes/requestRoutes.ts) calls [assemblePacket.ts](apps/api/src/core/packet/assemblePacket.ts). Criteria come from the policy file; how each is evaluated, from [bindings.ts](apps/api/src/core/rules/bindings.ts); thresholds and windows, from data. No form of the three decision words can leave the service. |
+| 2 | `GET /requests/{request_id}/evidence` | [requestRoutes.ts](apps/api/src/http/routes/requestRoutes.ts) calls [assemblePacket.ts](apps/api/src/core/packet/assemblePacket.ts). Criteria come from the policy file; how each is evaluated, from the bindings in the same version folder's [rules-engine-config.json](data/policies/MP-SYN-021/2026-07-01_2026.1/rules-engine-config.json); thresholds and windows, from data. No form of the three decision words can leave the service. |
 | 3 | MCP tools and a small tool-using agent on a local model; say which front door, and why | Four tools at `/mcp` ([mcpServer.ts](apps/api/src/mcp/mcpServer.ts), [evidenceTools.ts](apps/api/src/core/tools/evidenceTools.ts)); the agent in [runAgent.ts](apps/api/src/agent/runAgent.ts). It is a second front door: [why](#the-agent-is-a-second-front-door-item-3). |
 | 4 | Safety: tagged data and a stated rule, validated model output, cited sources that exist, a faithful summary | [clinicalData.ts](apps/api/src/core/llm/clinicalData.ts) (tags), Zod schemas on every model output (Zod does Pydantic's job, D-088), [verifySources.ts](apps/api/src/core/packet/verifySources.ts), [faithfulness.ts](apps/api/src/core/packet/faithfulness.ts). Details in the [security notes](#security-notes-item-7). |
 | 5 | The seven requests and ten Synthea requests evaluated, a hand audit, the findings | [Evaluation](#evaluation): `pnpm eval` writes EVAL.md and EVAL.html; the Synthea forms state their request dates ([SYNTHEA-NOTES.md](eval/expected/SYNTHEA-NOTES.md)); the hand audit is [eval/hand-audit.json](eval/hand-audit.json) (method: [eval/HAND-AUDIT.md](eval/HAND-AUDIT.md)); the findings are [eval/findings.json](eval/findings.json). |
@@ -32,8 +32,10 @@ Five files, in reading order:
 
 1. [assemblePacket.ts](apps/api/src/core/packet/assemblePacket.ts): builds the packet. Every status, source and the route are
    decided here, in code ([route.ts](apps/api/src/core/rules/route.ts) holds the route rule).
-2. [bindings.ts](apps/api/src/core/rules/bindings.ts): the only file that names criterion ids. It binds each policy criterion to an
-   evaluator kind; every number (threshold, window, tolerance, age) comes from the policy's data.
+2. [rules-engine-config.json](data/policies/MP-SYN-021/2026-07-01_2026.1/rules-engine-config.json): binds each policy criterion to an
+   evaluator kind, with the comparison, the form fields checked for conflicts and the wording of the provider request, and adds
+   the numbers the policy has no field for. It sits in the policy's version folder; no source file names a criterion id
+   ([bindingSchema.ts](apps/api/src/core/rules/bindingSchema.ts) is its shape).
 3. [observationThreshold.ts](apps/api/src/core/rules/kinds/observationThreshold.ts): one evaluator kind, the latest qualifying lab
    against a threshold and a window (HbA1c, eGFR), with every result it set aside listed in `considered` and why.
 4. [requestRoutes.ts](apps/api/src/http/routes/requestRoutes.ts): the endpoint. Permission check, Zod, the core call, one audit

@@ -2,15 +2,22 @@ import { describe, expect, it } from 'vitest';
 import { assemblePacket } from '../../src/core/packet/assemblePacket.js';
 import { requestStoreFrom } from '../../src/core/requests/requestStore.js';
 import { checkBindings } from '../../src/core/rules/checkBindings.js';
-import { EXTENSION_BINDINGS, extensionDeps } from '../support/extensionWorld.js';
+import { extensionDeps } from '../support/extensionWorld.js';
 
-// A new criterion of an existing kind is a data change. This test adds C6 (BMI >= 27,
-// LOINC 39156-5) through a new policy version folder, a fixture BMI result and one binding line, and nothing else.
+// A new criterion of an existing kind is a data change. This test adds C6 (BMI >= 27, LOINC 39156-5) through a new
+// policy version folder (the criterion in policy.json, its binding in rules-engine-config.json) and a fixture BMI
+// result, and nothing else.
 describe('extension: a sixth criterion of an existing kind', () => {
   const deps = extensionDeps();
 
   it('passes the startup binding check', () => {
-    expect(checkBindings(deps.policies.all(), EXTENSION_BINDINGS, deps.terminology)).toEqual([]);
+    expect(checkBindings(deps.policies.all(), deps.terminology)).toEqual([]);
+  });
+
+  it('binds C6 from the new version folder only: the supplied version is unchanged', () => {
+    const versions = deps.policies.all();
+    expect(versions.find((policy) => policy.version === '2026.9')?.bindings.C6).toMatchObject({ kind: 'observation_threshold' });
+    expect(versions.find((policy) => policy.version === '2026.1')?.bindings.C6).toBeUndefined();
   });
 
   it('evaluates C6 for a request dated after the new version took effect', async () => {

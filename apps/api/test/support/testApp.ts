@@ -9,7 +9,6 @@ import { createStaticTokenVerifier, parseAuthTokens, sha256OfToken } from '../..
 import type { LocalModel } from '../../src/core/llm/localModel.js';
 import { createPolicyRegistry } from '../../src/core/policy/policyRegistry.js';
 import { loadPolicyStore } from '../../src/core/policy/policyStore.js';
-import { BINDINGS } from '../../src/core/rules/bindings.js';
 import { checkBindings } from '../../src/core/rules/checkBindings.js';
 import { createLogger } from '../../src/http/httpLogger.js';
 import { modelRegistryFor } from './mockModel.js';
@@ -44,7 +43,7 @@ export function testApp(overrides: Partial<AppDeps> & { policiesDir?: string; au
     ...supplied,
     policies: createPolicyRegistry({
       load: () => loadPolicyStore([policiesDir]),
-      check: (store) => checkBindings(store.all(), BINDINGS, supplied.terminology),
+      check: (store) => checkBindings(store.all(), supplied.terminology),
     }),
     verifier: createStaticTokenVerifier(parseAuthTokens(authTokens)),
     audit,

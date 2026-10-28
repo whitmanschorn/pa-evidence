@@ -1,6 +1,6 @@
 {
   "policy_id": "MP-SYN-021",
-  "note": "Rules engine config for the policy in this folder: values the payer's policy file has no structured field for, kept as data so they change without a code change. Merged into the policy's criteria when it loads. It may only add values: if the policy already sets a key, loading fails. Defaults from DECISIONS.md (panel defaults 2 and 3, D-029); the panel may revise them.",
+  "note": "Rules engine config for the policy in this folder: what the payer's policy file has no structured field for, kept as data so it changes without a code change. `criteria` adds numbers to the policy's criteria when it loads; it may only add values: if the policy already sets a key, loading fails. Defaults from DECISIONS.md (panel defaults 2 and 3, D-029); the panel may revise them. `bindings` says how each criterion is evaluated: the evaluator kind, the comparison direction, the request-form fields checked for conflicts, and the provider-request wording (shape: apps/api/src/core/rules/bindingSchema.ts). Every criterion needs one, or the service does not start. Wording placeholders: {from} {to} = the look-back window, {value} {date} = the attested lab result, {months} = the attested months of therapy.",
   "criteria": {
     "C2": {
       "attested_tolerance": 0.1
@@ -12,6 +12,70 @@
     },
     "C5": {
       "min_years": 18
+    }
+  },
+  "bindings": {
+    "C1": {
+      "kind": "condition_present",
+      "attested": {
+        "code": "diagnosis_claimed.snomed"
+      },
+      "documents": {
+        "missing": "Documentation of an active type 2 diabetes diagnosis (problem list or visit note)",
+        "conflicting": "Clinical note confirming the type 2 diabetes diagnosis and its current status"
+      }
+    },
+    "C2": {
+      "kind": "observation_threshold",
+      "compare": "gte",
+      "attested": {
+        "value": "prescriber_attestation.hba1c_value",
+        "date": "prescriber_attestation.hba1c_date"
+      },
+      "documents": {
+        "missing": "HbA1c lab result dated {from} to {to}",
+        "conflicting": "Lab report for the HbA1c result reported on the request form ({value} % on {date})"
+      }
+    },
+    "C3": {
+      "kind": "any_of",
+      "primary": {
+        "kind": "medication_duration",
+        "from": "path_a",
+        "attested": {
+          "months": "prescriber_attestation.metformin_trial_months"
+        }
+      },
+      "alternatives": [
+        {
+          "kind": "allergy_present",
+          "from": "path_b"
+        },
+        {
+          "kind": "observation_threshold",
+          "from": "path_c",
+          "compare": "lt",
+          "note": "The policy's value_max 30 is read as strict \"< 30\", per its note (panel default 1)."
+        }
+      ],
+      "documents": {
+        "missing": "Metformin prescription history for {from} to {to}, or documentation of metformin intolerance or contraindication",
+        "conflicting": "Metformin prescription or pharmacy fill history supporting the reported {months} months"
+      }
+    },
+    "C4": {
+      "kind": "condition_absent_ever"
+    },
+    "C5": {
+      "kind": "patient_age",
+      "documents": {
+        "missing": "Proof of member date of birth"
+      }
+    },
+    "C6": {
+      "kind": "observation_threshold",
+      "compare": "gte",
+      "note": "The extension test: a sixth criterion of an existing kind, with the kind's generic wording."
     }
   }
 }

@@ -7,8 +7,9 @@ import { parseVersionFolderName, requireDirectory, visibleNames } from '../versi
 // Reads policy versions from disk. Layout (an update is one new folder, e.g. dropped in by SFTP):
 //
 //   data/policies/<policy id>/<effective date>_<version>/policy.json                the payer's policy
-//   data/policies/<policy id>/<effective date>_<version>/rules-engine-config.json   values the policy has no field
-//                                                                                   for (optional), versioned with it
+//   data/policies/<policy id>/<effective date>_<version>/rules-engine-config.json   what the policy has no field for:
+//                                                                                   extra numbers and each criterion's
+//                                                                                   binding, versioned with it
 //
 // The folder names must agree with what is inside policy.json, and anything unexpected is an error, so a
 // half-copied or mislabelled drop stops the service at startup instead of being used. Dotfiles (.DS_Store,
@@ -57,8 +58,9 @@ function loadVersionFolder(folder: string, policyId: string, versionName: string
     );
   }
 
+  // Without a config the policy has no bindings, and the startup check names every criterion as unbound.
   const configPath = join(folder, RULES_ENGINE_CONFIG_FILE);
-  if (!existsSync(configPath)) return policy;
+  if (!existsSync(configPath)) return { ...policy, bindings: {} };
   const config = RulesEngineConfigSchema.safeParse(JSON.parse(readFileSync(configPath, 'utf8')));
   if (!config.success) throw new Error(`Invalid rules engine config ${configPath}: ${config.error.message}`);
   return mergeRulesEngineConfigIntoPolicy(policy, config.data);

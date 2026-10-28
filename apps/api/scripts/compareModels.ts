@@ -37,7 +37,6 @@ import { SUMMARY_PROMPT_VERSION } from '../src/core/packet/writeSummary.js';
 import { createPolicyRegistry, type PolicyRegistry } from '../src/core/policy/policyRegistry.js';
 import { loadPolicyStore } from '../src/core/policy/policyStore.js';
 import { loadRequestStore } from '../src/core/requests/requestStore.js';
-import { BINDINGS } from '../src/core/rules/bindings.js';
 import { checkBindings } from '../src/core/rules/checkBindings.js';
 import { loadTerminology } from '../src/core/terminology.js';
 import { latestInEffect } from '../src/core/versionFolders.js';
@@ -76,11 +75,10 @@ function serviceDeps(): ServiceDeps {
     fhir: createHttpFhirClient({ baseUrl: FHIR_URL, authHeader: createFhirAuth({ mode: 'none' }) }),
     policies: createPolicyRegistry({
       load: () => loadPolicyStore([join(REPO_ROOT, 'data/policies')]),
-      check: (store) => checkBindings(store.all(), BINDINGS, terminology),
+      check: (store) => checkBindings(store.all(), terminology),
     }),
     requests: loadRequestStore([join(REPO_ROOT, 'data/requests'), join(REPO_ROOT, 'eval/synthea-requests')]),
     terminology,
-    bindings: BINDINGS,
   };
 }
 

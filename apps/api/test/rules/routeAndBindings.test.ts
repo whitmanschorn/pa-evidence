@@ -1,7 +1,6 @@
 import type { CriterionResult, CriterionStatus } from '@pa/shared';
 import { describe, expect, it } from 'vitest';
 import { policyStoreFrom } from '../../src/core/policy/policyStore.js';
-import { BINDINGS } from '../../src/core/rules/bindings.js';
 import { checkBindings } from '../../src/core/rules/checkBindings.js';
 import { decideRoute } from '../../src/core/rules/route.js';
 import { policy, terminology } from '../support/builders.js';
@@ -39,14 +38,28 @@ describe('decideRoute', () => {
 
 describe('checkBindings (startup check)', () => {
   it('passes for the supplied policy', () => {
-    expect(checkBindings([policy], BINDINGS, terminology)).toEqual([]);
+    expect(checkBindings([policy], terminology)).toEqual([]);
   });
 
   it('names a criterion that has no binding', () => {
     const extra = { ...policy, criteria: [...policy.criteria, { id: 'C9', requirement: 'new', fhir: {} }] };
-    expect(checkBindings([extra], BINDINGS, terminology)).toEqual([
-      'MP-SYN-021@2026.1 C9: no binding in core/rules/bindings.ts',
+    expect(checkBindings([extra], terminology)).toEqual([
+      'MP-SYN-021@2026.1 C9: no binding in rules-engine-config.json',
     ]);
+  });
+
+  it('names a binding for a criterion the policy does not have (a typo would otherwise be ignored)', () => {
+    const typo = { ...policy, bindings: { ...policy.bindings, C9: { kind: 'condition_absent_ever' as const } } };
+    expect(checkBindings([typo], terminology)).toEqual([
+      'MP-SYN-021@2026.1 C9: binding in rules-engine-config.json, but the policy has no such criterion',
+    ]);
+  });
+
+  it('checks each version against its own bindings', () => {
+    const unbound = { ...policy, version: '2027.1', bindings: {} };
+    const problems = checkBindings([policy, unbound], terminology);
+    expect(problems).toHaveLength(policy.criteria.length);
+    expect(problems.every((problem) => problem.startsWith('MP-SYN-021@2027.1 '))).toBe(true);
   });
 
   it('names a criterion whose policy params do not fit its kind', () => {
@@ -56,7 +69,7 @@ describe('checkBindings (startup check)', () => {
         criterion.id === 'C2' ? { ...criterion, fhir: { ...criterion.fhir, value_min: undefined } } : criterion,
       ),
     };
-    const problems = checkBindings([broken], BINDINGS, terminology);
+    const problems = checkBindings([broken], terminology);
     expect(problems).toHaveLength(1);
     expect(problems[0]).toContain('C2 (observation_threshold)');
     expect(problems[0]).toContain('value_min');

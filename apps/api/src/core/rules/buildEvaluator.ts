@@ -9,7 +9,7 @@ import { buildObservationThreshold } from './kinds/observationThreshold.js';
 import { buildPatientAge } from './kinds/patientAge.js';
 import type { Binding, Evaluator } from './types.js';
 
-// Turns a policy criterion plus its binding into an evaluator. Throws when the policy's params do not parse
+// Turns a policy criterion plus its binding (from the same version's rules-engine-config.json) into an evaluator. Throws when the policy's params do not parse
 // for the bound kind; checkBindings runs this at startup so a bad policy file stops the service early.
 export function buildEvaluator(criterion: PolicyCriterion, binding: Binding, terminology: Terminology): Evaluator {
   return buildFromBlock(criterion.fhir, binding, terminology);

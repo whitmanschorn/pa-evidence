@@ -9,7 +9,6 @@ import { evaluateCriterion } from '../rules/evaluateCriterion.js';
 import { unique } from '../rules/matching.js';
 import { rulesFingerprint } from '../policy/policyRegistry.js';
 import { decideRoute } from '../rules/route.js';
-import type { Binding } from '../rules/types.js';
 import type { Terminology } from '../terminology.js';
 import { findUnverifiedRefs } from './verifySources.js';
 import { writeSummary, type SummaryResult } from './writeSummary.js';
@@ -19,7 +18,6 @@ export type PacketDeps = {
   policies: PolicyStore;
   requests: RequestStore;
   terminology: Terminology;
-  bindings: Record<string, Binding>;
   // The local model that writes the two-sentence summary. Without it, the code template is the summary.
   summaryModel?: LocalModel;
 };
@@ -55,9 +53,10 @@ export async function assemblePacket(
     warnings.push('medication_not_in_policy_list');
   }
 
-  // Loop over whatever criteria this policy version has; nothing here assumes how many or which.
+  // Loop over whatever criteria this policy version has; nothing here assumes how many or which. Each binding comes
+  // from the same version folder as the criterion it binds.
   const plans = policy.criteria.map((criterion) => {
-    const binding = deps.bindings[criterion.id];
+    const binding = policy.bindings[criterion.id];
     if (binding === undefined) throw new Error(`No binding for ${criterion.id}`); // checkBindings prevents this at startup
     return { criterion, evaluator: buildEvaluator(criterion, binding, deps.terminology) };
   });

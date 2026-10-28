@@ -4,7 +4,6 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { createPolicyRegistry } from '../../src/core/policy/policyRegistry.js';
 import { loadPolicyStore } from '../../src/core/policy/policyStore.js';
-import { BINDINGS } from '../../src/core/rules/bindings.js';
 import { checkBindings } from '../../src/core/rules/checkBindings.js';
 import { terminology } from '../support/builders.js';
 import { POLICIES_DIR } from '../support/suppliedWorld.js';
@@ -14,7 +13,7 @@ const SUPPLIED_VERSION = join(POLICIES_DIR, 'MP-SYN-021', '2026-07-01_2026.1');
 function registryOver(dir: string) {
   return createPolicyRegistry({
     load: () => loadPolicyStore([dir]),
-    check: (store) => checkBindings(store.all(), BINDINGS, terminology),
+    check: (store) => checkBindings(store.all(), terminology),
   });
 }
 
@@ -62,7 +61,7 @@ describe('policy registry (reload without a restart)', () => {
     const result = registry.reload();
 
     expect(result.ok).toBe(false);
-    expect(result.problems).toEqual(['MP-SYN-021@2027.1 C9: no binding in core/rules/bindings.ts']);
+    expect(result.problems).toEqual(['MP-SYN-021@2027.1 C9: no binding in rules-engine-config.json']);
     expect(result.versions.map((version) => version.version)).toEqual(['2026.1']);
     expect(registry.lastReload()).toMatchObject({ ok: false });
   });

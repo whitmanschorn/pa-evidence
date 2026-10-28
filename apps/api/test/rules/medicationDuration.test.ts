@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { BINDINGS } from '../../src/core/rules/bindings.js';
 import { buildEvaluator } from '../../src/core/rules/buildEvaluator.js';
 import type { AnyOfBinding } from '../../src/core/rules/types.js';
 import { contextWith, metforminOrder, policy, reasonOf, terminology } from '../support/builders.js';
@@ -7,7 +6,7 @@ import { contextWith, metforminOrder, policy, reasonOf, terminology } from '../s
 // C3 path A is bound to medication_duration: at least 90 metformin days in the 365 days before the request.
 // Window for a 2026-10-01 request: 2025-10-01 .. 2026-10-01.
 const c3 = policy.criteria.find((criterion) => criterion.id === 'C3')!;
-const pathA = buildEvaluator(c3, (BINDINGS.C3 as AnyOfBinding).primary, terminology);
+const pathA = buildEvaluator(c3, (policy.bindings.C3 as AnyOfBinding).primary, terminology);
 
 function runPathA(orders: fhir4.MedicationRequest[], attestation: Record<string, unknown> = {}) {
   return pathA.evaluate(contextWith({ medicationRequests: orders }, attestation));

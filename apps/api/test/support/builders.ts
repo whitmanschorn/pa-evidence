@@ -2,7 +2,6 @@ import type { Chart } from '../../src/core/fhir/chart.js';
 import type { Policy } from '../../src/core/policy/policySchema.js';
 import { loadPolicyStore } from '../../src/core/policy/policyStore.js';
 import type { RequestForm } from '../../src/core/requests/requestStore.js';
-import { BINDINGS } from '../../src/core/rules/bindings.js';
 import { buildEvaluator } from '../../src/core/rules/buildEvaluator.js';
 import type { EvaluationContext, Evaluator, KindResult } from '../../src/core/rules/types.js';
 import { loadTerminology } from '../../src/core/terminology.js';
@@ -22,7 +21,7 @@ export const terminology = loadTerminology(TERMINOLOGY_DIR);
 // The evaluator for a supplied-policy criterion, exactly as the service builds it.
 export function evaluatorFor(criterionId: string): Evaluator {
   const criterion = policy.criteria.find((candidate) => candidate.id === criterionId);
-  const binding = BINDINGS[criterionId];
+  const binding = policy.bindings[criterionId];
   if (criterion === undefined || binding === undefined) throw new Error(`no ${criterionId}`);
   return buildEvaluator(criterion, binding, terminology);
 }

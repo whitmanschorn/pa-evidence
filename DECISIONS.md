@@ -85,7 +85,8 @@ Repo-wide guard tests live in `apps/api/test/guards/`, because the API package i
 
 **D-007 Two guard tests start in Phase 0, not Phase 3 (Phase 0).** They cost almost nothing and guard from the first line of code:
 - `dataChecksums.test.ts`: every supplied file still matches `data/CHECKSUMS.sha256` (invariant 13).
-- `criterionIds.test.ts`: `C1`…`C9` appear only in `core/rules/bindings.ts`, tests and fixtures (invariant 14).
+- `criterionIds.test.ts`: `C1`…`C9` appear only in tests and fixtures, never in source code (invariant 14; until D-097, also in
+  `core/rules/bindings.ts`).
   It scans comments too, on purpose: a comment like "C3 is special" is the first step toward code that special-cases C3.
 
 **D-008 One definition of the banned words (Phase 0).** `findForbiddenTerms()` lives in `@pa/shared`, so the API's `outputGuard`
@@ -214,7 +215,7 @@ sent anywhere else.
 **D-038 Dates (Phase 3).** A dateTime's calendar day is the day as written in the record (its first ten characters). Day arithmetic is done
 on UTC midnights, so time zones and daylight saving never move a day. The Patient's birth date never enters the packet; C5 shows only the age.
 
-**D-039 Bindings are passed in, not imported (Phase 3).** `assemblePacket` takes `bindings` in its deps. The production map in
+**D-039 (superseded by D-097) Bindings are passed in, not imported (Phase 3).** `assemblePacket` takes `bindings` in its deps. The production map in
 `bindings.ts` stays C1–C5 (a sixth criterion is one line there), and the extension test adds its one C6 line in the test. `BINDINGS` is typed
 `Record<string, Binding>` rather than checked with `satisfies`, so it can be indexed by a policy's criterion id.
 
@@ -617,6 +618,26 @@ A call the MCP server refused (an `error`, or an empty result) says so in red. T
 each line still maps to an MCP call. Only the UI changes: the SSE events, the terminal's `pnpm agent` and the eval trace keep the
 JSON, which is what a developer reading them wants. The UI spec checks the sentences, that the list has no JSON characters, and a
 run with a refused call, an empty result and a missing source.
+
+**D-097 Bindings are data, in each policy version's rules-engine-config.json (Phase 13, the candidate's request).** Supersedes
+D-039. `core/rules/bindings.ts` bound each criterion to an evaluator kind, with the comparison direction, the form fields checked
+for conflicts and the provider-request wording. That is part of what the criterion means, so it now sits under `bindings` in the
+version folder's `rules-engine-config.json`, keyed by criterion id, next to the numbers (`criteria`). `core/rules/bindingSchema.ts`
+parses it, and the binding types are inferred from that schema. Its objects are strict, so a misspelt key stops the load. The code
+map had three faults beyond where it lived:
+- It was one map for every policy, so a second policy's `C1` would have been evaluated as this policy's `C1`.
+- It was not versioned, so a changed comparison applied to every policy version at once.
+- It was outside `rules_fingerprint`, so it could change outcomes without changing the fingerprint.
+
+The loader attaches each version's bindings to that version, `assemblePacket` reads `policy.bindings`, and the startup check runs
+per version. It also names a binding for a criterion the policy does not have, since a typo would otherwise be ignored. `bindings`
+left the packet and app dependencies. The C6 extension now needs no code at all: its binding is in the fixture folder's config.
+No source file names a criterion id (invariant 14 amended). JSON has no comments, so a binding may carry a `note` that code never
+reads; C3's eGFR path uses it to say why `value_max` 30 reads as strict `< 30`. The 2026.1 folder's config was edited rather than
+a new version added, because the rules did not change: every UI fixture packet is identical. Its fingerprint did change, so audit
+events before and after this change show different fingerprints for the same rules:
+- before: `a3a3abbc1204ec593b9970fa259b6e51b16e46edd6417b895cc528e9ce1f2e4f`
+- after: `28a4144e09d76b8bab29e623332442e6c6d2a908a3c9f256bb5638dd511fd35b`
 
 ## Defaults until the panel answers (the candidate is emailing the panel)
 

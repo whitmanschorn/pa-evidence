@@ -1,6 +1,19 @@
 import type { Attested, ConsideredItem, CriterionStatus, PathResult } from '@pa/shared';
+import type { z } from 'zod';
 import type { Chart, ChartQuery } from '../fhir/chart.js';
 import type { RequestForm } from '../requests/requestStore.js';
+import type {
+  AllergyPresentBindingSchema,
+  AnyOfBindingSchema,
+  BindingSchema,
+  ConditionAbsentEverBindingSchema,
+  ConditionPresentBindingSchema,
+  DocumentWordingSchema,
+  MedicationDurationBindingSchema,
+  ObservationThresholdBindingSchema,
+  PathBindingSchema,
+  PatientAgeBindingSchema,
+} from './bindingSchema.js';
 
 // Everything an evaluator reads. Pure data: evaluators never fetch, never read the clock.
 export type EvaluationContext = {
@@ -31,7 +44,7 @@ export type KindResult = {
 };
 
 // Wording of the provider request for a criterion, with {placeholders}. Only missing and conflicting produce one.
-export type DocumentWording = { missing?: string; conflicting?: string };
+export type DocumentWording = z.infer<typeof DocumentWordingSchema>;
 
 // A built evaluator: a kind configured with one criterion's params.
 export type Evaluator = {
@@ -41,40 +54,15 @@ export type Evaluator = {
   evaluate(context: EvaluationContext): KindResult;
 };
 
-// ----- Bindings: criterion id -> kind, plus what the policy JSON lacks (see bindings.ts) -----
+// ----- Bindings: criterion id -> kind, plus what the policy JSON lacks. They are data, read from each policy
+// version's rules-engine-config.json; the schemas, and why each field exists, are in bindingSchema.ts. -----
 
-// Request-form fields compared with the record. Paths are dotted, e.g. "prescriber_attestation.hba1c_value".
-// The tolerances for these comparisons are data (attested_tolerance, attested_tolerance_months in the
-// rules engine config), never numbers in code.
-export type AttestedValueBinding = { value: string; date: string };
-export type AttestedMonthsBinding = { months: string };
-
-// `from` names the sub-block of the criterion's `fhir` object that holds this kind's params (e.g. "path_a").
-type BindingCommon = { from?: string; documents?: DocumentWording };
-
-export type ConditionPresentBinding = BindingCommon & { kind: 'condition_present'; attested?: { code: string } };
-export type ObservationThresholdBinding = BindingCommon & {
-  kind: 'observation_threshold';
-  compare: 'gte' | 'lt';
-  attested?: AttestedValueBinding;
-};
-export type MedicationDurationBinding = BindingCommon & {
-  kind: 'medication_duration';
-  attested?: AttestedMonthsBinding;
-};
-export type AllergyPresentBinding = BindingCommon & { kind: 'allergy_present' };
-export type ConditionAbsentEverBinding = BindingCommon & { kind: 'condition_absent_ever' };
-export type PatientAgeBinding = BindingCommon & { kind: 'patient_age' }; // min_years comes from data
-
-// Any kind except any_of can be one path of an any_of.
-export type PathBinding =
-  | ConditionPresentBinding
-  | ObservationThresholdBinding
-  | MedicationDurationBinding
-  | AllergyPresentBinding
-  | ConditionAbsentEverBinding
-  | PatientAgeBinding;
-
-export type AnyOfBinding = BindingCommon & { kind: 'any_of'; primary: PathBinding; alternatives: PathBinding[] };
-
-export type Binding = PathBinding | AnyOfBinding;
+export type ConditionPresentBinding = z.infer<typeof ConditionPresentBindingSchema>;
+export type ObservationThresholdBinding = z.infer<typeof ObservationThresholdBindingSchema>;
+export type MedicationDurationBinding = z.infer<typeof MedicationDurationBindingSchema>;
+export type AllergyPresentBinding = z.infer<typeof AllergyPresentBindingSchema>;
+export type ConditionAbsentEverBinding = z.infer<typeof ConditionAbsentEverBindingSchema>;
+export type PatientAgeBinding = z.infer<typeof PatientAgeBindingSchema>;
+export type PathBinding = z.infer<typeof PathBindingSchema>;
+export type AnyOfBinding = z.infer<typeof AnyOfBindingSchema>;
+export type Binding = z.infer<typeof BindingSchema>;
